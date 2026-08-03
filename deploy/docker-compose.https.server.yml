@@ -1,0 +1,63 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pg-crypto-robot
+    restart: always
+    env_file: ./.env
+    ports:
+      - "127.0.0.1:${PG_PORT:-3580}:5432"
+    volumes:
+      - pg_crypto_robot_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: node:22-slim
+    container_name: robot_crypto_jsnode
+    restart: always
+    working_dir: /code
+    env_file: ./.env.app
+    environment:
+      NODE_ENV: production
+      HTTP_HOST: 0.0.0.0
+      HTTP_PORT: 3000
+      DASHBOARD_AUTH_ENABLED: "true"
+      EXCHANGE_ID: binance
+      SYMBOLS: BTC/USDT,ETH/USDT,SOL/USDT
+      QUOTE_CURRENCY: USDT
+      TRADING_MODE: paper
+      LIVE_TRADING_LOCKED: "true"
+      RISK_MAX_ORDER_QUOTE: 50
+      RISK_DAILY_QUOTE_BUDGET: 250
+      RISK_MAX_DAILY_LOSS_QUOTE: 30
+      RISK_MAX_OPEN_POSITIONS: 5
+      RISK_MAX_SYMBOL_EXPOSURE_QUOTE: 150
+      RISK_MAX_SPREAD_PERCENT: 0.25
+      PAPER_FEE_PERCENT: 0.1
+      AUTO_PAPER_TRADER_ENABLED: "true"
+      AUTO_PAPER_TRADER_INTERVAL_MS: 60000
+      AUTO_PAPER_ORDER_QUOTE: 10
+      AUTO_PAPER_MIN_24H_CHANGE_PERCENT: 0.5
+      AUTO_PAPER_TAKE_PROFIT_PERCENT: 2
+      AUTO_PAPER_STOP_LOSS_PERCENT: 1.5
+      AUTO_PAPER_ALLOW_FALLBACK_MARKET_DATA: "false"
+      AUTO_PAPER_RECORD_OBSERVATIONS: "false"
+      VITE_BASE_PATH: /crypto/
+      VITE_API_BASE: /crypto-api
+    command: bash -lc 'if [ ! -x node_modules/.bin/tsx ]; then npm ci --include=dev; fi; npm run build && npm run db:migrate && npm run start'
+    ports:
+      - "127.0.0.1:5758:3000"
+    volumes:
+      - ./app:/code
+      - robot_crypto_node_modules:/code/node_modules
+    depends_on:
+      - db
+
+volumes:
+  pg_crypto_robot_data:
+  robot_crypto_node_modules:

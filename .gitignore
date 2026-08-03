@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+ui/dist/
+.DS_Store
+npm-debug.log*
+playwright-report/
+test-results/
+.playwright-cli/
+output/
+docs/DASHBOARD_CREDENTIALS.local.md

@@ -1,0 +1,3 @@
+project_id: project:robot-crypto-jsnode
+api_base_url: http://127.0.0.1:8765
+token_env: MEMORY_CORE_TOKEN

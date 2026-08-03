@@ -1,0 +1,24 @@
+import type { MarketTicker, PaperOrderRequest } from '../domain/types.js';
+import { TradeJournalService, type PaperFillResult } from '../journal/trade-journal.service.js';
+import type { ExchangeAdapter } from './exchange-adapter.js';
+
+export class PaperExchange implements ExchangeAdapter {
+  readonly id: string;
+
+  constructor(
+    private readonly journal: TradeJournalService,
+    exchangeId: string,
+    private readonly feePercent: number
+  ) {
+    this.id = `${exchangeId}:paper`;
+  }
+
+  async placePaperOrder(request: PaperOrderRequest, ticker: MarketTicker): Promise<PaperFillResult> {
+    return this.journal.createPaperFill({
+      exchange: ticker.exchange,
+      request,
+      price: ticker.lastPrice,
+      feePercent: this.feePercent
+    });
+  }
+}
