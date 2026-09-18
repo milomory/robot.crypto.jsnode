@@ -1,4 +1,4 @@
-import type { MarketTicker, PaperOrderRequest } from '../domain/types.js';
+import type { MarketTicker, PaperOrderRequest, RiskContext } from '../domain/types.js';
 import { TradeJournalService, type PaperFillResult } from '../journal/trade-journal.service.js';
 import type { ExchangeAdapter } from './exchange-adapter.js';
 
@@ -8,7 +8,8 @@ export class PaperExchange implements ExchangeAdapter {
   constructor(
     private readonly journal: TradeJournalService,
     exchangeId: string,
-    private readonly feePercent: number
+    private readonly feePercent: number,
+    private readonly riskContext: Pick<RiskContext, 'mode' | 'liveTradingLocked' | 'allowedSymbols' | 'budget'>
   ) {
     this.id = `${exchangeId}:paper`;
   }
@@ -18,7 +19,8 @@ export class PaperExchange implements ExchangeAdapter {
       exchange: ticker.exchange,
       request,
       price: ticker.lastPrice,
-      feePercent: this.feePercent
+      feePercent: this.feePercent,
+      riskContext: { ...this.riskContext, ticker }
     });
   }
 }

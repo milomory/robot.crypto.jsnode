@@ -67,7 +67,7 @@ export class RiskBudgetService {
       });
     }
 
-    if (request.side === 'buy' && context.dailyBuyQuoteUsage + quoteValue > context.budget.dailyQuoteBudget) {
+    if (request.side === 'buy' && context.dailyBuyQuoteUsage + quoteValue * (1 + context.feePercent / 100) > context.budget.dailyQuoteBudget) {
       block('daily-budget', 'Daily quote budget would be exceeded', {
         dailyBuyQuoteUsage: context.dailyBuyQuoteUsage,
         dailyQuoteBudget: context.budget.dailyQuoteBudget

@@ -124,3 +124,36 @@ When exchange keys are introduced:
 - keep trading permission disabled until an explicit live-trading phase;
 - write keys only to server-side env/secret files with `600` permissions;
 - never paste secrets into chat or commit them to git.
+
+## Upgrade: transactional risk and daily P/L
+
+Stop **all** API/auto-trader instances before running `npm run db:migrate` with
+this version, then start only the updated version. Migration
+`003_trade_realized_pnl.sql` adds per-trade realized P/L and backfills it using
+historical weighted average cost, including fees. It preserves existing positions
+and checks the reconstruction against their balances and cumulative P/L.
+
+The migration aborts transactionally if history is incomplete, mixed buy/sell
+trades share a timestamp, or reconstructed balances disagree with positions.
+Reconcile that history before retrying; do not bypass the checks or reset P/L.
+The new column intentionally has no default, so old writers cannot silently
+omit P/L after migration. Take a database backup before deployment.
+
+For HTTPS, `VITE_API_BASE=/crypto-api` replaces the UI's `/api` prefix, producing
+`/crypto-api/status`, which nginx maps to `/api/status`.
+
+## PostgreSQL integration tests
+
+`npm test` runs unit tests; the PostgreSQL suite is skipped unless
+`TEST_DATABASE_URL` is supplied. Use a disposable local PostgreSQL instance with
+an empty database named exactly `robot_crypto_test`, then run:
+
+```bash
+TEST_DATABASE_URL=postgres://postgres@127.0.0.1:TEST_PORT/robot_crypto_test npm test
+```
+
+Replace `TEST_PORT` with that instance's port and use its local authentication
+configuration. The suite applies migrations and **truncates its test tables**;
+it rejects remote hosts and any other database name. Never point it at the
+application database. It covers concurrent budgets/position limits, read failures,
+daily P/L, fees, single-connection execution, and historical migration backfill.

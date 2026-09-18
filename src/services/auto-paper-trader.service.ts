@@ -2,7 +2,7 @@ import type { AppConfig } from '../config/env.js';
 import type { MarketTicker, PaperOrderRequest, PositionRecord } from '../domain/types.js';
 import { isFallbackMarketTicker, type MarketDataAdapter } from '../exchange/exchange-adapter.js';
 import type { PaperExchange } from '../exchange/paper-exchange.js';
-import type { TradeJournalService } from '../journal/trade-journal.service.js';
+import { PaperRiskBlockedError, type TradeJournalService } from '../journal/trade-journal.service.js';
 import type { RiskBudgetService } from '../risk/risk-budget.service.js';
 
 type AutoTraderJournal = Pick<
@@ -12,7 +12,7 @@ type AutoTraderJournal = Pick<
   | 'recordDecision'
   | 'listPositions'
   | 'getDailyBuyQuoteUsage'
-  | 'getRealizedPnlQuote'
+  | 'getDailyRealizedPnlQuote'
 >;
 
 type AutoTraderPaperExchange = Pick<PaperExchange, 'placePaperOrder'>;
@@ -177,7 +177,7 @@ export class AutoPaperTraderService {
 
     const [dailyBuyQuoteUsage, realizedPnlQuote, openPositions] = await Promise.all([
       this.journal.getDailyBuyQuoteUsage(),
-      this.journal.getRealizedPnlQuote(),
+      this.journal.getDailyRealizedPnlQuote(),
       this.journal.listPositions()
     ]);
 
@@ -185,6 +185,7 @@ export class AutoPaperTraderService {
       mode: this.config.trading.mode,
       liveTradingLocked: this.config.trading.liveTradingLocked,
       allowedSymbols: this.config.exchange.symbols,
+      feePercent: this.config.trading.paperFeePercent,
       dailyBuyQuoteUsage,
       realizedPnlQuote,
       openPositions,
@@ -209,7 +210,25 @@ export class AutoPaperTraderService {
       return signal;
     }
 
-    const fill = await this.paperExchange.placePaperOrder(request, ticker);
+    let fill;
+    try {
+      fill = await this.paperExchange.placePaperOrder(request, ticker);
+    } catch (error) {
+      if (!(error instanceof PaperRiskBlockedError)) {
+        throw error;
+      }
+      await Promise.all(error.decision.events.map((event) => this.journal.recordRiskEvent(event)));
+      const signal: AutoTraderSignal = {
+        symbol: ticker.symbol,
+        action: request.side,
+        decision: 'block',
+        reason: error.message,
+        price: ticker.lastPrice,
+        quoteValue: request.baseQuantity * ticker.lastPrice
+      };
+      await this.recordSignal(signal, trigger);
+      return signal;
+    }
     const signal: AutoTraderSignal = {
       symbol: ticker.symbol,
       action: request.side,

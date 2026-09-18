@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   WalletCards
 } from 'lucide-react';
+import { apiUrl } from './api-url';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 type StatusPayload = {
@@ -224,8 +225,6 @@ const getErrorMessage = (error: unknown) => (error instanceof Error ? error.mess
 
 const pageTitle = (active: NavId) => nav.find((item) => item.id === active)?.label ?? 'Overview';
 
-const apiBase = (import.meta.env.VITE_API_BASE ?? '').replace(/\/$/, '');
-const apiUrl = (path: string) => `${apiBase}${path}`;
 
 const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers);
@@ -234,7 +233,7 @@ const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(apiUrl(path), {
+  const response = await fetch(apiUrl(path, import.meta.env.VITE_API_BASE), {
     ...init,
     headers
   });

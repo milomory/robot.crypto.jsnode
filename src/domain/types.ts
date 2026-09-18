@@ -93,6 +93,7 @@ export interface RiskContext {
   mode: TradingMode;
   liveTradingLocked: boolean;
   allowedSymbols: string[];
+  feePercent: number;
   dailyBuyQuoteUsage: number;
   realizedPnlQuote: number;
   openPositions: PositionRecord[];

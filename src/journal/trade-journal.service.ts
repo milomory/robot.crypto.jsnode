@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { RiskBudgetService } from '../risk/risk-budget.service.js';
 import type { DbPool } from '../db/pool.js';
 import type {
   MarketTicker,
@@ -7,6 +8,8 @@ import type {
   OrderSide,
   PaperOrderRequest,
   PositionRecord,
+  RiskContext,
+  RiskDecision,
   RiskEventInput,
   TradeRecord
 } from '../domain/types.js';
@@ -69,6 +72,7 @@ export interface PaperFillInput {
   request: PaperOrderRequest;
   price: number;
   feePercent: number;
+  riskContext: Pick<RiskContext, 'mode' | 'liveTradingLocked' | 'allowedSymbols' | 'ticker' | 'budget'>;
 }
 
 export interface PaperFillResult {
@@ -77,8 +81,14 @@ export interface PaperFillResult {
   position: PositionRecord;
 }
 
+export class PaperRiskBlockedError extends Error {
+  constructor(readonly decision: RiskDecision) {
+    super(decision.events.find((event) => event.decision === 'block')?.message ?? 'Risk blocked');
+  }
+}
+
 export class TradeJournalService {
-  constructor(private readonly pool: DbPool) {}
+  constructor(private readonly pool: Pick<DbPool, 'query' | 'connect'>) {}
 
   async health(): Promise<boolean> {
     await this.pool.query('SELECT 1');
@@ -239,6 +249,19 @@ export class TradeJournalService {
     return toNumber(result.rows[0]?.quote_usage);
   }
 
+  async getDailyRealizedPnlQuote(now = new Date()): Promise<number> {
+    const start = new Date(now);
+    start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+    const result = await this.pool.query(
+      `SELECT COALESCE(SUM(realized_pnl_quote), 0) AS realized
+       FROM app.trades WHERE mode = 'paper' AND executed_at >= $1 AND executed_at < $2`,
+      [start, end]
+    );
+    return toNumber(result.rows[0]?.realized);
+  }
+
   async getRealizedPnlQuote(): Promise<number> {
     const result = await this.pool.query(
       `
@@ -261,8 +284,29 @@ export class TradeJournalService {
     const feeQuote = quoteValue * (input.feePercent / 100);
 
     try {
-      await client.query('BEGIN');
+      await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+      // One account-wide lock serializes risk reads and fills across symbols/processes.
+      await client.query("SELECT pg_advisory_xact_lock(728341, 1)");
+      now.setTime(Date.now());
       await client.query('SELECT pg_advisory_xact_lock(hashtext($1)::bigint)', [request.symbol]);
+
+      const transactionalJournal = new TradeJournalService({
+        query: client.query.bind(client),
+        connect: this.pool.connect.bind(this.pool)
+      });
+      const dailyBuyQuoteUsage = await transactionalJournal.getDailyBuyQuoteUsage(now);
+      const realizedPnlQuote = await transactionalJournal.getDailyRealizedPnlQuote(now);
+      const openPositions = await transactionalJournal.listPositions();
+      const decision = new RiskBudgetService(input.riskContext.budget).evaluateOrder(request, {
+        ...input.riskContext,
+        feePercent: input.feePercent,
+        dailyBuyQuoteUsage,
+        realizedPnlQuote,
+        openPositions
+      });
+      if (decision.decision === 'block') {
+        throw new PaperRiskBlockedError(decision);
+      }
 
       const existing = await client.query('SELECT * FROM app.positions WHERE symbol = $1 FOR UPDATE', [request.symbol]);
       const current = existing.rows[0] ? mapPosition(existing.rows[0]) : undefined;
@@ -289,7 +333,7 @@ export class TradeJournalService {
         }
       }
 
-      await client.query(
+      const orderResult = await client.query(
         `
           INSERT INTO app.orders (
             id, mode, exchange, symbol, side, type, status, requested_quantity,
@@ -297,6 +341,7 @@ export class TradeJournalService {
             created_at, updated_at
           )
           VALUES ($1, 'paper', $2, $3, $4, $5, 'filled', $6, $7, $8, $9, $10, $11, $12, $13, $13)
+          RETURNING *
         `,
         [
           orderId,
@@ -315,12 +360,13 @@ export class TradeJournalService {
         ]
       );
 
-      await client.query(
+      const tradeResult = await client.query(
         `
           INSERT INTO app.trades (
-            id, order_id, mode, exchange, symbol, side, quantity, price, quote_value, fee_quote, executed_at
+            id, order_id, mode, exchange, symbol, side, quantity, price, quote_value, fee_quote, executed_at, realized_pnl_quote
           )
-          VALUES ($1, $2, 'paper', $3, $4, $5, $6, $7, $8, $9, $10)
+          VALUES ($1, $2, 'paper', $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          RETURNING *
         `,
         [
           tradeId,
@@ -332,11 +378,12 @@ export class TradeJournalService {
           input.price,
           quoteValue,
           feeQuote,
-          now
+          now,
+          nextRealized - (current?.realizedPnlQuote ?? 0)
         ]
       );
 
-      await client.query(
+      const positionResult = await client.query(
         `
           INSERT INTO app.positions (symbol, base_quantity, avg_entry_price, realized_pnl_quote, updated_at)
           VALUES ($1, $2, $3, $4, $5)
@@ -346,23 +393,18 @@ export class TradeJournalService {
             avg_entry_price = EXCLUDED.avg_entry_price,
             realized_pnl_quote = EXCLUDED.realized_pnl_quote,
             updated_at = EXCLUDED.updated_at
+          RETURNING *
         `,
         [request.symbol, nextQuantity, nextAvg, nextRealized, now]
       );
 
-      await client.query('COMMIT');
-
-      const [orderResult, tradeResult, positionResult] = await Promise.all([
-        this.pool.query('SELECT * FROM app.orders WHERE id = $1', [orderId]),
-        this.pool.query('SELECT * FROM app.trades WHERE id = $1', [tradeId]),
-        this.pool.query('SELECT * FROM app.positions WHERE symbol = $1', [request.symbol])
-      ]);
-
-      return {
+      const result = {
         order: mapOrder(orderResult.rows[0]),
         trade: mapTrade(tradeResult.rows[0]),
         position: mapPosition(positionResult.rows[0])
       };
+      await client.query('COMMIT');
+      return result;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

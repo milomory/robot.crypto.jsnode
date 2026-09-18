@@ -15,7 +15,7 @@ import { isFallbackMarketTicker, type MarketDataAdapter } from '../exchange/exch
 import { PaperExchange } from '../exchange/paper-exchange.js';
 import { ResilientMarketDataAdapter } from '../exchange/resilient-market-data.js';
 import { SeedMarketDataAdapter } from '../exchange/seed-market-data.js';
-import { TradeJournalService } from '../journal/trade-journal.service.js';
+import { PaperRiskBlockedError, TradeJournalService } from '../journal/trade-journal.service.js';
 import { RiskBudgetService } from '../risk/risk-budget.service.js';
 import { AutoPaperTraderService } from '../services/auto-paper-trader.service.js';
 
@@ -131,7 +131,12 @@ export const buildServer = async (pool: DbPool) => {
   const journal = new TradeJournalService(pool);
   const risk = new RiskBudgetService(config.risk);
   const marketData = new ResilientMarketDataAdapter(new BinancePublicMarketDataAdapter(), new SeedMarketDataAdapter());
-  const paperExchange = new PaperExchange(journal, config.exchange.id, config.trading.paperFeePercent);
+  const paperExchange = new PaperExchange(journal, config.exchange.id, config.trading.paperFeePercent, {
+    mode: config.trading.mode,
+    liveTradingLocked: config.trading.liveTradingLocked,
+    allowedSymbols: config.exchange.symbols,
+    budget: config.risk
+  });
   const autoTrader = new AutoPaperTraderService(config, marketData, journal, risk, paperExchange);
 
   app.addHook('onRequest', async (request, reply) => {
@@ -327,15 +332,16 @@ export const buildServer = async (pool: DbPool) => {
     };
 
     const [dailyBuyQuoteUsage, realizedPnlQuote, openPositions] = await Promise.all([
-      safe(() => journal.getDailyBuyQuoteUsage(), 0),
-      safe(() => journal.getRealizedPnlQuote(), 0),
-      safe(() => journal.listPositions(), [])
+      journal.getDailyBuyQuoteUsage(),
+      journal.getDailyRealizedPnlQuote(),
+      journal.listPositions()
     ]);
 
     const decision = risk.evaluateOrder(paperRequest, {
       mode: config.trading.mode,
       liveTradingLocked: config.trading.liveTradingLocked,
       allowedSymbols: config.exchange.symbols,
+      feePercent: config.trading.paperFeePercent,
       dailyBuyQuoteUsage,
       realizedPnlQuote,
       openPositions,
@@ -377,6 +383,17 @@ export const buildServer = async (pool: DbPool) => {
 
       return { ok: true, decision, fill };
     } catch (error) {
+      if (error instanceof PaperRiskBlockedError) {
+        await Promise.all(error.decision.events.map((event) => safe(() => journal.recordRiskEvent(event), undefined)));
+        await safe(() => journal.recordDecision({
+          symbol,
+          signal: `${body.side}:operator-paper`,
+          decision: 'block',
+          reason: error.message,
+          context: { request: paperRequest, events: error.decision.events }
+        }), undefined);
+        return reply.code(409).send({ ok: false, decision: error.decision });
+      }
       await safe(
         () =>
           journal.recordRiskEvent({

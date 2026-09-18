@@ -31,3 +31,16 @@ MarketDataAdapter -> SignalEngine -> RiskBudget -> PaperExchange
 
 Production-like Postgres is on `igorjan94.ru` in container `pg-crypto-robot`.
 It is intentionally bound to `127.0.0.1:3580` on the server, so local access uses an SSH tunnel.
+
+## Paper execution and accounting
+
+- Every fill rechecks risk inside a `READ COMMITTED` transaction using the same
+  database connection as the writes. An account-wide advisory lock serializes
+  fills across symbols and application instances; preliminary API/scan checks
+  are not authoritative. All writers must use this path.
+- Failed risk reads abort execution. Daily buy usage includes the new order's fee.
+- The daily loss guard uses per-trade realized P/L for the UTC calendar day.
+  Buy fees enter the position's average cost and are realized on sale; sell fees
+  reduce that sale's P/L. The dashboard's total realized P/L remains cumulative.
+- `INSERT ... RETURNING` supplies the response before commit; no follow-up reads
+  can turn a successfully committed fill into a read error.

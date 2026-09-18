@@ -21,6 +21,7 @@ const baseRequest: PaperOrderRequest = {
 };
 
 const baseContext: RiskContext = {
+  feePercent: 0.1,
   mode: 'paper',
   liveTradingLocked: true,
   allowedSymbols: ['BTC/USDT', 'ETH/USDT'],
@@ -96,4 +97,13 @@ describe('RiskBudgetService', () => {
       ])
     );
   });
+});
+
+it('includes the new buy fee in the daily budget', () => {
+  const service = new RiskBudgetService(budget);
+  const decision = service.evaluateOrder({ ...baseRequest, baseQuantity: 0.00025 }, {
+    ...baseContext, dailyBuyQuoteUsage: 225
+  });
+  expect(decision.decision).toBe('block');
+  expect(decision.events).toContainEqual(expect.objectContaining({ gate: 'daily-budget', decision: 'block' }));
 });

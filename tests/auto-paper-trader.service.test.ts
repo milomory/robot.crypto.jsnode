@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AppConfig } from '../src/config/env.js';
 import type { MarketTicker, PositionRecord } from '../src/domain/types.js';
+import { PaperRiskBlockedError } from '../src/journal/trade-journal.service.js';
 import { RiskBudgetService } from '../src/risk/risk-budget.service.js';
 import { AutoPaperTraderService } from '../src/services/auto-paper-trader.service.js';
 
@@ -70,7 +71,7 @@ const makeJournal = (positions: PositionRecord[] = []) => {
       },
       listPositions: async () => positions,
       getDailyBuyQuoteUsage: async () => 0,
-      getRealizedPnlQuote: async () => 0
+      getDailyRealizedPnlQuote: async () => 0
     }
   };
 };
@@ -247,4 +248,20 @@ describe('AutoPaperTraderService', () => {
     expect(fills).toHaveLength(0);
     expect(decisions).toHaveLength(1);
   });
+});
+
+
+it('records a transactional risk rejection as a blocked signal rather than a scan error', async () => {
+  const config = makeConfig();
+  const { journal, decisions } = makeJournal();
+  const service = new AutoPaperTraderService(
+    config, { id: 'seed', getTickers: async () => [ticker] }, journal, new RiskBudgetService(config.risk),
+    { placePaperOrder: async () => { throw new PaperRiskBlockedError({
+      decision: 'block', events: [{ severity: 'critical', gate: 'daily-budget', decision: 'block', message: 'Budget exhausted' }]
+    }); } }
+  );
+  const status = await service.runScan('test');
+  expect(status.lastSignals[0]).toMatchObject({ decision: 'block', reason: 'Budget exhausted' });
+  expect(status.consecutiveErrors).toBe(0);
+  expect(decisions).toContainEqual(expect.objectContaining({ decision: 'block' }));
 });
