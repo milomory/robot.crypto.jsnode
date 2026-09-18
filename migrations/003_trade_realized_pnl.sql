@@ -45,7 +45,9 @@ BEGIN
     SELECT * INTO position_row FROM app.positions WHERE symbol = symbol_row.symbol;
     IF NOT FOUND OR abs(position_row.base_quantity - quantity) > 0.00000001
       OR abs(position_row.realized_pnl_quote - realized) > 0.000001
-      OR abs(position_row.avg_entry_price - average_price) > 0.000001 THEN
+      -- Historical quantities were rounded to 12 decimals independently of price.
+      -- Compare cost-basis value, not unit price, using one micro-quote tolerance.
+      OR abs((position_row.avg_entry_price - average_price) * quantity) > 0.000001 THEN
       RAISE EXCEPTION 'Historical ledger does not match position for %; reconcile before migration', symbol_row.symbol;
     END IF;
   END LOOP;

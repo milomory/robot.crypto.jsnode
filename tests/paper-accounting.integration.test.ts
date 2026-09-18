@@ -179,4 +179,18 @@ describe.skipIf(!databaseUrl)('paper accounting with isolated PostgreSQL', () =>
     } finally { await app.close(); vi.unstubAllEnvs(); }
   });
 
+  it('backfills tiny high-price lots despite historical quantity rounding', async () => {
+    await fill('buy', 81180.83, 10 / 81180.83);
+    const before = await journal.listPositions();
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('ALTER TABLE app.trades DROP COLUMN realized_pnl_quote');
+      await client.query(await readFile('migrations/003_trade_realized_pnl.sql', 'utf8'));
+      await client.query('COMMIT');
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+    finally { client.release(); }
+    expect(await journal.listPositions()).toEqual(before);
+  });
+
 });
