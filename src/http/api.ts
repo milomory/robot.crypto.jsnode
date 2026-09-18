@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { getConfig } from '../config/env.js';
 import type { DbPool } from '../db/pool.js';
 import type { MarketTicker, PaperOrderRequest } from '../domain/types.js';
+import { registerBinanceReadOnlyRoutes } from './binance-readonly-routes.js';
 import { BinancePublicMarketDataAdapter } from '../exchange/binance-public-market-data.js';
 import { isFallbackMarketTicker, type MarketDataAdapter } from '../exchange/exchange-adapter.js';
 import { PaperExchange } from '../exchange/paper-exchange.js';
@@ -189,6 +190,8 @@ export const buildServer = async (pool: DbPool) => {
       decorateReply: false
     });
   }
+
+  registerBinanceReadOnlyRoutes(app, config);
 
   app.get('/health', async () => ({ ok: true }));
 

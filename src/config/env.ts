@@ -27,6 +27,9 @@ const envSchema = z.object({
   DASHBOARD_AUTH_ENABLED: boolFromEnv,
   DASHBOARD_USERNAME: z.string().default('robot'),
   DASHBOARD_PASSWORD: z.string().optional().default(''),
+  BINANCE_READONLY_ENABLED: boolFromEnv.default('false'),
+  BINANCE_API_KEY: z.string().default(''),
+  BINANCE_API_SECRET: z.string().default(''),
   EXCHANGE_ID: z.string().default('binance'),
   SYMBOLS: z.string().default('BTC/USDT,ETH/USDT,SOL/USDT'),
   QUOTE_CURRENCY: z.string().default('USDT'),
@@ -75,6 +78,12 @@ export const getConfig = () => {
       authEnabled: env.DASHBOARD_AUTH_ENABLED ?? env.NODE_ENV === 'production',
       username: env.DASHBOARD_USERNAME,
       password: env.DASHBOARD_PASSWORD
+    },
+    binanceReadOnly: {
+      enabled: env.BINANCE_READONLY_ENABLED === true,
+      apiKey: env.BINANCE_API_KEY,
+      apiSecret: env.BINANCE_API_SECRET,
+      symbols
     },
     exchange: {
       id: env.EXCHANGE_ID.toLowerCase(),

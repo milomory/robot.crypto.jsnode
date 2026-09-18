@@ -9,6 +9,7 @@ The current implementation is intentionally paper-only:
 - React/Vite operator dashboard
 - Postgres journal/accounting
 - public Binance spot market data with seed fallback
+- optional Binance read-only account connector (disabled by default; see `docs/BINANCE-READONLY.md`)
 - paper exchange execution
 - risk budget and risk-event log
 - live trading locked by default
