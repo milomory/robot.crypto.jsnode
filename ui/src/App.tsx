@@ -20,6 +20,7 @@ type StatusPayload = {
   mode: 'paper' | 'live';
   liveTradingLocked: boolean;
   dashboardAuth?: 'enabled' | 'disabled';
+  access?: { role: 'viewer' | 'operator' };
   autoTrader?: AutoTraderStatus;
   exchange: string;
   marketData: string;
@@ -494,10 +495,12 @@ const decisionTone = (decision: AutoTraderSignal['decision']): 'good' | 'warn' |
 function AutoTraderPanel({
   status,
   statusError,
+  canOperate,
   onScanned
 }: {
   status?: AutoTraderStatus;
   statusError?: string;
+  canOperate: boolean;
   onScanned: () => Promise<void> | void;
 }) {
   const [scanState, setScanState] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
@@ -545,7 +548,7 @@ function AutoTraderPanel({
       action={
         <div className="panel-action-row">
           <StatusPill tone={stateTone}>{stateLabel}</StatusPill>
-          <button
+          {canOperate ? <button
             className="primary compact"
             type="button"
             disabled={scanState === 'running'}
@@ -554,7 +557,7 @@ function AutoTraderPanel({
           >
             <RefreshCw size={14} className={scanState === 'running' ? 'spin' : ''} />
             {scanState === 'running' ? 'Running' : 'Run scan'}
-          </button>
+          </button> : <StatusPill tone="neutral">Read only</StatusPill>}
         </div>
       }
     >
@@ -907,6 +910,7 @@ export function App() {
   const [active, setActive] = useState<(typeof nav)[number]['id']>('overview');
   const { snapshot, loading, refresh } = useSnapshot();
   const status = snapshot.status;
+  const canOperate = !snapshot.error && status?.access?.role === 'operator';
   const symbols = status?.symbols ?? ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'];
   const realized = snapshot.risk?.usage.realizedPnlQuote ?? 0;
 
@@ -932,6 +936,7 @@ export function App() {
     <AutoTraderPanel
       status={snapshot.autoTrader}
       statusError={snapshot.autoTraderError}
+      canOperate={canOperate}
       onScanned={() => refresh()}
     />
   );
@@ -944,7 +949,7 @@ export function App() {
             {metrics}
             <section className="grid">{autoTraderPanel}</section>
             <section className="grid two-one">
-              <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} />
+              {canOperate ? <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} /> : null}
               <PositionsPanel positions={snapshot.positions} />
             </section>
             <section className="grid equal">
@@ -991,7 +996,7 @@ export function App() {
               {autoTraderPanel}
             </section>
             <section className="grid equal">
-              <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} />
+              {canOperate ? <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} /> : null}
               <PositionsPanel positions={snapshot.positions} />
             </section>
             <section className="grid">

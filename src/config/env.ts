@@ -15,6 +15,11 @@ const boolFromEnv = z
   });
 
 const envSchema = z.object({
+  AUTH_CORE_ENABLED: z.enum(['true', 'false']).default('false'),
+  AUTH_CORE_ORIGIN: z.string().default(''),
+  AUTH_CORE_APP_ORIGIN: z.string().default(''),
+  AUTH_CORE_CLIENT_SECRET: z.string().default(''),
+  AUTH_CORE_VIEWER_IDS: z.string().default(''),
   NODE_ENV: z.string().default('development'),
   HTTP_HOST: z.string().default('127.0.0.1'),
   HTTP_PORT: z.coerce.number().int().positive().default(3000),
@@ -62,6 +67,13 @@ export const getConfig = () => {
 
   return {
     nodeEnv: env.NODE_ENV,
+    authCore: {
+      enabled: env.AUTH_CORE_ENABLED === 'true',
+      origin: env.AUTH_CORE_ORIGIN,
+      appOrigin: env.AUTH_CORE_APP_ORIGIN,
+      clientSecret: env.AUTH_CORE_CLIENT_SECRET,
+      viewerIds: env.AUTH_CORE_VIEWER_IDS.split(',').map(value => value.trim()).filter(Boolean)
+    },
     http: {
       host: env.HTTP_HOST,
       port: env.HTTP_PORT

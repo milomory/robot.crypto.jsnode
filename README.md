@@ -13,6 +13,7 @@ The current implementation is intentionally paper-only:
 - paper exchange execution
 - risk budget and risk-event log
 - live trading locked by default
+- optional Auth Core read-only SSO (disabled by default; local review and rollout gates in [docs/AUTH-CORE-INTEGRATION-REVIEW.md](docs/AUTH-CORE-INTEGRATION-REVIEW.md))
 
 No T-Invest SDK, FIGI model, or broker account logic is used here.
 

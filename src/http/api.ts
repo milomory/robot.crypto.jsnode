@@ -7,6 +7,7 @@ import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
 import { z } from 'zod';
 
+import { isOperatorPath, logSafeRequest, registerAuthCore } from '../auth/auth-core.js';
 import { getConfig } from '../config/env.js';
 import type { DbPool } from '../db/pool.js';
 import type { MarketTicker, PaperOrderRequest } from '../domain/types.js';
@@ -128,7 +129,18 @@ const latestTickerFor = async (adapter: MarketDataAdapter, symbols: string[], sy
 
 export const buildServer = async (pool: DbPool) => {
   const config = getConfig();
-  const app = Fastify({ logger: true });
+  if (config.authCore.enabled && (!config.dashboard.authEnabled || !config.dashboard.password)) {
+    throw new Error('SSO requires configured separate operator authentication');
+  }
+  const app = Fastify({ logger: { serializers: { req: logSafeRequest } } });
+  if (config.authCore.enabled) {
+    // Explicit operational API aliases; never a fallback for viewer authentication.
+    app.addHook('onRoute', (route) => {
+      if (typeof route.method === 'string' && ['GET', 'POST'].includes(route.method) && route.url.startsWith('/api/')) {
+        app.route({ ...route, url: `/operator${route.url}`, exposeHeadRoute: false });
+      }
+    });
+  }
   const journal = new TradeJournalService(pool);
   const risk = new RiskBudgetService(config.risk);
   const marketData = new ResilientMarketDataAdapter(new BinancePublicMarketDataAdapter(), new SeedMarketDataAdapter());
@@ -141,6 +153,7 @@ export const buildServer = async (pool: DbPool) => {
   const autoTrader = new AutoPaperTraderService(config, marketData, journal, risk, paperExchange);
 
   app.addHook('onRequest', async (request, reply) => {
+    if (config.authCore.enabled && !isOperatorPath(request.url)) return;
     if (!config.dashboard.authEnabled || isPublicPath(request.url)) {
       return;
     }
@@ -166,7 +179,10 @@ export const buildServer = async (pool: DbPool) => {
     }
   });
 
+  registerAuthCore(app, config.authCore);
+
   app.addHook('preHandler', async (request, reply) => {
+    if (config.authCore.enabled) return; // Auth adapter enforces exact Origin + CSRF.
     if (!stateChangingMethods.has(request.method)) {
       return;
     }
@@ -205,7 +221,7 @@ export const buildServer = async (pool: DbPool) => {
     autoTrader.stop();
   });
 
-  app.get('/api/status', async () => {
+  app.get('/api/status', async (request) => {
     const database = await safe<{ ok: boolean; error?: string }>(async () => ({ ok: await journal.health() }), {
       ok: false,
       error: 'database unavailable'
@@ -216,6 +232,7 @@ export const buildServer = async (pool: DbPool) => {
       mode: config.trading.mode,
       liveTradingLocked: config.trading.liveTradingLocked,
       dashboardAuth: config.dashboard.authEnabled ? 'enabled' : 'disabled',
+      access: { role: config.authCore.enabled && !isOperatorPath(request.url) ? 'viewer' : 'operator' },
       autoTrader: autoTrader.getStatus(),
       exchange: config.exchange.id,
       marketData: marketData.id,
