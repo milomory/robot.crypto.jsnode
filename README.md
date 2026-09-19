@@ -39,17 +39,14 @@ Containers:
 - `pg-crypto-robot`
 - `robot_crypto_jsnode`
 
-The dashboard is exposed with Basic Auth:
+The dashboard is exposed through VPN with Basic Auth and a dedicated private CA:
 
 ```text
-http://crypto.igorjan94.ru:5758
+https://crypto.robot.vpn/
 ```
 
-Prepared HTTPS target after the nginx handoff is activated:
-
-```text
-https://igorjan94.ru/crypto/
-```
+Direct port 5758 is loopback-only. Certificate, verification and rollback details:
+[HTTPS deployment](docs/HTTPS-DEPLOYMENT.md). Client-device CA trust still needs verification.
 
 Database access is also localhost-only on the server:
 

@@ -1,5 +1,8 @@
 # HTTPS preflight — 2026-09-19
 
+Historical preflight; the approved TLS-only deployment is now recorded in
+[HTTPS-DEPLOYMENT.md](HTTPS-DEPLOYMENT.md).
+
 Scope: read-only inspection and a concrete deployment proposal. No runtime,
 DNS, certificate, firewall, membership, credential or production DB changes.
 
