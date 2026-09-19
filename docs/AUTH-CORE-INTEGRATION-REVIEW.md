@@ -1,5 +1,8 @@
 # Crypto Robot: локальная интеграция Auth Core
 
+Исторический review. Последующее разрешение пользователя и выполненная активация:
+[SSO deployment](AUTH-SSO-DEPLOYMENT-20260919.md).
+
 Дата: 2026-09-18. Реализация подготовлена для review, **не развёрнута**.
 Контракт: Auth Core `codex/multi-service-sso`, commit
 `9003f5ff71fb9505e412383c89d3f5f29ee01801`, `docs/multi-service-sso.md` и `server/sso.mjs`.
