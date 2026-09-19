@@ -1,0 +1,20 @@
+# REVIEW ONLY: do not apply before explicit transport rollout approval.
+# Merge with the CURRENT runtime compose, whose port is already loopback-only.
+# No port, command, image, credentials, membership or trading-setting overrides.
+version: '3.3'
+services:
+  api:
+    extra_hosts:
+      - "auth.vpn:192.168.3.1"
+    environment:
+      NODE_EXTRA_CA_CERTS: /run/crypto-public-ca/auth-vpn-root-ca.crt
+      AUTH_CORE_ENABLED: "false"
+    volumes:
+      - ./public-ca/auth-vpn-root-ca.crt:/run/crypto-public-ca/auth-vpn-root-ca.crt:ro
+    networks:
+      default:
+        ipv4_address: 192.168.3.2
+networks:
+  default:
+    external:
+      name: robotcryptojsnode_default
