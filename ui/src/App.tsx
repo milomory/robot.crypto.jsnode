@@ -227,6 +227,7 @@ const getErrorMessage = (error: unknown) => (error instanceof Error ? error.mess
 const pageTitle = (active: NavId) => nav.find((item) => item.id === active)?.label ?? 'Overview';
 
 
+let redirectingToLogin = false;
 const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
   const headers = new Headers(init?.headers);
 
@@ -241,7 +242,8 @@ const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    if (response.status === 401 && payload.error === 'not_authenticated') {
+    if (response.status === 401 && payload.error === 'not_authenticated' && !redirectingToLogin) {
+      redirectingToLogin = true;
       window.location.replace('/auth/login');
     }
     throw new Error(payload.error?.message ?? payload.error ?? `HTTP ${response.status}`);
