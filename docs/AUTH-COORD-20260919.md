@@ -1,5 +1,14 @@
 # AUTH-COORD-20260919 — Crypto consumer handoff
 
+## User selection: admin
+
+The user selected `admin` as the sole intended Crypto viewer. This means the
+existing Auth account with login admin, not an administrator/trading role.
+Auth owner must confirm its immutable UUID; authorization remains active
+membership AND independent local UUID allowlist. Selection does not authorize
+provisioning, production configuration changes, SSO activation or live auth tests.
+No membership/grant was changed by recording this selection.
+
 Accepted user-authorized coordination only. No new authorization for production,
 credentials, membership or trading. HTTPS and publication are completed; do not
 repeat them. No trading-control edits in this task.
