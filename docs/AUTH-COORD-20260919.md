@@ -118,3 +118,12 @@ Our direct initial request is visible as recipient userMessage in active turn
 01a0b8a0-989f-7280-a8ed-20541ba18764 contains the DNS/TLS/403 results and this
 document path; its detailed acceptance is pending. No duplicate sends or forced
 starts of the active recipient were performed.
+
+Direct request ACK received in completed turn 01a0b89f-dc08-7303-ba56-ce4d8dcff414.
+Auth owner published f9924a0, docs/crypto-owner-handoff-20260919.md: final issuer,
+client/callback, membership AND independent UUID grant, seven read APIs and
+separate operator API confirmed; conditional joint rollout/rollback accepted.
+Catalog should use noopener noreferrer. User selects Crypto accounts; Auth owner
+confirms UUID/membership and Crypto owner maps the allowlist. T-Invest grants do
+not transfer. API-only operator usability still needs acceptance. ACK explicitly
+does not authorize activation; follow-up DNS/TLS/403 evidence has been queued.
