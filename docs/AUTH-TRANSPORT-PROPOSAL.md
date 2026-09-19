@@ -1,5 +1,9 @@
 # Crypto Auth transport proposal — 2026-09-19
 
+This network-only proposal was subsequently authorized and applied. See
+[deployment evidence](AUTH-TRANSPORT-DEPLOYMENT.md); the remaining SSO stage
+is still not activated.
+
 Prepared only; no production configuration changed. User selected existing Auth
 account admin. Auth owner confirmed a unique active user and recorded its UUID
 in private owner handoff commit03f71ac. Do not copy that identity into public
