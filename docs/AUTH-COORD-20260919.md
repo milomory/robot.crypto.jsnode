@@ -104,3 +104,17 @@ Target verified via live task list: Auth Core — Athena,
 Initial queue entry 01a0b89e-bc30-73b0-9c95-462038dee9e7 accepted while recipient
 active. Queue acceptance alone is not owner acknowledgment; receipt/decisions
 will be recorded after reading the recipient's response.
+
+Owner response read from completed turn 01a0b89e-387f-7bb2-be6e-bf5ce85fcc37:
+AUTH-COORD-20260919 accepted; production Auth's three SSO module hashes match
+9003f5f; final origin https://auth.vpn; Crypto client absent in production.
+Owner accepts Crypto 9d65fad, the contract and viewer-only plan, and Crypto-scoped
+rollback preserving TLS/closed port/live-lock. Remaining owner decisions are
+exact subjects, container DNS/CA/ACL/logging acceptance, and explicit provisioning/
+activation authority. This acknowledgment does not authorize those changes.
+
+Our direct initial request is visible as recipient userMessage in active turn
+01a0b89f-dc08-7303-ba56-ce4d8dcff414 (delivery verified). Follow-up evidence queue
+01a0b8a0-989f-7280-a8ed-20541ba18764 contains the DNS/TLS/403 results and this
+document path; its detailed acceptance is pending. No duplicate sends or forced
+starts of the active recipient were performed.
