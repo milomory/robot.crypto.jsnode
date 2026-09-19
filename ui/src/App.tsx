@@ -241,6 +241,9 @@ const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
+    if (response.status === 401 && payload.error === 'not_authenticated') {
+      window.location.replace('/auth/login');
+    }
     throw new Error(payload.error?.message ?? payload.error ?? `HTTP ${response.status}`);
   }
 

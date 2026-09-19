@@ -116,11 +116,20 @@ export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, t
     }
     if (['/auth/login', '/auth/callback'].includes(path) && request.method === 'GET') return;
     if (path === '/auth/logout' && request.method === 'POST') return;
+    const unauthenticated = () => {
+      clear(request, reply);
+      // Redirect only the known document entry. APIs/assets keep an explicit 401,
+      // and no user-controlled return URL is carried into the login flow.
+      if (path === '/' && ['GET', 'HEAD'].includes(request.method)) {
+        return reply.code(303).redirect('/auth/login');
+      }
+      return fail(reply, 401, 'not_authenticated');
+    };
     const session = sessions.get(key(cookie(request, sessionCookie)));
-    if (!session) { clear(request, reply); return fail(reply, 401, 'not_authenticated'); }
+    if (!session) return unauthenticated();
     try {
       const info = await introspect(session);
-      if (!info) { clear(request, reply); return fail(reply, 401, 'not_authenticated'); }
+      if (!info) return unauthenticated();
       if (!viewers.has(info.user.id)) { clear(request, reply); return fail(reply, 403, 'viewer_not_authorized'); }
       const safeAsset = /^\/assets\/[A-Za-z0-9_-]+\.(js|css)$/.test(path);
       if (!['GET', 'HEAD'].includes(request.method) ||

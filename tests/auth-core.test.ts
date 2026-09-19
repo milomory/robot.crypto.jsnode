@@ -45,6 +45,7 @@ async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
   const fake = upstream();
   const app = Fastify({ logger: false });
   registerAuthCore(app, { ...config, ...overrides }, fake.fetcher);
+  app.get('/', async () => 'Crypto viewer');
   app.get('/api/status', async () => ({ ok: true }));
   app.get('/api/runtime-config', async () => ({ private: true }));
   app.get('/api/exchanges/binance/account', async () => ({ private: true }));
@@ -70,6 +71,40 @@ async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Auth Core viewer adapter (offline)', () => {
+  it('redirects unauthenticated documents to login but never redirects API calls', async () => {
+    const f = await fixture();
+    try {
+      for (const method of ['GET', 'HEAD'] as const) {
+        const r = await f.app.inject({ method, url: '/?returnTo=https://evil.example' });
+        expect(r.statusCode).toBe(303);
+        expect(r.headers.location).toBe('/auth/login');
+        expect(r.headers['www-authenticate']).toBeUndefined();
+      }
+      const r = await f.app.inject({ url: '/api/status', headers: { accept: 'text/html' } });
+      expect(r.statusCode).toBe(401);
+      expect(r.headers.location).toBeUndefined();
+    } finally { await f.app.close(); }
+  });
+  it('redirects revoked page sessions, without loops for forbidden grants or outages', async () => {
+    const f = await fixture();
+    try {
+      const flow = await f.login();
+      const headers = { cookie: flow.sessionCookie };
+      f.fake.state.fail = 'introspect';
+      expect((await f.app.inject({ url: '/', headers })).statusCode).toBe(503);
+      f.fake.state.fail = '';
+      f.fake.state.active = false;
+      const r = await f.app.inject({ url: '/', headers });
+      expect(r.statusCode).toBe(303);
+      expect(r.headers.location).toBe('/auth/login');
+    } finally { await f.app.close(); }
+    const denied = await fixture({ viewerIds: [] });
+    try {
+      const flow = await denied.login();
+      expect(flow.result.statusCode).toBe(403);
+      expect(flow.result.headers.location).toBeUndefined();
+    } finally { await denied.app.close(); }
+  });
   it('uses browser-bound S256 and separate secure cookies; introspects every request', async () => {
     const f = await fixture();
     try {
