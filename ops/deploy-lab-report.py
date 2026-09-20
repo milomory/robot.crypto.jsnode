@@ -13,7 +13,7 @@ import sys
 import yaml
 
 ROOT = Path('/home/mil/robot.crypto.jsnode')
-EVIDENCE = Path('/home/mil/crypto-market-lab-rules-20260920/evidence/btc-3')
+EVIDENCE = Path('/home/mil/crypto-market-observations/store')
 
 def run(args):
     return subprocess.check_output(args, cwd=str(ROOT), stderr=subprocess.PIPE)
@@ -45,10 +45,10 @@ def main():
     for directory in ['migrations', 'src/services', 'src/exchange', 'src/risk', 'src/journal']:
         if fingerprints(previous / directory) != fingerprints(release / directory):
             raise RuntimeError('trading or migration files changed')
-    if not (release / 'src/lab/instruments.ts').is_file() or not (EVIDENCE / 'run.json').is_file():
+    if not (release / 'src/lab/instruments.ts').is_file() or not (EVIDENCE / 'current.json').is_file():
         raise RuntimeError('missing prepared release or evidence')
     api = config['services']['api']
-    api['volumes'] = [v for v in api['volumes'] if mount(v)[1] != '/code']
+    api['volumes'] = [v for v in api['volumes'] if mount(v)[1] not in ['/code', '/run/crypto-lab/report']]
     api['volumes'].extend([str(release) + ':/code', str(EVIDENCE) + ':/run/crypto-lab/report:ro'])
     api['environment']['LAB_OBSERVATION_RUN_DIR'] = '/run/crypto-lab/report'
     staged = ROOT / ('docker-compose.lab-' + revision[:7] + '.yml')
@@ -58,7 +58,7 @@ def main():
     expected = copy.deepcopy(old)
     expected['services']['api']['environment']['LAB_OBSERVATION_RUN_DIR'] = '/run/crypto-lab/report'
     new_mounts = [mount(v) for v in new['services']['api']['volumes']]
-    wanted = [(str(release) if target == '/code' else source, target, ro) for source, target, ro in old_mounts]
+    wanted = [(str(release) if target == '/code' else source, target, ro) for source, target, ro in old_mounts if target != '/run/crypto-lab/report']
     wanted.append((str(EVIDENCE), '/run/crypto-lab/report', True))
     if sorted(new_mounts) != sorted(wanted):
         raise RuntimeError('unexpected mounts')

@@ -1,11 +1,11 @@
-import { mkdir, open, readdir } from 'node:fs/promises';
-import { constants } from 'node:fs';
+import { mkdir, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { compareVenues, LabError, validateBook, type FillAssumptions, type Venue } from './order-book.js';
 import { LAB_SYMBOLS, VENUES, type PublicBookClient } from './public-books.js';
 import { checkSize, instrumentsSchema } from './instruments.js';
+import { atomicJson, readJson, resolveRun, collectionSchema } from './observation-store.js';
 
 const time = z.number().int().positive().safe();
 const venue = z.enum(['binance', 'bybit', 'okx']);
@@ -72,30 +72,15 @@ function validateSample(run: ObservationRun, sample: ObservationSample): void {
   }
 }
 
-// Exclusive files, no append races or silent overwrite. Interrupted writes are
-// detected as corrupt evidence by the reader, never counted as valid observations.
-async function writeNew(path: string, value: unknown) {
-  const file = await open(path, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL, 0o600);
-  try { await file.writeFile(JSON.stringify(value) + '\n'); await file.sync(); }
-  finally { await file.close(); }
-}
 export async function startRun(directory: string, run: ObservationRun) {
   runSchema.parse(run);
   await mkdir(directory, { mode: 0o700 }); // parent must exist; refuse an existing run directory
-  await writeNew(join(directory, 'run.json'), run);
+  await atomicJson(join(directory, 'run.json'), run);
 }
 export async function saveSample(directory: string, run: ObservationRun, sample: ObservationSample) {
   sampleSchema.parse(sample);
   validateSample(run, sample);
-  await writeNew(join(directory, `${String(sample.sequence).padStart(3, '0')}.json`), sample);
-}
-async function readJson(path: string) {
-  const file = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
-  try {
-    const stat = await file.stat();
-    if (!stat.isFile() || stat.size > 100_000) throw new LabError('invalid-observation-file');
-    return JSON.parse(await file.readFile('utf8')) as unknown;
-  } finally { await file.close(); }
+  await atomicJson(join(directory, `${String(sample.sequence).padStart(3, '0')}.json`), sample);
 }
 
 export function summarize(run: ObservationRun, samples: ObservationSample[]) {
@@ -169,6 +154,7 @@ export function summarize(run: ObservationRun, samples: ObservationSample[]) {
 
 export async function readReport(directory: string) {
   try {
+    directory = await resolveRun(directory);
     const run = runSchema.parse(await readJson(join(directory, 'run.json')));
     const files = (await readdir(directory)).filter(name => /^\d{3}\.json$/.test(name));
     if (files.length > run.samples) throw new LabError('too-many-observation-files');
@@ -178,6 +164,15 @@ export async function readReport(directory: string) {
       if (Number(name.slice(0, 3)) !== sample.sequence) throw new LabError('observation-name-mismatch');
       samples.push(sample);
     }
-    return summarize(run, samples);
+    let collection: (Omit<import('./observation-store.js').Collection, 'state'> & {
+      state: import('./observation-store.js').Collection['state'] | 'interrupted'
+    }) | null = null;
+    try {
+      const saved = collectionSchema.parse(await readJson(join(directory, 'collection.json')));
+      if (saved.runId !== run.runId) throw new LabError('mismatched-collection');
+      collection = { ...saved, state: saved.state === 'running' &&
+        (Date.now() > saved.deadlineAt || Date.now() - saved.updatedAt > run.intervalMs + 20_000) ? 'interrupted' : saved.state };
+    } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+    return { ...summarize(run, samples), collection };
   } catch { throw new LabError('invalid-or-unreadable-observation-run'); }
 }

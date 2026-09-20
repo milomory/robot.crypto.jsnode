@@ -28,6 +28,7 @@ npm run lab:markets -- BTC/USDT 0.0001 10 5
 
 For bounded snapshot storage and offline reports, see
 [observation commands and Hyperion acceptance](docs/MARKET-OBSERVATIONS.md).
+For the30-minute campaign and storage policy, see [campaign runbook](docs/MARKET-CAMPAIGN.md).
 
 ```bash
 npm test

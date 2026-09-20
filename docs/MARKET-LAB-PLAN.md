@@ -18,8 +18,9 @@ Binance remains a public-data source. No keys are needed for stages 1–3.
    timestamped snapshots and assumptions outside the old trading journal, with
    run/model IDs and gap/coverage reporting. Hyperion acceptance completed;
    see [observation runbook](MARKET-OBSERVATIONS.md). Public instrument rules and
-   a read-only dashboard view are implemented. Still pending: retention across
-   runs and continuous-collection policy. Assess source synchronisation and REST limitations
+   a read-only dashboard view are implemented. Bounded campaigns and protected
+   retention are implemented in [the campaign runbook](MARKET-CAMPAIGN.md).
+   Continuous collection is not enabled. Assess source synchronisation and REST limitations
   before a continuous collector or WebSocket implementation. Add a viewer report
   of indicative spreads after costs, not an execution control.
 4. **Then: separate paper-v2 account/ledger and strategy comparison.** Explicit

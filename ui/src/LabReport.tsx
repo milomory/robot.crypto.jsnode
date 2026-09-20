@@ -36,11 +36,17 @@ export function LabReport({ load }: { load: () => Promise<Payload> }) {
       {report && <>
         <p><strong>{report.symbol}</strong> · объём {report.quantity} · снимков {report.recordedSamples}/{report.expectedSamples}</p>
         <p>Последнее наблюдение: {report.lastObservedAt ? new Date(report.lastObservedAt).toLocaleString() : 'нет'}.
-          {' '}Это сохранённая серия, не текущие котировки.</p>
+          {' '}Это сохранённые снимки, не текущие котировки.</p>
+        {report.collection && <p role="status">{report.collection.state === 'running'
+          ? `Сбор идёт, остановится не позже ${new Date(report.collection.deadlineAt).toLocaleString()}. Кнопка обновляет сохранённый отчёт.`
+          : report.collection.state === 'completed' ? 'Серия завершена. Сборщик остановлен.'
+          : report.collection.state === 'stopped' ? 'Серия остановлена до завершения. Данные сохранены.'
+          : report.collection.state === 'interrupted' ? 'Сбор не подтверждает активность. Серия может быть прервана.'
+          : 'Сбор завершился с ошибкой. Данные сохранены.'}</p>}
         <p>{report.sizeValidation === 'not-checked'
           ? 'В этой старой серии размеры заявок не проверялись.'
           : 'Проверены опубликованные шаги и лимиты объёма. Сумма заявки оценена по снимку; это не гарантия приёма биржей.'}</p>
-        <p>Пропущено снимков: {report.missingSequences.length}. Максимальный интервал: {(report.longestStartGapMs / 1000).toFixed(1)} с.</p>
+        <p>{report.collection?.state === 'running' ? 'Ещё не записано снимков' : 'Пропущено снимков'}: {report.missingSequences.length}. Максимальный интервал: {(report.longestStartGapMs / 1000).toFixed(1)} с.</p>
         <div className="lab-table"><table><thead><tr><th>Биржа</th><th>Получено</th><th>Свежих</th><th>Ошибок</th></tr></thead>
           <tbody>{Object.entries(report.byVenue).map(([venue, value]) => <tr key={venue}>
             <td>{venue}</td><td>{value.received}</td><td>{value.freshAtComparison}</td><td>{value.failed}</td>
