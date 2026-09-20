@@ -156,3 +156,22 @@ Protocol references:
 - [Binance filters](https://github.com/binance/binance-spot-api-docs/blob/master/filters.md)
 - [Bybit instruments](https://bybit-exchange.github.io/docs/v5/market/instrument)
 - [OKX instruments](https://www.okx.com/docs-v5/en/#public-data-rest-api-get-instruments)
+
+### Applied rollout
+
+Published and deployed app revision `867680f0b95e41a9ed5eff7f826c1b74dde5507a`.
+Release directory `/home/mil/robot.crypto.jsnode/releases/867680f0b95e41a9ed5eff7f826c1b74dde5507a`.
+Override backup `/home/mil/robot.crypto.jsnode/backups/lab-report-867680f/docker-compose.override.yml`.
+The app reads the new BTC run via read-only `/run/crypto-lab/report` mount.
+It shows a fixed three-sample acceptance series, not a continuously refreshed
+market feed. Clicking refresh rereads this saved series; it does not collect data.
+
+Initial readiness returned502 while the standard startup command compiled the
+release. After build/migration check/start finished, trusted external HTTPS:
+health200, root303, anonymous report401, no Basic challenge. Model-blind
+authenticated operator read: report200, available=true, samples3, sizeChecked18.
+Runtime status: paper, liveLocked=true, databaseOK=true, autoEnabled=true.
+No manual scans/orders or private exchange requests were made. Backend and UI
+typechecks passed (UI checked with strict mode plus Vite/Node type declarations).
+The SSO viewer GET/deny POST contract passed offline; a new actual iPhone login
+after this application restart was not tested by the agent.
