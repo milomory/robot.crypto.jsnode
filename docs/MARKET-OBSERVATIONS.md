@@ -98,7 +98,61 @@ and production build passed. Eight new tests cover persistence/replay, interrupt
 runs, exclusive writes, corruption/oversize/symlinks, source/run mixing, stale
 batch data, bounds and failure redaction. Existing depth tests remain passing.
 
-Next: instrument metadata and order-size validity, retention/coverage policy,
-then a read-only dashboard view and an explicitly bounded observation campaign.
+Next: retention/coverage policy and an explicitly bounded observation campaign.
 Real keys are not needed. The current paper strategy/journal is unchanged;
 depth-v2 still needs a separate virtual-account ledger before any portfolio claims.
+
+## Public instrument rules and dashboard (2026-09-20)
+
+New `lab:observe collect` runs first fetch and store instrument rules for each
+venue. Failed metadata reads disable that source for the run; no retries or
+fallback rules are invented. Exact decimal-integer arithmetic validates quantity
+steps without rounding user quantity. Minimum/maximum quantity and applicable
+published market-order notional limits are checked on both simulated legs.
+Metadata expires after one hour relative to each observation, not report-view time.
+
+Binance applies LOT_SIZE plus MARKET_LOT_SIZE, ignoring zero step size; market
+applicability flags control MIN_NOTIONAL/NOTIONAL. Binance's actual notional
+reference may be an exchange average price, so snapshot-based notional checks
+are estimates. Bybit uses basePrecision, minOrderQty, maxMarketOrderQty and
+minOrderAmt. OKX uses lotSz, minSz, maxMktSz and state; this endpoint does not
+provide a minimum quote notional, explicitly shown as not published. These are
+selected public size constraints, not all exchange/account restrictions.
+
+Legacy runs remain readable with `sizeValidation=not-checked` and zero
+`sizeChecked` comparisons. New runs use `public-rules-estimate`; invalid sizes
+become rejected comparisons. Historical evidence is not rewritten.
+
+Dashboard: new **Наблюдения** tab, available to existing authorised viewers.
+`GET /api/lab/report` reads only the operator-configured `LAB_OBSERVATION_RUN_DIR`;
+request parameters cannot select filesystem paths. No network/order/DB calls.
+Not configured returns an explicit empty state; corrupt/unreadable evidence
+returns a generic503. Existing SSO checks and no-store headers apply. POST is
+not registered and SSO viewers cannot mutate. UI loads on tab entry and manual
+refresh only, displays the observation date, assumed costs, data gaps, size
+validation, net-spread cards and rejection reasons. No collector start control.
+
+New Hyperion evidence:
+`/home/mil/crypto-market-lab-rules-20260920/evidence/btc-3/` and `report.json`.
+Three observations, all three instruments available, 18/18 comparisons passed
+size checks, zero positive net spreads with the same illustrative assumptions.
+New source and UI validation: 118 tests passed, 15 DB tests skipped, backend
+typecheck/build passed. Playwright at390/1440 verified report, empty and error
+states, lazy loading, console health and absence of page overflow using the real
+saved report through mocked HTTP. Browser plugin unavailable; regular Playwright
+used. Screenshots `/tmp/crypto-lab-390.png`, `/tmp/crypto-lab-1440.png`.
+This browser test does not claim a new real iPhone/SSO acceptance.
+
+Scoped rollout helper: `ops/deploy-lab-report.py REVISION` on Hyperion. Requires
+an existing versioned release and the prepared evidence. It compares every
+merged Compose setting, allows only the code mount, read-only report mount and
+LAB_OBSERVATION_RUN_DIR change; checks trading/risk/journal/migration files are
+identical, saves the old override and recreates API only. No schema migration
+changes. Rollback: restore the saved override and recreate only API; keep Auth,
+TLS, journal, database and trading limits unchanged. Readiness is checked after
+recreation; helper success alone is not readiness.
+
+Protocol references:
+- [Binance filters](https://github.com/binance/binance-spot-api-docs/blob/master/filters.md)
+- [Bybit instruments](https://bybit-exchange.github.io/docs/v5/market/instrument)
+- [OKX instruments](https://www.okx.com/docs-v5/en/#public-data-rest-api-get-instruments)

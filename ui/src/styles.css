@@ -623,7 +623,7 @@ select:focus,
   }
 
   .sidebar nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     overflow-x: auto;
   }
 
@@ -666,3 +666,12 @@ select:focus,
     padding: 8px;
   }
 }
+.lab-content { padding: 16px; }
+.lab-content p { margin: 0 0 12px; line-height: 1.5; }
+.lab-pairs { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 20px 0; }
+.lab-pair { border: 1px solid #283443; border-radius: 8px; padding: 14px; }
+.lab-pair h3 { margin-bottom: 12px; }
+.lab-pair .lab-net { font-size: 24px; font-weight: 700; }
+.lab-pair p { font-size: 13px; color: #aab6c4; }
+.lab-table { overflow-x: auto; margin: 16px 0; }
+.lab-report .panel-header { flex-wrap: wrap; gap: 12px; }

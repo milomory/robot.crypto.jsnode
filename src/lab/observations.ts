@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { compareVenues, LabError, validateBook, type FillAssumptions, type Venue } from './order-book.js';
 import { LAB_SYMBOLS, VENUES, type PublicBookClient } from './public-books.js';
+import { checkSize, instrumentsSchema } from './instruments.js';
 
 const time = z.number().int().positive().safe();
 const venue = z.enum(['binance', 'bybit', 'okx']);
@@ -15,7 +16,8 @@ export const runSchema = z.object({
   host: z.string().min(1).max(255), startedAt: time,
   symbol: z.enum(LAB_SYMBOLS), quantity: z.number().finite().positive(),
   samples: z.number().int().min(1).max(60), intervalMs: z.number().int().min(10_000).max(60_000),
-  costs: z.object({ binance: costs, bybit: costs, okx: costs }).strict()
+  costs: z.object({ binance: costs, bybit: costs, okx: costs }).strict(),
+  instruments: instrumentsSchema.optional()
 }).strict();
 export type ObservationRun = z.infer<typeof runSchema>;
 const level = z.tuple([z.number().finite().positive(), z.number().finite().positive()]);
@@ -40,7 +42,10 @@ export function createRun(host: string, symbol = 'BTC/USDT', quantity = .0001,
 export async function collectSample(run: ObservationRun, sequence: number,
   client: Pick<PublicBookClient, 'getBook'>, clock = Date.now): Promise<ObservationSample> {
   const startedAt = clock();
-  const results = await Promise.allSettled(VENUES.map(v => client.getBook(v, run.symbol)));
+  const results = await Promise.allSettled(VENUES.map(async v => {
+    if (run.instruments && !run.instruments[v].available) throw new LabError('unavailable');
+    return client.getBook(v, run.symbol);
+  }));
   const sample = sampleSchema.parse({ schema: 1, runId: run.runId, sequence, startedAt, checkedAt: clock(),
     sources: results.map((result, i) => {
       if (result.status === 'fulfilled') return { venue: VENUES[i], available: true, book: result.value };
@@ -100,10 +105,10 @@ export function summarize(run: ObservationRun, samples: ObservationSample[]) {
     sourceTimestampPresent: 0, failed: 0, failureReasons: {} as Record<string, number> }])) as
     Record<Venue, { received: number; freshAtComparison: number; sourceTimestampPresent: number;
       failed: number; failureReasons: Record<string, number> }>;
-  const pairs: Record<string, { valid: number; rejected: number; positive: number; bestNetBps: number | null;
+  const pairs: Record<string, { valid: number; sizeChecked: number; rejected: number; positive: number; bestNetBps: number | null;
     worstNetBps: number | null; reasons: Record<string, number> }> = {};
   for (const buy of VENUES) for (const sell of VENUES) if (buy !== sell) {
-    pairs[`${buy}->${sell}`] = { valid: 0, rejected: 0, positive: 0, bestNetBps: null, worstNetBps: null, reasons: {} };
+    pairs[`${buy}->${sell}`] = { valid: 0, sizeChecked: 0, rejected: 0, positive: 0, bestNetBps: null, worstNetBps: null, reasons: {} };
   }
   const sorted = [...samples].sort((a, b) => a.sequence - b.sequence);
   let previous: ObservationSample | undefined;
@@ -133,6 +138,15 @@ export function summarize(run: ObservationRun, samples: ObservationSample[]) {
         if (!buy.available || !sell.available) throw new LabError('source-unavailable');
         const result = compareVenues(buy.book, sell.book, run.quantity,
           run.costs as Record<Venue, FillAssumptions>, sample.checkedAt);
+        if (run.instruments) {
+          for (const [source, fill] of [[buy, result.purchase], [sell, result.sale]] as const) {
+            const metadata = run.instruments[source.venue];
+            if (!metadata.available) throw new LabError('instrument-unavailable');
+            if (metadata.instrument.venue !== source.venue || metadata.instrument.symbol !== run.symbol) throw new LabError('instrument-mismatch');
+            checkSize(metadata.instrument, run.quantity, fill.quoteBeforeSlippage, sample.checkedAt);
+          }
+          stats.sizeChecked++;
+        }
         stats.valid++; if (result.netQuote > 0) stats.positive++;
         stats.bestNetBps = Math.max(stats.bestNetBps ?? -Infinity, result.netBps);
         stats.worstNetBps = Math.min(stats.worstNetBps ?? Infinity, result.netBps);
@@ -144,6 +158,9 @@ export function summarize(run: ObservationRun, samples: ObservationSample[]) {
     }
   }
   return { model: run.model, runId: run.runId, host: run.host, symbol: run.symbol, quantity: run.quantity,
+    startedAt: run.startedAt, lastObservedAt: sorted.at(-1)?.checkedAt ?? null,
+    sizeValidation: run.instruments ? 'public-rules-estimate' : 'not-checked',
+    instruments: run.instruments ?? null,
     assumptions: run.costs, expectedSamples: run.samples, recordedSamples: samples.length,
     missingSequences: Array.from({ length: run.samples }, (_, i) => i).filter(i => !sequences.has(i)),
     longestStartGapMs, intervalMs: run.intervalMs, byVenue, pairs,

@@ -2,6 +2,7 @@ import { hostname } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
 import { createRun, collectSample, startRun, saveSample, readReport } from '../lab/observations.js';
 import { PublicBookClient } from '../lab/public-books.js';
+import { fetchInstruments } from '../lab/instruments.js';
 
 const [command, directory, ...args] = process.argv.slice(2);
 try {
@@ -13,6 +14,7 @@ try {
     if (args.length > 6) throw new Error();
     const [symbol = 'BTC/USDT', quantity = '.0001', samples = '3', interval = '10000', fee = '10', slippage = '5'] = args;
     const run = createRun(hostname(), symbol, Number(quantity), Number(samples), Number(interval), Number(fee), Number(slippage));
+    run.instruments = await fetchInstruments(run.symbol);
     await startRun(directory, run);
     const client = new PublicBookClient();
     for (let i = 0; i < run.samples; i++) {

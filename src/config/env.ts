@@ -23,6 +23,7 @@ const envSchema = z.object({
   NODE_ENV: z.string().default('development'),
   HTTP_HOST: z.string().default('127.0.0.1'),
   HTTP_PORT: z.coerce.number().int().positive().default(3000),
+  LAB_OBSERVATION_RUN_DIR: z.string().default(''),
   DB_HOST: z.string().default('127.0.0.1'),
   DB_PORT: z.coerce.number().int().positive().default(3580),
   DB_NAME: z.string().default('robot_crypto'),
@@ -67,6 +68,7 @@ export const getConfig = () => {
 
   return {
     nodeEnv: env.NODE_ENV,
+    labObservationRunDir: env.LAB_OBSERVATION_RUN_DIR,
     authCore: {
       enabled: env.AUTH_CORE_ENABLED === 'true',
       origin: env.AUTH_CORE_ORIGIN,

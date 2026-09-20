@@ -5,6 +5,7 @@ import {
   BookOpenText,
   CirclePause,
   Database,
+  FlaskConical,
   Gauge,
   LockKeyhole,
   Play,
@@ -13,6 +14,7 @@ import {
   WalletCards
 } from 'lucide-react';
 import { apiUrl } from './api-url';
+import { LabReport, type Payload as LabPayload } from './LabReport';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 type StatusPayload = {
@@ -163,6 +165,7 @@ const nav = [
   { id: 'overview', label: 'Overview', icon: Gauge },
   { id: 'paper', label: 'Paper Trading', icon: Play },
   { id: 'journal', label: 'Journal', icon: BookOpenText },
+  { id: 'lab', label: 'Наблюдения', icon: FlaskConical },
   { id: 'risk', label: 'Risk', icon: ShieldCheck },
   { id: 'logs', label: 'Logs', icon: Activity }
 ] as const;
@@ -251,6 +254,8 @@ const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
 
   return response.json() as Promise<T>;
 };
+
+const loadLabReport = () => api<LabPayload>('/api/lab/report');
 
 const fetchAutoTraderStatus = async (): Promise<AutoTraderFetchResult> => {
   try {
@@ -948,6 +953,8 @@ export function App() {
 
   const activeContent = (() => {
     switch (active) {
+      case 'lab':
+        return <LabReport load={loadLabReport} />;
       case 'paper':
         return (
           <>
@@ -1030,7 +1037,7 @@ export function App() {
           {nav.map((item) => {
             const Icon = item.icon;
             return (
-              <button key={item.id} className={active === item.id ? 'active' : ''} onClick={() => setActive(item.id)}>
+              <button key={item.id} aria-label={item.label} className={active === item.id ? 'active' : ''} onClick={() => setActive(item.id)}>
                 <Icon size={16} />
                 <span>{item.label}</span>
               </button>

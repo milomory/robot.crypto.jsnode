@@ -47,6 +47,7 @@ async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
   registerAuthCore(app, { ...config, ...overrides }, fake.fetcher);
   app.get('/', async () => 'Crypto viewer');
   app.get('/api/status', async () => ({ ok: true }));
+  app.get('/api/lab/report', async () => ({ available: false }));
   app.get('/api/runtime-config', async () => ({ private: true }));
   app.get('/api/exchanges/binance/account', async () => ({ private: true }));
   for (const path of ['/api/auto-trader/scan', '/api/paper/orders', '/api/admin/live-unlock']) {
@@ -71,6 +72,15 @@ async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Auth Core viewer adapter (offline)', () => {
+  it('allows only authenticated viewer reads of the observation report', async () => {
+    const f = await fixture();
+    try {
+      expect((await f.app.inject('/api/lab/report')).statusCode).toBe(401);
+      const flow = await f.login();
+      expect((await f.app.inject({ url: '/api/lab/report', headers: { cookie: flow.sessionCookie } })).statusCode).toBe(200);
+      expect((await f.app.inject({ method: 'POST', url: '/api/lab/report', headers: { cookie: flow.sessionCookie } })).statusCode).toBe(403);
+    } finally { await f.app.close(); }
+  });
   it('redirects unauthenticated documents to login but never redirects API calls', async () => {
     const f = await fixture();
     try {

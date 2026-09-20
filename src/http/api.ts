@@ -17,6 +17,7 @@ import { isFallbackMarketTicker, type MarketDataAdapter } from '../exchange/exch
 import { PaperExchange } from '../exchange/paper-exchange.js';
 import { ResilientMarketDataAdapter } from '../exchange/resilient-market-data.js';
 import { SeedMarketDataAdapter } from '../exchange/seed-market-data.js';
+import { readReport } from '../lab/observations.js';
 import { PaperRiskBlockedError, TradeJournalService } from '../journal/trade-journal.service.js';
 import { RiskBudgetService } from '../risk/risk-budget.service.js';
 import { AutoPaperTraderService } from '../services/auto-paper-trader.service.js';
@@ -180,6 +181,13 @@ export const buildServer = async (pool: DbPool) => {
   });
 
   registerAuthCore(app, config.authCore);
+
+  app.get('/api/lab/report', async (_request, reply) => {
+    reply.header('Cache-Control', 'no-store');
+    if (!config.labObservationRunDir) return { available: false, reason: 'not-configured' };
+    try { return { available: true, report: await readReport(config.labObservationRunDir) }; }
+    catch { return reply.code(503).send({ available: false, reason: 'report-unavailable' }); }
+  });
 
   app.addHook('preHandler', async (request, reply) => {
     if (config.authCore.enabled) return; // Auth adapter enforces exact Origin + CSRF.

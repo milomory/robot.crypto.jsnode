@@ -34,7 +34,7 @@ const setCookie = (reply: FastifyReply, name: string, value: string, maxAge: num
 };
 export const viewerPaths = new Set([
   '/api/status', '/api/market/tickers', '/api/risk-budget', '/api/journal',
-  '/api/positions', '/api/risk-events', '/api/auto-trader/status'
+  '/api/positions', '/api/risk-events', '/api/auto-trader/status', '/api/lab/report'
 ]);
 const operatorMutations = new Set(['/operator/api/auto-trader/scan', '/operator/api/paper/orders', '/operator/api/admin/live-unlock']);
 export const isOperatorPath = (url: string) => url.split('?')[0].startsWith('/operator/');
