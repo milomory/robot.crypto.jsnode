@@ -15,7 +15,8 @@
     "lint": "tsc --noEmit -p tsconfig.json",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:status": "tsx src/scripts/db-status.ts",
-    "lab:markets": "tsx src/scripts/market-lab.ts"
+    "lab:markets": "tsx src/scripts/market-lab.ts",
+    "lab:observe": "tsx src/scripts/market-observe.ts"
   },
   "dependencies": {
     "@fastify/static": "^9.1.3",

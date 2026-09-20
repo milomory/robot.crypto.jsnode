@@ -14,12 +14,14 @@ Binance remains a public-data source. No keys are needed for stages 1–3.
    Bybit and OKX; BTC/USDT, ETH/USDT and SOL/USDT. Fixed public endpoints only,
    5-second timeout, no credentials, redirects, retries or synthetic fallback.
    Separate unavailable-source and rejected-comparison results.
-3. **Next: durable observation and report.** Store timestamped snapshots and
-   assumptions outside the old trading journal, with run/model IDs, bounded
-   retention, gap/coverage reporting and instrument metadata (lot size, minimum
-   notional, trading status). Assess source synchronisation and REST limitations
-   before a continuous collector or WebSocket implementation. Add a viewer report
-   of indicative spreads after costs, not an execution control.
+3. **Partially done: durable observation and report.** Bounded runs now store
+   timestamped snapshots and assumptions outside the old trading journal, with
+   run/model IDs and gap/coverage reporting. Hyperion acceptance completed;
+   see [observation runbook](MARKET-OBSERVATIONS.md). Still pending: retention
+   across runs, instrument metadata (lot size, minimum notional, trading status)
+   and the dashboard view. Assess source synchronisation and REST limitations
+  before a continuous collector or WebSocket implementation. Add a viewer report
+  of indicative spreads after costs, not an execution control.
 4. **Then: separate paper-v2 account/ledger and strategy comparison.** Explicit
    starting cash, position and fee accounting, daily equity, drawdown including
    open positions, benchmark and reconciliation. Use the depth-v2 calculator;
