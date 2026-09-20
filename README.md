@@ -19,6 +19,13 @@ No T-Invest SDK, FIGI model, or broker account logic is used here.
 
 ## Local Checks
 
+Public multi-exchange observation lab (separate from the running paper robot):
+[plan, usage and limitations](docs/MARKET-LAB-PLAN.md). No account keys required.
+
+```bash
+npm run lab:markets -- BTC/USDT 0.0001 10 5
+```
+
 ```bash
 npm test
 npm run lint
