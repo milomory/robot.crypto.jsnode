@@ -33,6 +33,8 @@ The first Hyperion campaign is complete: [results and evidence](docs/MARKET-CAMP
 Offline paper-v2 accounting is implemented: [usage, exact rules and limits](docs/PAPER-V2.md).
 For decimal-preserving public Bybit data and observed-period replay, see
 [exact observation workflow](docs/MARKET-EXACT.md).
+A bounded 30-minute capture and causal offline comparison are described in
+[the fixed study protocol](docs/PAPER-STUDY.md).
 
 ```bash
 mkdir -p output

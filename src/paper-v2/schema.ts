@@ -36,9 +36,13 @@ const observedScenario = scenarioBase.extend({ schema: z.literal(2), model: z.li
   funding: z.literal('synthetic'),
   marketData: z.object({ kind: z.literal('public-decimal-observations'), schema: z.literal(1),
     captureId: z.string().uuid(), datasetHash: z.string().regex(/^[a-f0-9]{64}$/),
-    policy: z.literal('fixed-probe-v1')
-  }).strict()
+    policy: z.enum(['fixed-probe-v1', 'fixed-study-30m-v1'])
+  }).strict(), executionPolicy: z.literal('lagged-sma-3-6-v1').optional()
 }).strict();
-export const scenarioSchema = z.discriminatedUnion('schema', [syntheticScenario, observedScenario]);
+export const scenarioSchema = z.discriminatedUnion('schema', [syntheticScenario, observedScenario]).superRefine((value, ctx) => {
+  if (value.schema === 2 && value.executionPolicy !== undefined && value.marketData.policy !== 'fixed-study-30m-v1') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['executionPolicy'], message: 'incompatible-execution-policy' });
+  }
+});
 export type Scenario = z.infer<typeof scenarioSchema>;
 export type Step = z.infer<typeof stepSchema>;

@@ -101,6 +101,24 @@ function levels(input: unknown, side: 'bids' | 'asks'): [bigint, bigint][] {
   return result;
 }
 
+/** Validate the complete observation before a signal may consume its prices. */
+export function validateBook(book: Book, now: number) {
+  if (!record(book) || !venue(book.venue) || book.symbol !== 'BTC/USDT') throw new PaperError('invalid-book');
+  if (!time(now) || !time(book.requestedAt) || !time(book.receivedAt) ||
+      book.requestedAt > book.receivedAt || book.receivedAt > now ||
+      now - book.receivedAt > 5_000 || now - book.requestedAt > 5_000) {
+    throw new PaperError('stale-or-invalid-receipt-time');
+  }
+  if (book.sourceAt !== undefined && (!time(book.sourceAt) ||
+      book.sourceAt - now > 1_000 || now - book.sourceAt > 5_000)) {
+    throw new PaperError('stale-or-invalid-source-time');
+  }
+  const bids = levels(book.bids, 'bids');
+  const asks = levels(book.asks, 'asks');
+  if (bids[0][0] >= asks[0][0]) throw new PaperError('crossed-or-locked-book');
+  return { bids, asks };
+}
+
 export function executeFill(book: Book, instrument: Instrument, side: 'buy' | 'sell',
   quantity: string, costs: Costs, now: number): ExactFill {
   if (!record(book) || !record(instrument) || !record(costs)) throw new PaperError('invalid-input');
@@ -140,9 +158,7 @@ export function executeFill(book: Book, instrument: Instrument, side: 'buy' | 's
   const amount = positive(quantity);
   if (amount < minQuantity || amount > maxQuantity) throw new PaperError('quantity-out-of-range');
   if (amount % step !== 0n) throw new PaperError('quantity-step-mismatch');
-  const bids = levels(book.bids, 'bids');
-  const asks = levels(book.asks, 'asks');
-  if (bids[0][0] >= asks[0][0]) throw new PaperError('crossed-or-locked-book');
+  const { bids, asks } = validateBook(book, now);
   let remaining = amount;
   let rawQuoteNumerator = 0n;
   for (const [price, available] of side === 'buy' ? asks : bids) {

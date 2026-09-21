@@ -4,7 +4,7 @@ import { canonical, digest } from '../paper-v2/ledger.js';
 import { scenarioSchema } from '../paper-v2/schema.js';
 import { replayScenario } from '../paper-v2/replay.js';
 import { PaperError } from '../paper-v2/exact.js';
-import { newArchive, readCompleteArchive, writeArchiveFile } from './archive.js';
+import { newArchive, readCompleteArchive, writeReplayFile, REPLAY_FILE_LIMIT } from './archive.js';
 import { toPaperBook, toPaperInstrument } from './bybit.js';
 
 export async function buildObservedScenario(directory: string) {
@@ -37,8 +37,11 @@ export async function replayObservedTo(inputDirectory: string, outputDirectory: 
   const sourceBytes = canonical(scenario) + '\n';
   const artifact = { ...result, provenance: { inputHash: result.inputHash,
     sourceFileSha256: createHash('sha256').update(sourceBytes).digest('hex') } };
+  // Check both complete artifacts before publishing even an empty output directory.
+  if (Buffer.byteLength(sourceBytes) > REPLAY_FILE_LIMIT ||
+      Buffer.byteLength(canonical(artifact) + '\n') > REPLAY_FILE_LIMIT) throw new PaperError('archive-file-too-large');
   await newArchive(outputDirectory);
-  await writeArchiveFile(join(outputDirectory, 'scenario.json'), scenario);
-  await writeArchiveFile(join(outputDirectory, 'result.json'), artifact);
+  await writeReplayFile(join(outputDirectory, 'scenario.json'), scenario);
+  await writeReplayFile(join(outputDirectory, 'result.json'), artifact);
   return { scenarioId: result.scenarioId, runId: result.runId, comparable: result.comparison.comparable };
 }

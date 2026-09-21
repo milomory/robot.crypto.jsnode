@@ -120,7 +120,8 @@ See [acceptance evidence](evidence/paper-v2-20260921/acceptance.json).
 The separate [decimal-preserving Bybit observation format](MARKET-EXACT.md) and
 conversion to schema 2 are now implemented. The first depth-v2 archive contains
 JSON numbers and is not accepted as exact monetary input. A fixed real period
-with diagnostic intents checks the path; strategy assessment still requires
+with diagnostic intents checks the path. The [fixed causal comparison](PAPER-STUDY.md)
+adds a declared 30-minute profile; strategy assessment still requires
 longer comparable periods and a declared signal policy. More venues, keys, a
 dashboard or an autonomous worker remain outside this first implementation.
 A worker still requires the separate namespace, storage/backup plan and scoped

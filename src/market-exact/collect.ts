@@ -4,21 +4,23 @@ import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { ExactBybitClient } from './bybit.js';
 import { PaperError } from '../paper-v2/exact.js';
-import { newArchive, writeArchiveFile, manifestSchema, sampleSchema, PLAN, type State } from './archive.js';
+import { newArchive, writeArchiveFile, manifestSchema, sampleSchema, planSchema, PLAN, type ExactPlan, type State } from './archive.js';
 
 interface Dependencies { client: Pick<ExactBybitClient, 'getBook' | 'getInstrument'>;
   clock: () => number; sleep: (ms: number, signal: AbortSignal) => Promise<void>; host: string }
 export async function collectExact(directory: string, signal: AbortSignal, dependencies: Dependencies = {
   client: new ExactBybitClient(), clock: Date.now, host: hostname(),
   sleep: async (ms, signal) => { await sleep(ms, undefined, { signal }); }
-}) {
+}, profile: ExactPlan = PLAN) {
+  // Reject tuned or unknown profiles before touching disk or making a request.
+  const plan = planSchema.parse(profile);
   // Refuse an existing directory before performing any public request.
   await newArchive(directory);
   const startedAt = dependencies.clock(), captureId = randomUUID();
-  const state: State = { schema: 1, captureId, status: 'running', deadlineAt: startedAt + PLAN.maxDurationMs, updatedAt: startedAt };
+  const state: State = { schema: 1, captureId, status: 'running', deadlineAt: startedAt + plan.maxDurationMs, updatedAt: startedAt };
   await writeArchiveFile(join(directory, 'state.json'), state);
   const deadlineController = new AbortController();
-  const timer = setTimeout(() => deadlineController.abort(), PLAN.maxDurationMs);
+  const timer = setTimeout(() => deadlineController.abort(), plan.maxDurationMs);
   timer.unref();
   const abort = AbortSignal.any([signal, deadlineController.signal]);
   let recorded = 0;
@@ -26,13 +28,13 @@ export async function collectExact(directory: string, signal: AbortSignal, depen
     if (abort.aborted) throw new Error();
     const instrument = await dependencies.client.getInstrument(abort);
     const manifest = manifestSchema.parse({ schema: 1, kind: 'public-decimal-observations', captureId,
-      venue: 'bybit', symbol: 'BTC/USDT', host: dependencies.host, startedAt, plan: PLAN, instrument });
+      venue: 'bybit', symbol: 'BTC/USDT', host: dependencies.host, startedAt, plan, instrument });
     await writeArchiveFile(join(directory, 'manifest.json'), manifest);
-    for (let sequence = 0; sequence < PLAN.samples; sequence++) {
-      const due = startedAt + sequence * PLAN.intervalMs;
+    for (let sequence = 0; sequence < plan.samples; sequence++) {
+      const due = startedAt + sequence * plan.intervalMs;
       if (abort.aborted || dependencies.clock() >= state.deadlineAt) break;
       if (dependencies.clock() < due) await dependencies.sleep(due - dependencies.clock(), abort);
-      if (abort.aborted || dependencies.clock() >= state.deadlineAt || dependencies.clock() >= due + PLAN.intervalMs) break;
+      if (abort.aborted || dependencies.clock() >= state.deadlineAt || dependencies.clock() >= due + plan.intervalMs) break;
       const sampleStarted = dependencies.clock();
       let source;
       try { source = { available: true as const, book: await dependencies.client.getBook(abort) }; }
@@ -44,7 +46,7 @@ export async function collectExact(directory: string, signal: AbortSignal, depen
       state.updatedAt = dependencies.clock();
       await writeArchiveFile(join(directory, 'state.json'), state, true);
     }
-    state.status = recorded === PLAN.samples && !abort.aborted && dependencies.clock() <= state.deadlineAt ? 'completed' : 'stopped';
+    state.status = recorded === plan.samples && !abort.aborted && dependencies.clock() <= state.deadlineAt ? 'completed' : 'stopped';
   } catch (error) {
     state.status = abort.aborted ? 'stopped' : 'failed';
     if (!abort.aborted) throw new PaperError('exact-capture-failed');

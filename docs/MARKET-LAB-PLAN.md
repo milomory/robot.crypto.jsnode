@@ -39,7 +39,8 @@ Binance remains a public-data source. No keys are needed for stages 1–4.
    now preserve decimal strings and bind a full fixed period to schema 2; the
    old numeric archive is not authoritative monetary input. The first real-data
    probe uses predetermined diagnostic intents, not an optimised strategy.
-   No worker is enabled. Longer-period strategy comparison remains under the
+   No worker is enabled. A [fixed 30-minute causal comparison](PAPER-STUDY.md)
+   is the next bounded protocol; broader strategy assessment remains under the
    [remaining gates](PAPER-V2-PLAN.md).
 5. **Only if needed: private account reads.** Ask the user for selected venues
    and dedicated read-only keys through the existing key vault/secret workflow.

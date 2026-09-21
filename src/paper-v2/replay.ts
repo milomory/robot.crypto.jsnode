@@ -90,7 +90,8 @@ export function replayScenario(input: unknown) {
   const inputHash = digest(scenario);
   return { schema: scenario.schema, model: 'paper-v2-exact-1' as const, scenarioId: scenario.scenarioId,
     runId: `pv2-${inputHash}`, ledgerSchema: 1 as const, costModel: 'quote-fee-exact-gross-v1' as const,
-    ...(scenario.schema === 1 ? { synthetic: true as const } : { funding: scenario.funding, marketData: scenario.marketData }), inputHash,
+    ...(scenario.schema === 1 ? { synthetic: true as const } : { funding: scenario.funding, marketData: scenario.marketData,
+      ...(scenario.executionPolicy ? { executionPolicy: scenario.executionPolicy } : {}) }), inputHash,
     units: { BTC: '8 decimal places', USDT: '8 decimal places', price: '8 decimal places',
       roundingFractions: 'fractions of one 0.00000001 USDT atom', percentDisplay: 'six decimals, truncated' },
     assumptions: { venue: scenario.venue, symbol: scenario.symbol, opening: scenario.opening, costs: scenario.costs,
@@ -103,5 +104,7 @@ export function replayScenario(input: unknown) {
       reason: comparable ? 'complete-common-window' : 'incomplete-valuation-or-benchmark-entry',
       interpretation: scenario.schema === 1
         ? 'Synthetic fixture results only; no strategy-performance or live execution claim.'
-        : 'Observed public prices with synthetic funding and fixed probe intents; not actual trades or strategy performance.' } };
+        : scenario.marketData.policy === 'fixed-study-30m-v1'
+          ? 'Observed public prices with synthetic funding and a declared fixed comparison; not actual trades, statistical evidence or a profit forecast.'
+          : 'Observed public prices with synthetic funding and fixed probe intents; not actual trades or strategy performance.' } };
 }

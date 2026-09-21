@@ -2,7 +2,9 @@
 
 2026-09-21. Separate format `public-decimal-observations`, schema 1. The first
 adapter is Bybit BTC/USDT spot; the existing three-venue depth-v2 archive and
-running paper engine are unchanged. Exchange keys are unnecessary.
+running paper engine are unchanged. Exchange keys are unnecessary. The additional fixed 30-minute profile and causal
+comparison are documented in [PAPER-STUDY.md](PAPER-STUDY.md); the default
+six-sample probe below remains unchanged.
 
 ## Fixed first probe
 
@@ -70,12 +72,14 @@ samples, symlinks, mixed run IDs, altered plan or impossible chronology prevent
 complete-series replay. A hard kill leaves evidence for inspection; it is not
 silently resumed. No perpetual collector or retention schedule is enabled.
 
-Only a completed six-sample archive is converted. The full archive digest binds
+Only a completed full archive of its declared profile is converted: six samples
+for the default probe or 60 for the fixed 30-minute study. The full archive digest binds
 its manifest, exact samples and terminal state. Schema 2 of paper-v2 records
 `marketData` provenance and `funding:synthetic` separately. Schema 1 retains its
 original synthetic fixture meaning and byte-identical results.
 
 `scenario.json` and `result.json` are written to a new offline output directory.
+Their separate limit is 2 MiB each; individual raw files retain the 128 KiB cap.
 The standalone paper-v2 CLI can reproduce `result.json`, including provenance,
 from `scenario.json`. No capture/replay module imports production configuration,
 DB, Auth, credentials or the running trader. All paper-v2 balances, FIFO costs,
