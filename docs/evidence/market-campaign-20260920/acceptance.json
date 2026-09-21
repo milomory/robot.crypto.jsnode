@@ -1,0 +1,292 @@
+{
+  "files": {
+    "000.json": "e6fc2d7390bc840711a607c39548a42fef9d54c67cfdcfd728e31975c84bc2f0",
+    "001.json": "df73827e149bbbe3b3308327b089bfbf10c3c266efd33eadfe4e2ae54c280999",
+    "002.json": "e9208e938f1df8411aaae4d03373dc832669ec38b62bbf8227aff9c168760987",
+    "003.json": "7d41e4729c52781c01b06f816f141fa682a54ce9a7d6de2d607eca8bac97daba",
+    "004.json": "44b80c2979c87fc76c8905d816845191f47b2b9ea51df2ca45228577a1c60a35",
+    "005.json": "3cc2d8520431d968dadc93718a4aff5d8c70dab927c3eeb06c30065a0c38b121",
+    "006.json": "473f3a887245c57bca169fe5f70b93bb2c0594343d56fe7ddcb4bfe9d23c846e",
+    "007.json": "0f3f636cde25b4890bbd86ebc4abdfbae8e8073dfeff443956dbb0ca43c72c97",
+    "008.json": "dc7332897f37c2a81c9fbac83086486baca03e7f3fb2bbc4e4d97b14a9b38122",
+    "009.json": "87e1cb8f46e1502b53a8631ab0c01a2549c4532f174c027cf40ad35dd05bcbd1",
+    "010.json": "25788d05eea31b311676ab4e9d2503c0f4738d8f9eb63543f52477508f5c9e0c",
+    "011.json": "d66546039cc07f78f46a262dac5c6f6c8859ab8319c1507bd7438abbf1271b3e",
+    "012.json": "99a3ce3bd9ca2888a15eae93707ff223d40bd3c885a070413b3a621e41dacfcb",
+    "013.json": "808cc4d9b0cca3dfee3a1b1a7f3a454ceec69591394b882597bd868b58f00ae4",
+    "014.json": "bd8443601a128ef8bb7ac0f4dcc09f5cd67ab6b57a7a0a7eb3a0ca1b53f4c0e5",
+    "015.json": "6e1efaa94e93da6059d3976dff063f367f6efc6a5456d1bb9fdaa77924bed973",
+    "016.json": "a05cd3ec7230614492575177fefd546484c6cb86ac3c9d67eef0ad417310fcdf",
+    "017.json": "9fced0768fb49c10a4af0626c3916de729401c3bd75089f908bf2b1f31eafdd1",
+    "018.json": "2f771cbb914b8eef7ea9f8edc9a03bb8eacc0f73e81eb23aa239946acbd699a3",
+    "019.json": "96499016c9a19932b3afb2998a7ffc10c01637bde87f8440d31a9f07c3fa8ef1",
+    "020.json": "ab6c638d61dea9dc17c2fc32b5d9a0694aa7f140dd1b0483f5949abdeb451682",
+    "021.json": "f2fe4c584d44895befc154c4beb128abfe0a9bd6d5232f96b666ffd6d7fb5f06",
+    "022.json": "1a08ed3a1fc8a11fb26e9779ba58d2e88b677537de6cb949f72744e1edd41985",
+    "023.json": "fbba1e12d1eaf5a7967debf23193498091bc6fa2ede363f5181305cfca868081",
+    "024.json": "e367496209ea7095a3eb0c62cedbda3baacd07e8a6fe5c6e9ae6c7d45b04b6cd",
+    "025.json": "07699d472d3f8a8fc27c7a7534cf5ded3dac9e7b462417546d5bb27fc02599d9",
+    "026.json": "5700bb7f1b0bf58adec5da642369c1f1506ef5b8056dcc8bebf6bf6e2817fd71",
+    "027.json": "cbe4d1f0991f948e5244096b4c70cbed038bd3499f360a13a5077bcf8cf5e126",
+    "028.json": "893ddc982fe3e79a65f4aa4d415a70898b3c03c7e4d3781e6b33d3eaaf403755",
+    "029.json": "4ac18ea53ca209b2d8fa3b6b45845b4680daa3feb30329e1cf867fa908fac854",
+    "collection.json": "44bd7e2c868b11a826ffde4b5128f492c143938ed15c7748b6f93aaa5da2716b",
+    "run.json": "92cca07e6aaf2545b340613e114d21a23488641b15a473c9974345442630d870"
+  },
+  "containers": [
+    {
+      "container": "/crypto-market-campaign-20260920",
+      "status": "exited",
+      "exitCode": 0,
+      "oomKilled": false,
+      "startedAt": "2026-09-20T07:05:58.421533496Z",
+      "finishedAt": "2026-09-20T07:35:00.893915104Z",
+      "restartCount": 0,
+      "restartPolicy": "no",
+      "mounts": [
+        {
+          "source": "/home/mil/crypto-market-campaign-386ee2c/crypto-market-campaign-20260920.mjs",
+          "destination": "/lab/campaign.mjs",
+          "rw": false
+        },
+        {
+          "source": "/home/mil/crypto-market-observations",
+          "destination": "/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "container": "/robot_crypto_jsnode",
+      "status": "running",
+      "exitCode": 0,
+      "oomKilled": false,
+      "startedAt": "2026-09-20T07:06:47.864812714Z",
+      "finishedAt": "0001-01-01T00:00:00Z",
+      "restartCount": 0,
+      "restartPolicy": "always",
+      "mounts": [
+        {
+          "source": "/home/mil/crypto-market-observations/store",
+          "destination": "/run/crypto-lab/report",
+          "rw": false
+        },
+        {
+          "source": "/home/mil/robot.crypto.jsnode/releases/386ee2c1734af87f76ab3745b1076739cd5195f4",
+          "destination": "/code",
+          "rw": true
+        }
+      ]
+    }
+  ],
+  "writerLockExists": false,
+  "api": {
+    "reportStatus": 200,
+    "report": {
+      "model": "depth-v2",
+      "runId": "a43cc042-9fee-424b-87ba-b44457b16b7c",
+      "host": "hyperion-observation",
+      "symbol": "BTC/USDT",
+      "quantity": 0.0001,
+      "startedAt": 1789887959214,
+      "lastObservedAt": 1789889700152,
+      "sizeValidation": "public-rules-estimate",
+      "instruments": {
+        "binance": {
+          "available": true,
+          "instrument": {
+            "venue": "binance",
+            "symbol": "BTC/USDT",
+            "fetchedAt": 1789887960907,
+            "trading": true,
+            "lots": [
+              {
+                "min": "0.00001000",
+                "max": "9000.00000000",
+                "step": "0.00001000"
+              },
+              {
+                "min": "0.00000000",
+                "max": "106.67692241",
+                "step": "0.00000000"
+              }
+            ],
+            "minQuote": "5.00000000",
+            "notionalReference": "snapshot-estimate"
+          }
+        },
+        "bybit": {
+          "available": true,
+          "instrument": {
+            "venue": "bybit",
+            "symbol": "BTC/USDT",
+            "fetchedAt": 1789887959815,
+            "trading": true,
+            "lots": [
+              {
+                "min": "0.000001",
+                "max": "120",
+                "step": "0.000001"
+              }
+            ],
+            "minQuote": "5",
+            "notionalReference": "snapshot-estimate"
+          }
+        },
+        "okx": {
+          "available": true,
+          "instrument": {
+            "venue": "okx",
+            "symbol": "BTC/USDT",
+            "fetchedAt": 1789887959924,
+            "trading": true,
+            "lots": [
+              {
+                "min": "0.00001",
+                "max": "1000000",
+                "step": "0.00000001"
+              }
+            ],
+            "notionalReference": "not-published"
+          }
+        }
+      },
+      "assumptions": {
+        "binance": {
+          "feeBps": 10,
+          "slippageBps": 5
+        },
+        "bybit": {
+          "feeBps": 10,
+          "slippageBps": 5
+        },
+        "okx": {
+          "feeBps": 10,
+          "slippageBps": 5
+        }
+      },
+      "expectedSamples": 30,
+      "recordedSamples": 30,
+      "missingSequences": [],
+      "longestStartGapMs": 60086,
+      "intervalMs": 60000,
+      "byVenue": {
+        "binance": {
+          "received": 30,
+          "freshAtComparison": 30,
+          "sourceTimestampPresent": 0,
+          "failed": 0,
+          "failureReasons": {}
+        },
+        "bybit": {
+          "received": 30,
+          "freshAtComparison": 30,
+          "sourceTimestampPresent": 30,
+          "failed": 0,
+          "failureReasons": {}
+        },
+        "okx": {
+          "received": 30,
+          "freshAtComparison": 30,
+          "sourceTimestampPresent": 30,
+          "failed": 0,
+          "failureReasons": {}
+        }
+      },
+      "pairs": {
+        "binance->bybit": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -28.046322625231774,
+          "worstNetBps": -30.130110992226186,
+          "reasons": {}
+        },
+        "binance->okx": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -28.23145815055515,
+          "worstNetBps": -31.184161158497414,
+          "reasons": {}
+        },
+        "bybit->binance": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -29.793648312251175,
+          "worstNetBps": -31.877054554253224,
+          "reasons": {}
+        },
+        "bybit->okx": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -29.27238348962095,
+          "worstNetBps": -31.356534615233322,
+          "reasons": {}
+        },
+        "okx->binance": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -28.73943836294815,
+          "worstNetBps": -31.691994072300826,
+          "reasons": {}
+        },
+        "okx->bybit": {
+          "valid": 30,
+          "sizeChecked": 30,
+          "rejected": 0,
+          "positive": 0,
+          "bestNetBps": -28.578183433853546,
+          "worstNetBps": -30.662496402770227,
+          "reasons": {}
+        }
+      },
+      "indicativeOnly": true,
+      "interpretation": "Counts are snapshot observations, not trades or earned P/L. No summation of overlapping opportunities.",
+      "collection": {
+        "schema": 1,
+        "runId": "a43cc042-9fee-424b-87ba-b44457b16b7c",
+        "state": "completed",
+        "deadlineAt": 1789889759214,
+        "updatedAt": 1789889700205,
+        "endedAt": 1789889700205
+      }
+    },
+    "anonymousStatus": 401,
+    "mode": "paper",
+    "liveLocked": true,
+    "databaseOK": true,
+    "autoEnabled": true
+  },
+  "copiedSourceHashesMatch": true,
+  "apiMatchesOfflineReplay": true,
+  "observedAt": "2026-09-21T04:30:43.361690+00:00",
+  "sourceRun": "/home/mil/crypto-market-observations/store/runs/a43cc042-9fee-424b-87ba-b44457b16b7c",
+  "sourceHost": "Hyperion",
+  "deployedCommit": "386ee2c1734af87f76ab3745b1076739cd5195f4",
+  "httpsAnonymousChecksFromAthena": {
+    "/health": {
+      "status": 200,
+      "tlsVerified": true,
+      "basicChallenge": false
+    },
+    "/": {
+      "status": 303,
+      "tlsVerified": true,
+      "basicChallenge": false
+    },
+    "/api/lab/report": {
+      "status": 401,
+      "tlsVerified": true,
+      "basicChallenge": false
+    }
+  }
+}

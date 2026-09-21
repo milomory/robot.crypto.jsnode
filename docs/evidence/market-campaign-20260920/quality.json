@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "runId": "a43cc042-9fee-424b-87ba-b44457b16b7c",
+  "sourceHost": "Hyperion",
+  "sourceRun": "/home/mil/crypto-market-observations/store/runs/a43cc042-9fee-424b-87ba-b44457b16b7c",
+  "deployedCommit": "386ee2c1734af87f76ab3745b1076739cd5195f4",
+  "grain": "one run/sequence/venue book; each sequence yields six directional comparisons",
+  "window": {
+    "startedAt": 1789887959214,
+    "lastObservedAt": 1789889700152,
+    "elapsedMs": 1740938
+  },
+  "checks": {
+    "copiedSourceHashesMatch": true,
+    "apiMatchesOfflineReport": true,
+    "uniqueBookKeys": 90,
+    "duplicateBookKeys": 0,
+    "samples": 30,
+    "missingSequences": [],
+    "freshBooks": 90,
+    "sourceFailures": 0,
+    "validDirectionalComparisons": 180,
+    "sizeCheckedComparisons": 180,
+    "rejectedComparisons": 0
+  },
+  "sampleStartGapsMs": {
+    "count": 29,
+    "min": 58326,
+    "median": 60000,
+    "p95NearestRank": 60035,
+    "max": 60086
+  },
+  "batchDurationMs": {
+    "count": 30,
+    "min": 349,
+    "median": 934.5,
+    "p95NearestRank": 1738,
+    "max": 1766
+  },
+  "venueTiming": {
+    "binance": {
+      "requestDurationMs": {
+        "count": 30,
+        "min": 241,
+        "median": 914.5,
+        "p95NearestRank": 1722,
+        "max": 1753
+      },
+      "sourceToReceiptMs": null,
+      "sourceTimePresent": 0
+    },
+    "bybit": {
+      "requestDurationMs": {
+        "count": 30,
+        "min": 221,
+        "median": 273.5,
+        "p95NearestRank": 387,
+        "max": 407
+      },
+      "sourceToReceiptMs": {
+        "count": 30,
+        "min": 161,
+        "median": 197.5,
+        "p95NearestRank": 270,
+        "max": 294
+      },
+      "sourceTimePresent": 30
+    },
+    "okx": {
+      "requestDurationMs": {
+        "count": 30,
+        "min": 330,
+        "median": 397.0,
+        "p95NearestRank": 505,
+        "max": 527
+      },
+      "sourceToReceiptMs": {
+        "count": 30,
+        "min": 137,
+        "median": 155.5,
+        "p95NearestRank": 179,
+        "max": 194
+      },
+      "sourceTimePresent": 30
+    }
+  },
+  "pairWindowMs": {
+    "binance->bybit": {
+      "count": 30,
+      "min": 263,
+      "median": 914.5,
+      "p95NearestRank": 1722,
+      "max": 1753
+    },
+    "binance->okx": {
+      "count": 30,
+      "min": 339,
+      "median": 914.5,
+      "p95NearestRank": 1722,
+      "max": 1753
+    },
+    "bybit->binance": {
+      "count": 30,
+      "min": 263,
+      "median": 914.5,
+      "p95NearestRank": 1722,
+      "max": 1753
+    },
+    "bybit->okx": {
+      "count": 30,
+      "min": 255,
+      "median": 320.0,
+      "p95NearestRank": 407,
+      "max": 426
+    },
+    "okx->binance": {
+      "count": 30,
+      "min": 339,
+      "median": 914.5,
+      "p95NearestRank": 1722,
+      "max": 1753
+    },
+    "okx->bybit": {
+      "count": 30,
+      "min": 255,
+      "median": 320.0,
+      "p95NearestRank": 407,
+      "max": 426
+    }
+  },
+  "costAssumptions": {
+    "binance": {
+      "feeBps": 10,
+      "slippageBps": 5
+    },
+    "bybit": {
+      "feeBps": 10,
+      "slippageBps": 5
+    },
+    "okx": {
+      "feeBps": 10,
+      "slippageBps": 5
+    }
+  },
+  "result": {
+    "positiveDirectionalComparisons": 0,
+    "bestNetBps": -28.046322625231774,
+    "worstNetBps": -31.877054554253224
+  },
+  "decision": "pass for functional offline replay; insufficient for profitability or live execution claims",
+  "limitations": [
+    "30 snapshots over roughly 29 minutes; no multi-day or multi-regime coverage",
+    "Binance has no source timestamp; receipt timing does not prove matching-engine freshness",
+    "six directional comparisons share snapshots and are not independent trades",
+    "fees/slippage are illustrative; no account eligibility, tariffs, funding or rebalancing verified",
+    "source-to-receipt timing includes unverified cross-host clock differences",
+    "fixed quantity; public instrument rules are estimates, not exchange order acceptance"
+  ]
+}

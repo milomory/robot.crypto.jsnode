@@ -1,8 +1,8 @@
 # Market data and paper lab plan
 
-Updated 2026-09-20. User requested a plan and implementation, with notification
+Updated 2026-09-21. User requested a plan and implementation, with notification
 when keys are needed. Binance account integration is excluded by user choice;
-Binance remains a public-data source. No keys are needed for stages 1–3.
+Binance remains a public-data source. No keys are needed for stages 1–4.
 
 ## Delivery sequence
 
@@ -14,21 +14,28 @@ Binance remains a public-data source. No keys are needed for stages 1–3.
    Bybit and OKX; BTC/USDT, ETH/USDT and SOL/USDT. Fixed public endpoints only,
    5-second timeout, no credentials, redirects, retries or synthetic fallback.
    Separate unavailable-source and rejected-comparison results.
-3. **Partially done: durable observation and report.** Bounded runs now store
+3. **Done for bounded campaigns: durable observation and report.** Bounded runs store
    timestamped snapshots and assumptions outside the old trading journal, with
    run/model IDs and gap/coverage reporting. Hyperion acceptance completed;
    see [observation runbook](MARKET-OBSERVATIONS.md). Public instrument rules and
    a read-only dashboard view are implemented. Bounded campaigns and protected
    retention are implemented in [the campaign runbook](MARKET-CAMPAIGN.md).
-   Continuous collection is not enabled. Assess source synchronisation and REST limitations
-  before a continuous collector or WebSocket implementation. Add a viewer report
-  of indicative spreads after costs, not an execution control.
+   First Hyperion campaign completed: 30/30 snapshots, 90 fresh source books,
+   180 valid directional comparisons, zero positive results after assumed costs.
+   The viewer report displays indicative spreads and collection progress.
+   See [measured quality and limitations](MARKET-CAMPAIGN-RESULT-20260920.md).
+   Continuous collection is not enabled. Assess longer-period coverage and
+   source synchronisation before a continuous collector or WebSocket implementation.
 4. **Then: separate paper-v2 account/ledger and strategy comparison.** Explicit
    starting cash, position and fee accounting, daily equity, drawdown including
-   open positions, benchmark and reconciliation. Use the depth-v2 calculator;
+   open positions, benchmark and reconciliation. Use depth-v2 execution rules
+   with exact arithmetic;
    do not silently switch old positions to new execution assumptions. Compare
    identical periods before assessing strategy improvements. Deployment must
    specify the separate data namespace and rollback before activating a worker.
+   [The concrete offline implementation plan](PAPER-V2-PLAN.md) defines exact
+   amounts, starting fixtures, reconciliation and the acceptance gate. It is
+   a specification; the paper-v2 ledger has not been implemented yet.
 5. **Only if needed: private account reads.** Ask the user for selected venues
    and dedicated read-only keys through the existing key vault/secret workflow.
    Verify the available vault-to-consumer delivery contract before using it;
@@ -73,10 +80,13 @@ bypass it. A future worker needs persistent/shared rate-limit handling.
 - Displayed depth can change before execution. All comparisons are indicative,
   including positive results. No account eligibility or exchange recommendation
   is implied by successful access to a public endpoint.
-- Fees are modeled in quote currency. Actual fee assets, rebates, lot sizes,
-  minimum order amounts, transfer/rebalancing costs and funding inventory are
-  not modeled yet. Number arithmetic is adequate for this diagnostic estimate,
-  not an authoritative monetary ledger or signed order quantity.
+- Fees are modeled in quote currency. Saved runs with public instrument metadata
+  check quantity increments and published size/notional limits; notional checks
+  remain snapshot estimates, not proof of exchange order acceptance. Actual fee
+  assets, rebates, transfer/rebalancing costs and funding inventory are not modeled.
+  Number arithmetic is adequate for this diagnostic estimate, not an authoritative
+  monetary ledger or signed order quantity. Exact paper-v2 needs decimal-preserving
+  input as well as exact accounting arithmetic.
 - HTTP/application errors and malformed payloads never echo response bodies.
   Public-data failures do not fall back to demo prices.
 

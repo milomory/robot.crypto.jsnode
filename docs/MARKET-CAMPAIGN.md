@@ -110,3 +110,33 @@ Playwright390/1440 checks running/completed/interrupted, populated/empty/error
 states, lazy loading, no horizontal page overflow and no page errors. Browser
 plugin unavailable; local Playwright with mocked HTTP is UI evidence, not a
 fresh physical-device SSO acceptance. Runtime acceptance is recorded below.
+
+## Applied rollout and completed acceptance
+
+Code/collector revision: `386ee2c1734af87f76ab3745b1076739cd5195f4` (published).
+The API uses `/home/mil/robot.crypto.jsnode/releases/386ee2c1734af87f76ab3745b1076739cd5195f4`;
+the managed store is mounted read-only at `/run/crypto-lab/report`.
+Override backup: `/home/mil/robot.crypto.jsnode/backups/lab-report-386ee2c/docker-compose.override.yml`.
+The scoped deployment left the paper engine, journal and Auth configuration unchanged.
+
+Collector bundle: `/home/mil/crypto-market-campaign-386ee2c/crypto-market-campaign-20260920.mjs`.
+SHA256: `466e5ffcada852a3ad6c2e79ba5cb67e448c39a2f837b74c0d3226969dba9f89`.
+Container `crypto-market-campaign-20260920` has restart policy `no` and no
+credentials or application/DB mounts. Docker reported no swap-limit support
+on the host; the configured memory bound is not complete swap isolation.
+
+Run `a43cc042-9fee-424b-87ba-b44457b16b7c` finished on 2026-09-20 at
+07:35:00.205 UTC (09:35:00.205 Europe/Amsterdam), before its 07:35:59.214 UTC
+deadline. All 30 snapshots were written. On 2026-09-21 read-only inspection
+confirmed `completed`, container exit 0, no OOM/restarts and no writer lock.
+No second run or automatic schedule was started.
+
+The deployed report and local offline reconstruction match exactly; hashes of
+all 32 copied evidence files match Hyperion. Authenticated report 200,
+anonymous report 401; trusted HTTPS checks from Athena returned health 200,
+root 303 and anonymous report 401, with no Basic challenge. Application status
+remained PAPER, live locked, DB healthy and the existing auto-paper loop enabled.
+This verifies server behaviour, not a new physical-device SSO acceptance.
+
+See [results, quality assessment and next step](MARKET-CAMPAIGN-RESULT-20260920.md)
+and [machine-readable acceptance](evidence/market-campaign-20260920/acceptance.json).
