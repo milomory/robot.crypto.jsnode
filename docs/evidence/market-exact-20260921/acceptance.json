@@ -1,0 +1,203 @@
+{
+  "ready": true,
+  "state": {
+    "captureId": "0f47b8aa-4a89-4414-b4ee-3f2bb63ddd3d",
+    "deadlineAt": 1789973655036,
+    "endedAt": 1789973625353,
+    "schema": 1,
+    "status": "completed",
+    "updatedAt": 1789973625353
+  },
+  "files": {
+    "000.json": "2a90cc6b4ba0fc104eee22b2bff5880548d62c23813f712b0f11f4b654578dce",
+    "001.json": "736b40502e1c0eed11c5ec378ebf65e75a070dd1d08e8fd8a86ef6817285bfcb",
+    "002.json": "5fe1e913aece1110f350046d5a898cb9cf786a92b1c9b6e8520354ced21bd33f",
+    "003.json": "78d27bb96d62123e7c74618aae2916c3b126cf77c6e16d918b9f4cc719e388b1",
+    "004.json": "bf842646bbfe6076c58a75743ded8579a97fec472954dca96c56fc7364378270",
+    "005.json": "497cc255ff388db15c66e8dd041392d0c8cad587cb9d0817662aa8af1c9985b5",
+    "manifest.json": "1f8a78485e9c697cdbec3e1298e1bc0e3b71a0873575f457f70e573a7578996d",
+    "state.json": "d67ff89929c74c0c0559a879ea8b1e2eddffbaeb5d7e9142dd5707d24b96a10e"
+  },
+  "containers": [
+    {
+      "name": "/crypto-exact-btc-20260921",
+      "status": "exited",
+      "exitCode": 0,
+      "startedAt": "2026-09-21T06:51:13.99782476Z",
+      "finishedAt": "2026-09-21T06:53:45.559830581Z",
+      "oomKilled": false,
+      "restarts": 0,
+      "restartPolicy": "no",
+      "readOnlyRootfs": true,
+      "memoryBytes": 134217728,
+      "nanoCpus": 500000000,
+      "pidsLimit": 64,
+      "capDrop": [
+        "ALL"
+      ],
+      "securityOpt": [
+        "no-new-privileges"
+      ],
+      "user": "1002:27",
+      "mounts": [
+        {
+          "source": "/home/mil/crypto-exact-observations",
+          "target": "/data",
+          "rw": true
+        },
+        {
+          "source": "/home/mil/crypto-exact-probe-a27d31b/collect.mjs",
+          "target": "/lab/collect.mjs",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "/robot_crypto_jsnode",
+      "status": "running",
+      "exitCode": 0,
+      "startedAt": "2026-09-20T07:06:47.864812714Z",
+      "finishedAt": "0001-01-01T00:00:00Z",
+      "oomKilled": false,
+      "restarts": 0,
+      "restartPolicy": "always",
+      "readOnlyRootfs": false,
+      "memoryBytes": 0,
+      "nanoCpus": 0,
+      "pidsLimit": null,
+      "capDrop": null,
+      "securityOpt": null,
+      "user": "",
+      "mounts": [
+        {
+          "source": "/home/mil/robot.crypto.jsnode/releases/386ee2c1734af87f76ab3745b1076739cd5195f4",
+          "target": "/code",
+          "rw": true
+        }
+      ]
+    }
+  ],
+  "bundleSha256": "00abd8a31ad7e448fe8761c90cd6cbf5772a2ee287aafd4243f67586789314e3",
+  "schema": 1,
+  "checkedAt": "2026-09-21T06:54:35.779150+00:00",
+  "sourceRevision": "a27d31bd68d31780c9590347d17dd162b65cf817",
+  "sourcePublishedAtCapture": false,
+  "sourceHost": "Hyperion",
+  "sourceArchive": "/home/mil/crypto-exact-observations/capture",
+  "copiedFilesMatch": true,
+  "rawArchiveUnchangedAfterReplay": true,
+  "sourceAndBuiltReplayBytesIdentical": true,
+  "resultSha256": "acf5455c0173d37a6c7df488f62236731bdff53d1b05a9e1bf48bb44fd4a1097",
+  "datasetHash": "6250d14d2d07e4c541bb5408c853e9d1c2e61f9118a5377f62aa379949fb5186",
+  "paperRunId": "pv2-c07dea0c5837d7f0ba1690bb460205d49f7c40ebaaf4e5e3c00bbf863d854b20",
+  "plan": {
+    "buyQuantityBTC": "0.001",
+    "feeBps": 10,
+    "intervalMs": 30000,
+    "maxDurationMs": 180000,
+    "openingUSDT": "1000",
+    "policy": "fixed-probe-v1",
+    "samples": 6,
+    "sellQuantityBTC": "0.0004",
+    "sellSequence": 3,
+    "slippageBps": 5
+  },
+  "period": {
+    "from": 1789973475994,
+    "inputSteps": 6,
+    "to": 1789973625334,
+    "uniqueSteps": 6
+  },
+  "monetaryValuesStoredAsStrings": true,
+  "sampleCount": 6,
+  "availableCount": 6,
+  "sourceTimestampKind": [
+    "matching-engine",
+    "matching-engine",
+    "matching-engine",
+    "matching-engine",
+    "matching-engine",
+    "matching-engine"
+  ],
+  "requestDurationMs": {
+    "min": 242,
+    "median": 261.0,
+    "max": 290
+  },
+  "startGapMs": {
+    "min": 29293,
+    "median": 30000,
+    "max": 30019
+  },
+  "strategyCounts": {
+    "filled": 2,
+    "marked": 4,
+    "rejected": 0
+  },
+  "finalAccount": {
+    "adverseRounding": {
+      "denominator": "10000000000000000",
+      "numerator": "10850000000000000",
+      "unit": "USDT-atom"
+    },
+    "balances": {
+      "bybit": {
+        "BTC": "0.00060000",
+        "USDT": "950.81018663"
+      }
+    },
+    "costBasisUSDT": "49.07678940",
+    "feesUSDT": "0.11435042",
+    "lots": [
+      {
+        "costUSDT": "49.07678940",
+        "id": "fill:sample-0",
+        "quantityBTC": "0.00060000"
+      }
+    ],
+    "realisedPnLUSDT": "-0.11302397",
+    "reconciled": true,
+    "venue": "bybit"
+  },
+  "strategyPerformance": {
+    "availablePoints": 7,
+    "complete": true,
+    "equityChangeUSDT": "-0.29981402",
+    "expectedPoints": 7,
+    "finalEquityUSDT": "999.70018598",
+    "maxDrawdownPercent": "0.029981",
+    "maxDrawdownUSDT": "0.29981402",
+    "returnPercent": "-0.029981",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "cashBenchmark": {
+    "availablePoints": 7,
+    "complete": true,
+    "equityChangeUSDT": "0.00000000",
+    "expectedPoints": 7,
+    "finalEquityUSDT": "1000.00000000",
+    "maxDrawdownPercent": "0.000000",
+    "maxDrawdownUSDT": "0.00000000",
+    "returnPercent": "0.000000",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "buyAndHoldBenchmark": {
+    "availablePoints": 7,
+    "complete": true,
+    "equityChangeUSDT": "-0.31131674",
+    "expectedPoints": 7,
+    "finalEquityUSDT": "999.68868326",
+    "maxDrawdownPercent": "0.031131",
+    "maxDrawdownUSDT": "0.31131674",
+    "returnPercent": "-0.031131",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "interpretation": "Observed public prices with synthetic funding and fixed probe intents; not actual trades or strategy performance.",
+  "checks": {
+    "allTestsPassed": 246,
+    "postgresTestsSkipped": 15,
+    "build": "passed",
+    "newTests": 69,
+    "runtimeApplicationChanged": false
+  }
+}

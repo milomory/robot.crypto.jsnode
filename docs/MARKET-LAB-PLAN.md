@@ -26,7 +26,7 @@ Binance remains a public-data source. No keys are needed for stages 1–4.
    See [measured quality and limitations](MARKET-CAMPAIGN-RESULT-20260920.md).
    Continuous collection is not enabled. Assess longer-period coverage and
    source synchronisation before a continuous collector or WebSocket implementation.
-4. **Offline ledger done; real-market replay and strategy comparison next.** Explicit
+4. **Offline ledger and exact observed-data path implemented.** Explicit
    starting cash, position and fee accounting, daily equity, drawdown including
    open positions, benchmark and reconciliation. Use depth-v2 execution rules
    with exact arithmetic;
@@ -35,10 +35,12 @@ Binance remains a public-data source. No keys are needed for stages 1–4.
    specify the separate data namespace and rollback before activating a worker.
    [The offline ledger](PAPER-V2.md) now implements exact amounts, explicit
    synthetic starting funds, FIFO/fees, reconciliation, valuation and benchmark
-   comparison on common fixture timestamps. No worker is enabled. Before using
-   real market data, preserve decimal strings in a separate observation format;
-   the existing numeric archive is not authoritative monetary input. Then test
-   a fixed period and compare strategies under the [remaining gates](PAPER-V2-PLAN.md).
+   comparison on common timestamps. [Exact Bybit observations](MARKET-EXACT.md)
+   now preserve decimal strings and bind a full fixed period to schema 2; the
+   old numeric archive is not authoritative monetary input. The first real-data
+   probe uses predetermined diagnostic intents, not an optimised strategy.
+   No worker is enabled. Longer-period strategy comparison remains under the
+   [remaining gates](PAPER-V2-PLAN.md).
 5. **Only if needed: private account reads.** Ask the user for selected venues
    and dedicated read-only keys through the existing key vault/secret workflow.
    Verify the available vault-to-consumer delivery contract before using it;

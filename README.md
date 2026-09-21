@@ -31,6 +31,8 @@ For bounded snapshot storage and offline reports, see
 For the 30-minute campaign and storage policy, see [campaign runbook](docs/MARKET-CAMPAIGN.md).
 The first Hyperion campaign is complete: [results and evidence](docs/MARKET-CAMPAIGN-RESULT-20260920.md).
 Offline paper-v2 accounting is implemented: [usage, exact rules and limits](docs/PAPER-V2.md).
+For decimal-preserving public Bybit data and observed-period replay, see
+[exact observation workflow](docs/MARKET-EXACT.md).
 
 ```bash
 mkdir -p output

@@ -28,8 +28,11 @@ is never replaced. If writing fails, inspect the new directory before doing
 anything else: partial evidence is retained, with no automatic cleanup/resume.
 No scheduled retention or quota worker is installed by this offline command.
 
-The strict schema lives in `src/paper-v2/schema.ts`. It requires `synthetic:true`,
-explicit starting balances, costs, instrument rules and a fixed benchmark size.
+The strict schema lives in `src/paper-v2/schema.ts`. Schema 1 requires
+`synthetic:true`; schema 2 separates observed `marketData` provenance from
+`funding:synthetic`. Both require explicit starting balances, costs, instrument
+rules and a fixed benchmark size. The [exact observation workflow](MARKET-EXACT.md)
+creates schema 2 from a complete decimal-preserving archive.
 All money/prices/quantities are unsigned decimal **strings**, at most 20 integer
 and 8 fractional digits. Numeric JSON money, exponents, fee assets other than
 USDT and unknown fields are rejected. Intermediate products use arbitrary-size
@@ -92,8 +95,9 @@ The cash baseline (or `hold-opening-assets` when initial BTC is nonzero) and a
 fixed-quantity buy-and-hold path share starting balances, venue, timestamps,
 books and costs. Buy-and-hold attempts entry once at the first event, with no
 retry or parameter search. Failed entry or any incomplete path marks the
-comparison non-comparable. The report is fixture accounting, not an assessment
-of strategy performance or executable cross-venue arbitrage.
+comparison non-comparable. The report is simulated accounting: fixture or observed market data is labelled
+separately from virtual funding. It is not an assessment of strategy performance
+or executable cross-venue arbitrage.
 
 ## Verification and next gate
 
@@ -113,11 +117,11 @@ maximum observed drawdown 1.79730090 USDT. These are invented scenario prices,
 not the running robot's results or a profit forecast.
 See [acceptance evidence](evidence/paper-v2-20260921/acceptance.json).
 
-Next: preserve exchange decimal strings in a separate versioned observation
-format and verify their conversion into this model. The first depth-v2 archive
-contains JSON numbers and is not accepted as exact monetary input. Then replay
-a fixed real period with identical benchmark assumptions before assessing a
-strategy. More venues, keys, a dashboard or an autonomous worker are not part
-of this first implementation. A worker still requires the separate namespace,
-storage/backup plan and scoped rollback in the plan. Hyperion remains on its
-existing paper engine; this change does not require a server restart.
+The separate [decimal-preserving Bybit observation format](MARKET-EXACT.md) and
+conversion to schema 2 are now implemented. The first depth-v2 archive contains
+JSON numbers and is not accepted as exact monetary input. A fixed real period
+with diagnostic intents checks the path; strategy assessment still requires
+longer comparable periods and a declared signal policy. More venues, keys, a
+dashboard or an autonomous worker remain outside this first implementation.
+A worker still requires the separate namespace, storage/backup plan and scoped
+rollback in the plan. Hyperion remains on its existing paper engine.
