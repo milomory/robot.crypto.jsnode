@@ -20,12 +20,25 @@ export const costsSchema = z.object({ feeBps: z.number().int().min(0).max(9999),
 export const stepSchema = z.object({ id, at: time, book: bookSchema.optional(),
   intent: z.object({ side: z.enum(['buy', 'sell']), quantity: amountSchema }).strict().optional()
 }).strict();
-export const scenarioSchema = z.object({ schema: z.literal(1), model: z.literal('paper-v2-exact-1'),
-  synthetic: z.literal(true), scenarioId: id, venue, symbol,
+// A standalone account contract stays strict when scenario formats evolve.
+export const accountSchema = z.object({ venue, symbol,
   opening: z.object({ USDT: amountSchema, BTC: amountSchema, costBasisUSDT: amountSchema.optional() }).strict(),
-  costs: costsSchema, instrument: instrumentSchema,
+  costs: costsSchema, instrument: instrumentSchema
+}).strict();
+const scenarioBase = accountSchema.extend({ scenarioId: id,
   benchmark: z.object({ buyQuantityBTC: amountSchema }).strict(),
   steps: z.array(stepSchema).min(1).max(1000)
 }).strict();
+const syntheticScenario = scenarioBase.extend({ schema: z.literal(1), model: z.literal('paper-v2-exact-1'),
+  synthetic: z.literal(true)
+}).strict();
+const observedScenario = scenarioBase.extend({ schema: z.literal(2), model: z.literal('paper-v2-exact-1'),
+  funding: z.literal('synthetic'),
+  marketData: z.object({ kind: z.literal('public-decimal-observations'), schema: z.literal(1),
+    captureId: z.string().uuid(), datasetHash: z.string().regex(/^[a-f0-9]{64}$/),
+    policy: z.literal('fixed-probe-v1')
+  }).strict()
+}).strict();
+export const scenarioSchema = z.discriminatedUnion('schema', [syntheticScenario, observedScenario]);
 export type Scenario = z.infer<typeof scenarioSchema>;
 export type Step = z.infer<typeof stepSchema>;

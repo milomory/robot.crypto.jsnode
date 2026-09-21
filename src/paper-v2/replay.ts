@@ -88,9 +88,9 @@ export function replayScenario(input: unknown) {
   const comparable = strategy.performance.complete && baseline.performance.complete &&
     buyAndHold.performance.complete && buyAndHold.entryAccepted === true;
   const inputHash = digest(scenario);
-  return { schema: 1 as const, model: 'paper-v2-exact-1' as const, scenarioId: scenario.scenarioId,
+  return { schema: scenario.schema, model: 'paper-v2-exact-1' as const, scenarioId: scenario.scenarioId,
     runId: `pv2-${inputHash}`, ledgerSchema: 1 as const, costModel: 'quote-fee-exact-gross-v1' as const,
-    synthetic: true as const, inputHash,
+    ...(scenario.schema === 1 ? { synthetic: true as const } : { funding: scenario.funding, marketData: scenario.marketData }), inputHash,
     units: { BTC: '8 decimal places', USDT: '8 decimal places', price: '8 decimal places',
       roundingFractions: 'fractions of one 0.00000001 USDT atom', percentDisplay: 'six decimals, truncated' },
     assumptions: { venue: scenario.venue, symbol: scenario.symbol, opening: scenario.opening, costs: scenario.costs,
@@ -101,5 +101,7 @@ export function replayScenario(input: unknown) {
     strategy, benchmarks: { baseline: { label: parseAmount(scenario.opening.BTC) === 0n ? 'cash' : 'hold-opening-assets', ...baseline }, buyAndHold },
     comparison: { comparable, sameStartingBalances: true, sameValuationSchedule: true,
       reason: comparable ? 'complete-common-window' : 'incomplete-valuation-or-benchmark-entry',
-      interpretation: 'Synthetic fixture results only; no strategy-performance or live execution claim.' } };
+      interpretation: scenario.schema === 1
+        ? 'Synthetic fixture results only; no strategy-performance or live execution claim.'
+        : 'Observed public prices with synthetic funding and fixed probe intents; not actual trades or strategy performance.' } };
 }

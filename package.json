@@ -18,7 +18,9 @@
     "lab:markets": "tsx src/scripts/market-lab.ts",
     "lab:observe": "tsx src/scripts/market-observe.ts",
     "lab:campaign": "tsx src/scripts/market-campaign.ts",
-    "lab:paper-v2": "tsx src/scripts/paper-v2.ts"
+    "lab:paper-v2": "tsx src/scripts/paper-v2.ts",
+    "lab:exact-collect": "tsx src/scripts/market-exact-collect.ts",
+    "lab:exact-replay": "tsx src/scripts/market-exact-replay.ts"
   },
   "dependencies": {
     "@fastify/static": "^9.1.3",

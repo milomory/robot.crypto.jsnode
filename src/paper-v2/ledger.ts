@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { scenarioSchema, stepSchema, type Scenario, type Step } from './schema.js';
+import { accountSchema, stepSchema, type Scenario, type Step } from './schema.js';
 import { executeFill, formatAmount, parseAmount, PaperError, ROUNDING_DENOMINATOR,
   RAW_DENOMINATOR, SLIPPAGE_DENOMINATOR, type Book, type ExactFill } from './exact.js';
 
@@ -15,7 +15,6 @@ export function canonical(value: unknown): string {
     .map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(',')}}`;
 }
 export const digest = (value: unknown) => createHash('sha256').update(canonical(value)).digest('hex');
-const configSchema = scenarioSchema.pick({ venue: true, symbol: true, opening: true, costs: true, instrument: true });
 export type AccountConfig = Pick<Scenario, 'venue' | 'symbol' | 'opening' | 'costs' | 'instrument'>;
 interface Lot { id: string; quantity: bigint; cost: bigint }
 interface State { cash: bigint; base: bigint; lots: Lot[]; realised: bigint; fees: bigint; rounding: bigint;
@@ -50,7 +49,7 @@ export class PaperAccount {
   private readonly journal: LedgerEvent[] = [];
 
   constructor(input: AccountConfig) {
-    const parsed = configSchema.safeParse(input);
+    const parsed = accountSchema.safeParse(input);
     if (!parsed.success) throw new PaperError('invalid-account-config');
     this.config = parsed.data;
     if (this.config.instrument.venue !== this.config.venue || this.config.instrument.symbol !== this.config.symbol) {
