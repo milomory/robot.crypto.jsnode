@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-21T07:45:47.579407Z",
+  "captureId": "46c37b0f-2fa7-41ce-8e11-6c5c2d9e1bed",
+  "status": "running",
+  "recorded": 10,
+  "available": 10,
+  "expected": 60,
+  "deadlineAt": "2026-09-21T08:11:07.816000Z",
+  "collectorStatus": "running",
+  "appUnchanged": true,
+  "completedAcceptance": false
+}

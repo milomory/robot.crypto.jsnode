@@ -100,7 +100,47 @@ reproduces byte-identically through the independent CLI. On the real six-book
 archive, the old result SHA256 is unchanged; the new study is correctly a
 smoke-only result and independently reproduces its generated scenario.
 
-The bounded launch will be recorded separately. The previous collector is `crypto-exact-btc-20260921`, exited 0 at 06:53:45 UTC.
+The bounded campaign was launched at 2026-09-21 07:41:07 UTC (09:41 Amsterdam)
+from local source commit `4b2dedea5958e62f594945214a1154d0f8f4eff2`.
+Container: `crypto-study-30m-20260921`; capture:
+`46c37b0f-2fa7-41ce-8e11-6c5c2d9e1bed`.
+Archive: `/home/mil/crypto-study-30m-20260921/data/capture`.
+Bundle SHA256: `4a7bce29a715ff5ea6ce7ee6ba14ce2516a9523c25bd1d111621e8aa9e16dbf5`.
+[Launch evidence](evidence/paper-study-20260921/launch.json) confirms the pinned
+image, resources, mounts, first available sample and unchanged application.
+The internal deadline is 08:11:07.816 UTC (10:11 Amsterdam); the final scheduled
+sample is 30 seconds earlier. At 07:45:47 UTC, 10/60 samples were recorded and
+all 10 were available. This is progress, not a completed study or return estimate.
+
+The [read-only acceptance helper](../ops/verify-paper-study-20260921.py) is ready:
+
+```sh
+python3 ops/verify-paper-study-20260921.py NEW_LOCAL_ACCEPTANCE_DIRECTORY
+```
+
+While collecting, it returns exit 75 without creating the output directory; this
+path was verified against the live collector. After clean completion it verifies
+the pinned container/capture/bundle, copies exactly 62 public files, checks hashes,
+rebuilds the declared source, runs the study and independent replay, and checks
+both local and remote raw archives again. It writes `acceptance.json` only after
+all checks. Non-comparable findings remain explicit and are not discarded.
+Source and build configuration must match `4b2dede`; later documentation-only
+commits are allowed. Python optimization is refused locally and remotely so
+assertion checks cannot disappear. Syntax, both optimization guards and the
+running-state exit were checked; the completed path is NOT RUN yet.
+
+Source publication remains pending. Automatic approval rejected pushing the
+new commit to default `main`, judging the previous user approval specific to the
+earlier commits. No retry or alternative publication route was used. The
+separate bounded collection was authorized and launch evidence records
+`sourcePublishedAtLaunch:false` accurately.
+
+Private inventory follow-up on Mac: add Hyperion's named bounded collector,
+archive/bundle paths and lifecycle above. Credentials and access methods did not
+change. `System-Admin/CHAT-AGENTS.md` does not establish a currently verified Mac
+recipient for this task; no handoff was sent. Keep this route unverified.
+
+The previous collector is `crypto-exact-btc-20260921`, exited 0 at 06:53:45 UTC.
 The running application's verified start remains 2026-09-20T07:06:47.864812714Z.
 A running collection is not a completed study; only a complete validated archive
 may produce a period comparison. Future collection/research remains separate

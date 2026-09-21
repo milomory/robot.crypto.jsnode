@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-09-21T07:41:09.379378Z",
+  "sourceRevision": "4b2dedea5958e62f594945214a1154d0f8f4eff2",
+  "sourcePublishedAtLaunch": false,
+  "bundleSha256": "4a7bce29a715ff5ea6ce7ee6ba14ce2516a9523c25bd1d111621e8aa9e16dbf5",
+  "bundleBytes": 144528,
+  "sourceHost": "Hyperion",
+  "archive": "/home/mil/crypto-study-30m-20260921/data/capture",
+  "bundlePath": "/home/mil/crypto-study-30m-20260921/collect.mjs",
+  "container": {
+    "name": "crypto-study-30m-20260921",
+    "id": "d0975c5d59ad1d87a94209f488bd0ca4922ba9516e749e4ba92d604efa3ba754",
+    "image": "sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08",
+    "status": "running",
+    "startedAt": "2026-09-21T07:41:07.235351089Z",
+    "exitCode": 0,
+    "restartPolicy": "no",
+    "readOnlyRootfs": true,
+    "user": "1002:27",
+    "memoryBytes": 134217728,
+    "nanoCpus": 500000000,
+    "pidsLimit": 64,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "mounts": [
+      {
+        "source": "/home/mil/crypto-study-30m-20260921/collect.mjs",
+        "target": "/lab/collect.mjs",
+        "rw": false
+      },
+      {
+        "source": "/home/mil/crypto-study-30m-20260921/data",
+        "target": "/data",
+        "rw": true
+      }
+    ]
+  },
+  "captureId": "46c37b0f-2fa7-41ce-8e11-6c5c2d9e1bed",
+  "plan": {
+    "buyQuantityBTC": "0.001",
+    "comparisonPolicy": "lagged-sma-3-6-v1",
+    "feeBps": 10,
+    "intervalMs": 30000,
+    "maxDurationMs": 1800000,
+    "openingUSDT": "1000",
+    "policy": "fixed-study-30m-v1",
+    "samples": 60,
+    "sellQuantityBTC": "0.0004",
+    "sellSequence": 30,
+    "slippageBps": 5
+  },
+  "firstSampleAvailable": true,
+  "appUnchanged": true,
+  "appStartedAt": "2026-09-20T07:06:47.864812714Z",
+  "completedAcceptance": false,
+  "testsPassed": 307,
+  "postgresTestsSkipped": 15
+}
