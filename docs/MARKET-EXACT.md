@@ -152,10 +152,12 @@ release `386ee2c`; its source, journal, Auth and trading controls were untouched
 There was no scan, private exchange request or real order. No continuous worker
 or new dashboard deployment was enabled.
 
-Source publication is pending: automatic approval rejected pushing the local
-commit to default `main`, requiring explicit permission for that push. Source
-and acceptance are complete and reviewable locally; this is not a runtime or
-credentials blocker. The rejected push was not bypassed.
+Source and acceptance were published to `milomory/robot.crypto.jsnode` on
+2026-09-21 after explicit user approval of the push to `main`. The non-forced
+push included source commit `a27d31b` and acceptance commit `ea95925`; remote
+`main` was verified at `ea959251927f5cec3afcd088e759ba8c2b5bdf0b` immediately
+after publication. The earlier approval blocker is resolved. The evidence's
+`sourcePublishedAtCapture: false` remains the correct historical capture state.
 
 Private inventory follow-up on Mac: add Hyperion's exact collector name,
 bundle/data paths, read-only/public-only scope and verified stopped state.
