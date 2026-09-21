@@ -30,7 +30,12 @@ For bounded snapshot storage and offline reports, see
 [observation commands and Hyperion acceptance](docs/MARKET-OBSERVATIONS.md).
 For the 30-minute campaign and storage policy, see [campaign runbook](docs/MARKET-CAMPAIGN.md).
 The first Hyperion campaign is complete: [results and evidence](docs/MARKET-CAMPAIGN-RESULT-20260920.md).
-Next: [offline paper-v2 accounting](docs/PAPER-V2-PLAN.md).
+Offline paper-v2 accounting is implemented: [usage, exact rules and limits](docs/PAPER-V2.md).
+
+```bash
+mkdir -p output
+npm run lab:paper-v2 -- fixtures/paper-v2/basic.json output/paper-v2-first
+```
 
 ```bash
 npm test

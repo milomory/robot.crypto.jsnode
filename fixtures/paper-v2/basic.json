@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "model": "paper-v2-exact-1",
+  "synthetic": true,
+  "scenarioId": "basic-bybit-btc-usdt",
+  "venue": "bybit",
+  "symbol": "BTC/USDT",
+  "opening": { "USDT": "1000", "BTC": "0" },
+  "costs": { "feeBps": 10, "slippageBps": 5, "feeAsset": "USDT" },
+  "instrument": {
+    "venue": "bybit", "symbol": "BTC/USDT", "fetchedAt": 1789900000000,
+    "trading": true, "minQuantity": "0.00001", "maxQuantity": "10",
+    "quantityStep": "0.00001", "minNotional": "1"
+  },
+  "benchmark": { "buyQuantityBTC": "0.001" },
+  "steps": [
+    {
+      "id": "buy", "at": 1789900000100,
+      "book": {
+        "venue": "bybit", "symbol": "BTC/USDT",
+        "bids": [["99990", "2"]], "asks": [["100000", "2"]],
+        "requestedAt": 1789900000000, "receivedAt": 1789900000100, "sourceAt": 1789900000000
+      },
+      "intent": { "side": "buy", "quantity": "0.001" }
+    },
+    {
+      "id": "partial-sale", "at": 1789900060100,
+      "book": {
+        "venue": "bybit", "symbol": "BTC/USDT",
+        "bids": [["101000", "2"]], "asks": [["101010", "2"]],
+        "requestedAt": 1789900060000, "receivedAt": 1789900060100, "sourceAt": 1789900060000
+      },
+      "intent": { "side": "sell", "quantity": "0.0004" }
+    },
+    {
+      "id": "unfunded-sale", "at": 1789900120100,
+      "book": {
+        "venue": "bybit", "symbol": "BTC/USDT",
+        "bids": [["99500", "2"]], "asks": [["99510", "2"]],
+        "requestedAt": 1789900120000, "receivedAt": 1789900120100, "sourceAt": 1789900120000
+      },
+      "intent": { "side": "sell", "quantity": "1" }
+    },
+    {
+      "id": "final-mark", "at": 1789900180100,
+      "book": {
+        "venue": "bybit", "symbol": "BTC/USDT",
+        "bids": [["98000", "2"]], "asks": [["98010", "2"]],
+        "requestedAt": 1789900180000, "receivedAt": 1789900180100, "sourceAt": 1789900180000
+      }
+    }
+  ]
+}

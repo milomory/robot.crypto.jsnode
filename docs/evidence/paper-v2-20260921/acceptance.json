@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "model": "paper-v2-exact-1",
+  "scenarioId": "basic-bybit-btc-usdt",
+  "synthetic": true,
+  "sourceAndBuiltCLIResultsIdentical": true,
+  "resultSha256": "28353f8f8e32e90f7ee76121c97de68e99a17571226ab06933c6295a05ffa47f",
+  "inputHash": "189789101eb8e5ac9e7500e16468e000b41ccd7a5d5120472baf5cb19ee3adfd",
+  "sourceFileSha256": "ad2c8f74af5eff02335da3bc9397fe59ed82b15bbba962e53f0a80fb9d5fda7a",
+  "strategyCounts": {
+    "filled": 2,
+    "marked": 1,
+    "rejected": 1
+  },
+  "strategyFinalAccount": {
+    "adverseRounding": {
+      "denominator": "10000000000000000",
+      "numerator": "0",
+      "unit": "USDT-atom"
+    },
+    "balances": {
+      "bybit": {
+        "BTC": "0.00060000",
+        "USDT": "940.18937020"
+      }
+    },
+    "costBasisUSDT": "60.09003000",
+    "feesUSDT": "0.14042980",
+    "lots": [
+      {
+        "costUSDT": "60.09003000",
+        "id": "fill:buy",
+        "quantityBTC": "0.00060000"
+      }
+    ],
+    "realisedPnLUSDT": "0.27940020",
+    "reconciled": true,
+    "venue": "bybit"
+  },
+  "strategyPerformance": {
+    "availablePoints": 5,
+    "complete": true,
+    "equityChangeUSDT": "-1.09880040",
+    "expectedPoints": 5,
+    "finalEquityUSDT": "998.90119960",
+    "maxDrawdownPercent": "0.179604",
+    "maxDrawdownUSDT": "1.79730090",
+    "returnPercent": "-0.109880",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "cashBenchmarkPerformance": {
+    "availablePoints": 5,
+    "complete": true,
+    "equityChangeUSDT": "0.00000000",
+    "expectedPoints": 5,
+    "finalEquityUSDT": "1000.00000000",
+    "maxDrawdownPercent": "0.000000",
+    "maxDrawdownUSDT": "0.00000000",
+    "returnPercent": "0.000000",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "buyAndHoldPerformance": {
+    "availablePoints": 5,
+    "complete": true,
+    "equityChangeUSDT": "-2.29700100",
+    "expectedPoints": 5,
+    "finalEquityUSDT": "997.70299900",
+    "maxDrawdownPercent": "0.299341",
+    "maxDrawdownUSDT": "2.99550150",
+    "returnPercent": "-0.229700",
+    "startingEquityUSDT": "1000.00000000"
+  },
+  "comparison": {
+    "comparable": true,
+    "interpretation": "Synthetic fixture results only; no strategy-performance or live execution claim.",
+    "reason": "complete-common-window",
+    "sameStartingBalances": true,
+    "sameValuationSchedule": true
+  },
+  "verification": {
+    "newTestsPassed": 50,
+    "allTestsPassed": 177,
+    "postgresTestsSkipped": 15,
+    "typecheck": "passed",
+    "build": "passed",
+    "networkUsedByReplay": false,
+    "runtimeDeployed": false
+  },
+  "runId": "pv2-189789101eb8e5ac9e7500e16468e000b41ccd7a5d5120472baf5cb19ee3adfd",
+  "ledgerSchema": 1,
+  "costModel": "quote-fee-exact-gross-v1"
+}

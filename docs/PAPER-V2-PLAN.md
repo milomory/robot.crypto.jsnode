@@ -1,7 +1,8 @@
 # Paper-v2: offline accounting before a worker
 
 2026-09-21. Next stage of the [market lab plan](MARKET-LAB-PLAN.md).
-This document specifies an offline implementation; it does not activate a
+The first offline implementation is complete: [usage and acceptance](PAPER-V2.md).
+This document records the design and remaining gates; it does not activate a
 worker, request exchange keys, change the existing paper journal or authorise
 live trading. Keep the old engine, positions and live lock unchanged.
 
