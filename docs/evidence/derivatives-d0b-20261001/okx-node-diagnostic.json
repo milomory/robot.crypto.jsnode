@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "kind": "public-access-diagnostic",
+  "url": "https://www.okx.com/api/v5/market/books?instId=BTC-USDT-SWAP&sz=50",
+  "requestedAt": 1790854926313,
+  "receivedAt": 1790854926696,
+  "requests": 1,
+  "client": "node-global-fetch",
+  "credentialsUsed": false,
+  "redirects": false,
+  "retries": 0,
+  "alternateOrigins": false,
+  "httpStatus": 200,
+  "bodyClass": "json",
+  "bodyBytes": 2799,
+  "apiCode": "0",
+  "bookEnvelope": true,
+  "failure": null,
+  "marketAcceptance": false
+}

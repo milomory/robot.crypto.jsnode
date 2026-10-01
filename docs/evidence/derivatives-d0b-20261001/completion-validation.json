@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "D0b full public network acceptance and bounded MEXC BTC WS source-time evidence",
+  "fullD0bNetworkCapture": {
+    "status": "complete",
+    "requestCount": 24,
+    "acceptedObservations": 24,
+    "sameCaptureMetadata": true,
+    "replay": "passed",
+    "bookComparisonUsable": false,
+    "sha256": "4facee5bdf083fb22bfb170fc40275479e125e0afb53f5835ce453f0fb164210",
+    "bytes": 109876,
+    "startedAt": 1790854942727,
+    "endedAt": 1790854949033,
+    "elapsedMs": 6306
+  },
+  "okxAccess": {
+    "diagnosticRequests": 1,
+    "httpStatus": 200,
+    "apiCode": "0",
+    "originChanged": false,
+    "historical403CauseEstablished": false
+  },
+  "mexcDepthSource": {
+    "status": "complete",
+    "connections": 1,
+    "subscriptions": 1,
+    "pings": 0,
+    "frames": 11,
+    "acceptedDeltas": 10,
+    "contiguousVersions": true,
+    "sourceAgeMs": {
+      "min": 114,
+      "max": 123
+    },
+    "replay": "passed",
+    "bookReconstructed": false,
+    "sha256": "20453f24d8f8cbcf12ca85110082c9dcf653823f43eddcdf6f89b2d2ce824c7d",
+    "bytes": 7998,
+    "startedAt": 1790855361323,
+    "endedAt": 1790855362270,
+    "elapsedMs": 947
+  },
+  "sourceTests": {
+    "passed": 4574,
+    "skippedExistingPostgres": 15,
+    "newTests": 248
+  },
+  "apiUiBuild": "passed",
+  "marketDataStrictTypes": "passed",
+  "compiledRealArchiveReplays": "passed",
+  "independentReviewFixes": [
+    "preserve invalid-public-clock through callbacks",
+    "align normalized archive size cap with allowed raw frames (32 MiB archive)"
+  ],
+  "recurringObserverStarted": false,
+  "credentialsUsed": false,
+  "runtimeModified": false,
+  "executable": false,
+  "memoryCoreSearch": "available-no-relevant-result"
+}

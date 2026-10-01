@@ -38,8 +38,9 @@ contract specifications and funding forecasts on MEXC/OKX without keys. The
 [funding/basis roadmap](docs/DERIVATIVES-OPPORTUNITY-PLAN.md) keeps public observation,
 funding event accounting, hedged simulation and private readiness separate.
 The [D0b observation/replay profile](docs/DERIVATIVES-PUBLIC-D0B.md) adds books,
-mark/index/OI and historical funding. Offline checks pass; full network acceptance
-is pending after an OKX 403, and unverified source timestamps remain explicit.
+mark/index/OI and historical funding. The full 24-read capture and replay passed.
+A separate [MEXC WS source-time probe](docs/DERIVATIVES-MEXC-DEPTH-SOURCE.md) verifies
+matching-engine timestamps; reconstructing a complete book remains the next step.
 
 ## Local Checks
 

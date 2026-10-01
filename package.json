@@ -34,7 +34,8 @@
     "lab:order-recovery": "tsx src/scripts/order-recovery.ts",
     "lab:account-funds": "tsx src/scripts/account-funds-preparation.ts",
     "lab:derivatives-capabilities": "tsx src/scripts/derivatives-capabilities.ts",
-    "lab:derivatives-observe": "tsx src/scripts/derivatives-observe.ts"
+    "lab:derivatives-observe": "tsx src/scripts/derivatives-observe.ts",
+    "lab:mexc-depth-source": "tsx src/scripts/mexc-depth-source.ts"
   },
   "dependencies": {
     "@fastify/static": "^9.1.3",
