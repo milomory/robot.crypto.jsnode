@@ -23,7 +23,7 @@ It is not the strategy foundation for the new funding/basis research.
 | `src/paper-v2` | Exact single-venue ledger and deterministic replay | Retains its original scenario boundary |
 | `src/paper-pair` | Independently funded MEXC/OKX spot legs, partial/unknown outcomes, explicit-fill BTC/USDT/MX settlement and reserves | Spot pair accounting already exists; it is not a perpetual margin/funding engine |
 | `src/live` | Preparation, admission, journals and offline recovery | No exchange order sender; dispatch markers do not send orders |
-| `src/market-data` | Shared exchange/market identity, exact specs/grids, funding estimates/history, books/mark/index/OI and archive replay | D0a and full D0b capture accepted; MEXC WS source-time probe accepted separately. MEXC BTC/ETH top50 reconstruction accepted; joint time/Spot integration, account eligibility, fees and net edge remain unverified |
+| `src/market-data` | Shared exchange/market identity, exact specs/grids, funding estimates/history, books/mark/index/OI and archive replay | D0a and full D0b capture accepted; MEXC WS source-time probe accepted separately. MEXC BTC/ETH top50 reconstruction accepted; joint BTC/ETH books accepted with four time-compatible directions per base (MEXC Spot excluded). Account eligibility, fees and net edge remain unverified |
 
 `lab:derivatives-capabilities` is an explicit standalone command. Importing the
 application does not start it. Existing private account readers and server timers
@@ -33,8 +33,9 @@ remain intentional; they are not widened by the new shared research identity.
 MEXC BTC/ETH [top50 reconstruction](DERIVATIVES-MEXC-BOOK.md) is now accepted:
 fresh metadata, REST bootstrap and continuous WS deltas with immutable depth
 boundaries. This is not proof of the entire exchange book or execution readiness.
-Next: align these books with OKX/Spot observation, resolve the remaining metric-time
-contracts, and accept the D1 budget. Perpetual simulation still needs event funding,
+Joint alignment with OKX perpetual/Spot is also accepted on two short captures.
+Next: resolve the remaining metric/funding-time contracts and persistent observation
+storage protocol, then accept the D1 budget. Perpetual simulation still needs event funding,
 separate-wallet margin/liquidation, four execution costs and broken-hedge recovery.
 See [D0–D5](DERIVATIVES-OPPORTUNITY-PLAN.md).
 
@@ -71,3 +72,19 @@ It is intentionally bound to `127.0.0.1:3580` on the server, so local access use
   reduce that sale's P/L. The dashboard's total realized P/L remains cumulative.
 - `INSERT ... RETURNING` supplies the response before commit; no follow-up reads
   can turn a successfully committed fill into a read error.
+
+
+## Joint public observation
+
+`market-data/spot-observations.ts` parses exact BTC/ETH Spot metadata/books.
+`joint-client.ts` composes one explicit public capture with the separate MEXC
+`joint-recovery-v1` frame profile and two concurrent final OKX books.
+The profile allows one initial depth-commits bridge; later gaps still stop capture. `joint-replay.ts`
+reparses raw evidence and checks budgets/causality; `joint-quality.ts` evaluates
+all four markets at the same time. Missing MEXC Spot timestamp/grid excludes its
+pairs, without turning receipt time into source evidence.
+
+`joint-cost-scenario.ts` is a pure four-fill calculator with explicit exit books,
+fees, funding and extra costs. It does not supply hypothetical defaults to the
+capture, whose net edge stays unknown. See [contract and acceptance](DERIVATIVES-JOINT-BOOKS.md).
+No server, account reader or live sender is imported by the new CLI.

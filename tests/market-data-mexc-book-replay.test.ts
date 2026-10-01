@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { multiply, units } from '../src/market-data/exact-json.js';
+import { multiply, units, parsePublicJson } from '../src/market-data/exact-json.js';
 import { MarketDataError, publicUrl, type PublicReceipt, type ResearchBase } from '../src/market-data/model.js';
-import { mexcDepthBootstrapUrl } from '../src/market-data/mexc-depth-book.js';
+import { mexcDepthBootstrapUrl, parseMexcDepthBootstrap } from '../src/market-data/mexc-depth-book.js';
 import { MexcBookSession, type MexcBookCapture, type MexcBookEvent } from '../src/market-data/mexc-book-session.js';
+import { mexcDepthCommitsUrl, parseMexcDepthCommits } from '../src/market-data/mexc-depth-recovery.js';
 import { MAX_MEXC_BOOK_ARCHIVE_BYTES, replayMexcBook } from '../src/market-data/mexc-book-replay.js';
 
 // Actual public D0a metadata bytes are reused only as schema fixtures. ALL receipt times,
@@ -477,5 +478,198 @@ describe.each(acceptedPublicBooks)('pinned actual public $base reconstruction ca
       }
     }
     expect(units(book.bids[0].price)).toBeLessThan(units(book.asks[0].price));
+  });
+});
+
+
+function warmedComplete(): MexcBookCapture {
+  const r=run();r.frame(delta(version+1n,at+200),at+200);
+  r.bootstrap(bootstrapRaw(),{...bootstrapReceipt(),requestedAt:at+450});
+  for(let i=2;i<=10;i++)r.frame(delta(version+BigInt(i),at+2100+i),at+2100+i);
+  return {...r.report(),profile:'joint-4096'};
+}
+
+describe('explicit joint-4096 replay profile', () => {
+  it.each([null, '', 'default-256', 'joint-256', 'joint-4097', 4096, true, {}])('rejects unknown archived profile %j', profile => {
+    expect(() => replay({ ...complete(), profile })).toThrow('invalid-mexc-book-archive');
+  });
+  it('preserves canonical optional profile and rejects a changed marker against the original digest', () => {
+    const value = warmedComplete(), raw = bytes(value);
+    expect(replayMexcBook(raw, sha(raw))).toEqual(value);
+    expect(Object.hasOwn(replay(complete()), 'profile')).toBe(false);
+    const changed = bytes({ ...value, profile: 'unknown' });
+    expect(() => replayMexcBook(changed, sha(raw))).toThrow('invalid-mexc-book-archive');
+    expect(() => replayMexcBook(Buffer.from(JSON.stringify(value, null, 2)+'\n'), sha(Buffer.from(JSON.stringify(value, null, 2)+'\n')))).toThrow('invalid-mexc-book-archive');
+  });
+  it('accepts exactly 4096 control frames only with the declared profile and rejects the next frame', () => {
+    const r = run(); for (let i = 0; i < 4095; i++) r.frame(pong(at + 125), at + 125);
+    const value = { ...r.report('book-stream-frame-budget'), profile: 'joint-4096' as const };
+    expect(replay(value).events).toHaveLength(4096);
+    expect(() => replay(r.report('book-stream-frame-budget'))).toThrow('invalid-mexc-book-archive');
+    r.frame(pong(at + 125), at + 125);
+    expect(() => replay({ ...r.report('book-stream-frame-budget'), profile: 'joint-4096' })).toThrow('invalid-mexc-book-archive');
+  });
+  it('reconstructs 4095 buffered updates plus ACK and bootstrap without widening time or byte budgets', () => {
+    const r = run();
+    for (let i = 1; i <= 4095; i++) r.frame(delta(version + BigInt(i), at + 200), at + 200);
+    r.bootstrap(bootstrapRaw(),{...bootstrapReceipt(),requestedAt:at+450});const value = { ...r.report(), profile: 'joint-4096' as const };
+    expect(replay(value)).toMatchObject({ profile: 'joint-4096', appliedDeltas: 4095,
+      book: { version: String(version + 4095n), appliedUpdates: 4095, executable: false } });
+    expect(value.events).toHaveLength(4097);
+    expect(() => replay({ ...value, profile: undefined })).toThrow('invalid-mexc-book-archive');
+    expect(() => replay({ ...value, appliedDeltas: 4097 })).toThrow('invalid-mexc-book-archive');
+    const changed = clone(value); changed.events[10].raw = pong(at + 200);
+    expect(() => replay(changed)).toThrow();
+  });
+  it('still rejects over 4 MiB raw under the explicit profile', () => {
+    const r = run(), padded = JSON.stringify({ channel: 'pong', data: at + 125, padding: 'x'.repeat(500000) });
+    for (let i = 0; i < 9; i++) r.frame(padded, at + 125);
+    expect(() => replay({ ...r.report('book-raw-budget'), profile: 'joint-4096' })).toThrow('invalid-mexc-book-archive');
+  });
+  it('still rejects a claimed complete capture outside the unchanged socket deadline', () => {
+    expect(() => replay({ ...warmedComplete(), endedAt: at + 20101 })).toThrow('invalid-mexc-book-archive');
+  });
+});
+
+
+describe('joint replay verifies observed-delta warmup for accepted bootstrap only',()=>{
+  it('accepts a bootstrap exactly 250 ms after first delta',()=>{
+    expect(replay(warmedComplete())).toMatchObject({profile:'joint-4096',status:'complete',appliedDeltas:10});
+  });
+  it('rejects an accepted bootstrap with no prior delta under the joint profile',()=>{
+    expect(()=>replay({...complete(),profile:'joint-4096'})).toThrow('invalid-mexc-book-archive');
+    expect(replay(complete()).status).toBe('complete');
+  });
+  it('rejects an accepted bootstrap requested one ms early even with updated normalization and hash',()=>{
+    const r=run();r.frame(delta(version+1n,at+200),at+200);
+    r.bootstrap(bootstrapRaw(),{...bootstrapReceipt(),requestedAt:at+449});
+    for(let i=2;i<=10;i++)r.frame(delta(version+BigInt(i),at+2100+i),at+2100+i);
+    expect(()=>replay({...r.report(),profile:'joint-4096'})).toThrow('invalid-mexc-book-archive');
+  });
+  it('preserves historical joint failure prefixes without an accepted bootstrap or warmup proof',()=>{
+    const r=run();r.requestCount=2;r.frame(delta(version+7n,at+130),at+130);
+    expect(replay({...r.report('depth-book-version-discontinuity'),profile:'joint-4096'})).toMatchObject({
+      status:'incomplete',failure:'depth-book-version-discontinuity',requestCount:2,appliedDeltas:0,book:null});
+  });
+});
+
+
+describe('joint warmup failure stays bound to its only possible capture stage',()=>{
+  function stalledWarmup():MexcBookCapture {
+    const r=run();r.frame(delta(version+1n,at+200),at+200);
+    return {...r.report('book-bootstrap-warmup-incomplete',at+200),profile:'joint-4096'};
+  }
+  it('accepts joint ACK plus first delta with no bootstrap request and a clock below the warmup deadline',()=>{
+    expect(replay(stalledWarmup())).toMatchObject({profile:'joint-4096',requestCount:1,connections:1,subscriptions:1,
+      failure:'book-bootstrap-warmup-incomplete',appliedDeltas:0,book:null});
+  });
+  it('never grants the historical default profile the joint-only failure code',()=>{
+    const value=stalledWarmup();delete value.profile;
+    expect(()=>replay(value)).toThrow('invalid-mexc-book-archive');
+  });
+  it.each([{requestCount:2},{requestCount:0},{connections:0},{subscriptions:0},{endedAt:at+450},{endedAt:at+451}])(
+    'rejects impossible warmup failure stage %j',patch=>{
+      expect(()=>replay({...stalledWarmup(),...patch})).toThrow('invalid-mexc-book-archive');
+    });
+  it.each(['ack','delta'] as const)('requires captured %s evidence for a warmup timer failure',kind=>{
+    const value=stalledWarmup();value.events=value.events.filter(e=>e.kind!=='frame'||e.parsed.kind!==kind);
+    expect(()=>replay(value)).toThrow('invalid-mexc-book-archive');
+  });
+  it('rejects the failure after accepted bootstrap even before the ten-update target',()=>{
+    const r=run();r.frame(delta(version+1n,at+200),at+200);
+    r.bootstrap(bootstrapRaw(),{...bootstrapReceipt(),requestedAt:at+450});
+    expect(()=>replay({...r.report('book-bootstrap-warmup-incomplete'),profile:'joint-4096'})).toThrow('invalid-mexc-book-archive');
+  });
+  it('rejects the failure before metadata or socket exists',()=>{
+    const value=stalledWarmup();
+    Object.assign(value,{metadata:null,events:[],connections:0,subscriptions:0,socketStartedAt:null,socketOpenedAt:null});
+    expect(()=>replay(value)).toThrow('invalid-mexc-book-archive');
+  });
+});
+
+
+describe('initial commits bridge replay and incomplete evidence',()=>{
+  const initial=()=>({...bootstrapReceipt(),requestedAt:at+450,receivedAt:at+800});
+  const recovery=()=>({url:mexcDepthCommitsUrl('BTC'),requestedAt:at+850,receivedAt:at+1200});
+  const commits=(last=6)=>JSON.stringify({success:true,code:0,data:Array.from({length:last},(_,i)=>({version:String(version+BigInt(i+1)),bids:[[2000,7,2]],asks:[]}))});
+  function recovered():MexcBookCapture {
+    const r=run();r.frame(delta(version+7n,at+200),at+200);
+    for(let i=8;i<=16;i++)r.frame(delta(version+BigInt(i),at+900+i),at+900+i);
+    r.requestCount=3;r.events.push(r.session.acceptBootstrap(bootstrapRaw(),initial(),{raw:commits(10),receipt:recovery()}));
+    return {...r.report(null,at+1300),profile:'joint-recovery-v1'};
+  }
+  function pending(failure='book-http-timeout'):MexcBookCapture {
+    const r=run();r.frame(delta(version+7n,at+200),at+200);r.frame(delta(version+8n,at+1000),at+1000);r.requestCount=3;
+    const raw=bootstrapRaw(),receipt=initial();
+    return {...r.report(failure,at+1300),profile:'joint-recovery-v1',recoveryPending:{raw,receipt,
+      parsed:parseMexcDepthBootstrap(parsePublicJson(Buffer.from(raw)),'BTC',receipt,r.session.metadata.parsed)}};
+  }
+  it('rebuilds the original snapshot, exact commits bridge and later buffered WS into final top50',()=>{
+    const report=recovered(),result=replay(report),event=result.events.at(-1)!;
+    expect(result).toMatchObject({profile:'joint-recovery-v1',requestCount:3,appliedDeltas:10,book:{bootstrapVersion:String(version+6n),version:String(version+16n)}});
+    expect(event.kind).toBe('bootstrap');if(event.kind==='bootstrap'){
+      expect(event.parsed.version).toBe(String(version));expect(event.bridged?.version).toBe(String(version+6n));
+      expect(event.recovery?.parsed.sourceFreshnessVerified).toBe(false);expect(event.bridged?.receipt).toEqual(event.receipt);
+      expect(event.receipt.receivedAt).toBeLessThan(report.events[report.events.length-2].kind==='frame'?(report.events[report.events.length-2] as {receivedAt:number}).receivedAt:0);
+    }
+  });
+  it.each([
+    (r:MexcBookCapture)=>{delete r.profile;},(r:MexcBookCapture)=>{r.profile='joint-4096';},
+    (r:MexcBookCapture)=>{r.requestCount=2;},(r:MexcBookCapture)=>{r.requestCount=4;},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')delete e.bridged;},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')delete e.recovery;},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.recovery!.receipt.url=mexcDepthCommitsUrl('ETH');},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.recovery!.receipt.requestedAt=e.receipt.receivedAt-1;},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.recovery!.receipt.requestedAt=e.recovery!.receipt.receivedAt-3001;},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.recovery!.raw='x'.repeat(524289);},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.bridged!.version=String(version+5n);},
+    (r:MexcBookCapture)=>{const e=r.events.at(-1)!;if(e.kind==='bootstrap')e.recovery!.parsed.sourceFreshnessVerified=true as false;},
+    (r:MexcBookCapture)=>{r.recoveryPending=pending().recoveryPending;},
+  ])('rejects recovery profile, count, timing or derived evidence tampering %#',mutate=>{
+    const value=clone(recovered());mutate(value);expect(()=>replay(value)).toThrow();
+  });
+  it('rejects an unnecessary third GET even if an internally valid commits response was captured',()=>{
+    const value=clone(recovered()),e=value.events.at(-1)!;
+    if(e.kind!=='bootstrap')throw Error();e.raw=bootstrapRaw(version+6n);
+    e.parsed=parseMexcDepthBootstrap(parsePublicJson(Buffer.from(e.raw)),'BTC',e.receipt,value.metadata!.parsed);
+    expect(()=>replay(value)).toThrow('invalid-mexc-book-archive');
+  });
+  it.each(['book-http-timeout','book-http-access-denied','book-stream-closed','book-raw-budget','depth-recovery-missing-version','book-session-recovery-conflict'])(
+    'preserves original gap evidence when recovery fails: %s',failure=>{
+      expect(replay(pending(failure))).toMatchObject({status:'incomplete',failure,requestCount:3,book:null,appliedDeltas:0,recoveryPending:{parsed:{version:String(version)}}});
+    });
+  it.each([
+    (r:MexcBookCapture)=>{delete r.recoveryPending;},(r:MexcBookCapture)=>{delete r.profile;},
+    (r:MexcBookCapture)=>{r.profile='joint-4096';},(r:MexcBookCapture)=>{r.requestCount=2;},
+    (r:MexcBookCapture)=>{r.recoveryPending!.receipt.requestedAt=at+449;},
+    (r:MexcBookCapture)=>{r.recoveryPending!.parsed.version=String(version+6n);},
+    (r:MexcBookCapture)=>{r.recoveryPending!.raw='x'.repeat(524289);},
+  ])('rejects an unproved recovery attempt or altered pending evidence %#',mutate=>{
+    const value=clone(pending());mutate(value);expect(()=>replay(value)).toThrow();
+  });
+  it('does not accept a pending third-request reason without a real initial version gap',()=>{
+    const value=clone(pending()),p=value.recoveryPending!;p.raw=bootstrapRaw(version+6n);
+    p.parsed=parseMexcDepthBootstrap(parsePublicJson(Buffer.from(p.raw)),'BTC',p.receipt,value.metadata!.parsed);
+    expect(()=>replay(value)).toThrow('invalid-mexc-book-archive');
+  });
+  it('keeps a clock failure between proving the gap and dispatching recovery at two requests',()=>{
+    const value=pending('invalid-public-clock');value.requestCount=2;expect(replay(value)).toEqual(value);
+  });
+  it('rejects the next, unaccepted late WS overlap while keeping the already accepted recovery prefix replayable',()=>{
+    const r=run();r.frame(delta(version+7n,at+200),at+200);
+    const raw=JSON.parse(commits(8));raw.data[7].bids=[[2000,999,2]];
+    r.requestCount=3;r.events.push(r.session.acceptBootstrap(bootstrapRaw(),initial(),{raw:JSON.stringify(raw),receipt:recovery()}));
+    expect(()=>r.session.acceptFrame(delta(version+8n,at+1250),at+1250)).toThrow('book-session-recovery-conflict');
+    expect(replay({...r.report('book-session-recovery-conflict',at+1300),profile:'joint-recovery-v1'})).toMatchObject({appliedDeltas:1,book:null,requestCount:3});
+  });
+  it('rejects a forged successful later overlap even when normalized frame and final values are recomputed',()=>{
+    const r=run();r.frame(delta(version+7n,at+200),at+200);r.requestCount=3;
+    r.events.push(r.session.acceptBootstrap(bootstrapRaw(),initial(),{raw:commits(8),receipt:recovery()}));
+    for(let i=8;i<=16;i++)r.frame(delta(version+BigInt(i),at+1250+i),at+1250+i);
+    const value=clone({...r.report(null,at+1300),profile:'joint-recovery-v1' as const});
+    const event=value.events.find(e=>e.kind==='bootstrap')!;
+    if(event.kind!=='bootstrap')throw Error();const raw=JSON.parse(event.recovery!.raw);raw.data[7].bids=[[2000,999,2]];event.recovery={...event.recovery!,raw:JSON.stringify(raw),parsed:parseMexcDepthCommits(parsePublicJson(Buffer.from(JSON.stringify(raw))),'BTC',event.recovery!.receipt,value.metadata!.parsed)};
+    // Raw commit evidence itself contradicts the captured later WS frame; a new digest grants no exception.
+    expect(()=>replay(value)).toThrow();
   });
 });

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "captures": [
+    {
+      "base": "BTC",
+      "status": "incomplete",
+      "nestedFailure": "depth-book-version-discontinuity",
+      "profile": "joint-4096",
+      "requestCount": 6,
+      "connections": 1,
+      "acceptedFrames": 6,
+      "elapsedMs": 2094,
+      "bootstrapVersion": null,
+      "firstAcceptedDeltaVersion": "42267193819",
+      "lastAcceptedDeltaVersion": "42267193823",
+      "archiveBytes": 25835,
+      "sha256": "e8900f368b0936ed6c92dc5605fce8081346927c3e3f2c04a3456e3c80bf403f",
+      "replay": "passed",
+      "bootstrapWasAccepted": false,
+      "newRequestsForDiagnostic": 0,
+      "automaticRetry": false
+    },
+    {
+      "base": "BTC",
+      "status": "incomplete",
+      "nestedFailure": "depth-book-version-discontinuity",
+      "profile": "joint-4096",
+      "requestCount": 6,
+      "connections": 1,
+      "acceptedFrames": 5,
+      "elapsedMs": 2124,
+      "bootstrapVersion": "42267265960",
+      "firstAcceptedDeltaVersion": "42267265967",
+      "lastAcceptedDeltaVersion": "42267265970",
+      "archiveBytes": 25071,
+      "sha256": "4123a4d309dacc8e50967cfef54d1defa5c10357de03d142beb1427170f80fd1",
+      "replay": "passed",
+      "bootstrapWasAccepted": false,
+      "newRequestsForDiagnostic": 0,
+      "automaticRetry": false
+    }
+  ],
+  "finding": "In the diagnostic capture REST V=42267265960 predates first buffered WS V=42267265967; required V+1 bridge is absent. Historical preceding failure has no saved rejected snapshot and exact version relationship is unknown.",
+  "nextProtocol": "Explicit joint-4096 first-delta warmup250ms before the only bootstrap; keep all stop conditions and original profiles."
+}

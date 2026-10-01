@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "initialFullSuite": {
+    "passed": 5466,
+    "skipped": 15,
+    "workers": 2,
+    "note": "Intermediate full run; final validation below is authoritative."
+  },
+  "independentReviews": {
+    "recoveryBridge": "passed",
+    "lateRestWsOverlap": "reproduction fixed and targeted replay tests passed",
+    "outerDeadlineDispatch": "reproduction fixed; independent17marker/dispatch tests passed",
+    "fourFillExactCosts": "passed",
+    "exactPriceCache": "old/new output parity over80updates, raw1904update parity passed"
+  },
+  "tradingChanges": false,
+  "runtimeDeployment": false,
+  "finalFullSuite": {
+    "passed": 5470,
+    "skipped": 15,
+    "filesPassed": 123,
+    "filesSkipped": 1,
+    "workers": 2,
+    "durationSeconds": 144.58,
+    "skips": "existing PostgreSQL tests without disposable DB"
+  },
+  "buildApi": "passed",
+  "buildUi": "passed",
+  "strictMarketDataTestTypes": "passed",
+  "acceptedNetworkCaptures": [
+    "BTC",
+    "ETH"
+  ],
+  "failedNetworkCapturesPreserved": 5,
+  "netProfitDemonstrated": false
+}

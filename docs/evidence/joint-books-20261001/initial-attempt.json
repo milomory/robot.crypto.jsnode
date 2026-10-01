@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "status": "incomplete",
+  "failure": "joint-mexc-incomplete",
+  "nestedFailure": "book-stream-frame-budget",
+  "base": "BTC",
+  "requestCount": 6,
+  "connections": 1,
+  "elapsedMs": 1732,
+  "acceptedFrames": 256,
+  "bootstrapAccepted": false,
+  "sha256": "a4339c5be4e06dddafb06fec581707b90b8609cb04a23143cd40b491e72f5af3",
+  "archiveBytes": 214770,
+  "rawBytes": 46247,
+  "offlineReplay": "passed",
+  "privacyFieldScan": "passed",
+  "credentialsUsed": false,
+  "runtimeChanged": false,
+  "retriedAutomatically": false,
+  "executable": false
+}

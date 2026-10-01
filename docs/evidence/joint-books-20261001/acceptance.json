@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "date": "2026-10-01",
+  "status": "accepted-short-captures",
+  "captures": [
+    {
+      "schema": 1,
+      "kind": "independent-joint-acceptance",
+      "base": "BTC",
+      "sha256": "2f5005f9905664e1ca5705eb3614c8e04b90aa586bcd5096408725438764ea05",
+      "archiveBytes": 336160,
+      "rawBytes": 59394,
+      "elapsedMs": 2960,
+      "replay": true,
+      "independentRawBookReconstruction": true,
+      "bootstrapVPlusOneBridge": true,
+      "allRawVersionsContinuous": true,
+      "profileWarmup250ms": true,
+      "warmupAfterFirstDeltaMs": 250,
+      "requestCount": 8,
+      "connections": 1,
+      "subscriptions": 1,
+      "frames": 108,
+      "coveredDeltas": 8,
+      "appliedDeltas": 99,
+      "recoveryUsed": false,
+      "bridgeVersions": 0,
+      "overlapVersions": 0,
+      "allOverlapMatched": true,
+      "ctsFromWsOnly": true,
+      "markets": [
+        {
+          "id": "mexc-perpetual",
+          "sourceAgeMs": 674,
+          "metadataAgeMs": 1580,
+          "metadataBound": true,
+          "usable": true
+        },
+        {
+          "id": "okx-perpetual",
+          "sourceAgeMs": 198,
+          "metadataAgeMs": 2603,
+          "metadataBound": true,
+          "usable": true
+        },
+        {
+          "id": "okx-spot",
+          "sourceAgeMs": 148,
+          "metadataAgeMs": 2320,
+          "metadataBound": true,
+          "usable": true
+        }
+      ],
+      "pairs": [
+        {
+          "longMarket": "mexc-perpetual",
+          "shortMarket": "okx-perpetual",
+          "sourceSkewMs": 476,
+          "receiptSkewMs": 485,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-perpetual",
+          "shortMarket": "mexc-perpetual",
+          "sourceSkewMs": 476,
+          "receiptSkewMs": 485,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-spot",
+          "shortMarket": "mexc-perpetual",
+          "sourceSkewMs": 526,
+          "receiptSkewMs": 548,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-spot",
+          "shortMarket": "okx-perpetual",
+          "sourceSkewMs": 50,
+          "receiptSkewMs": 63,
+          "usable": true
+        }
+      ],
+      "supportedPairsUsable": 4,
+      "mexcSpotExcluded": true,
+      "privateFieldCount": 0,
+      "accountRequests": false,
+      "netEdgeBps": null,
+      "executable": false,
+      "networkDisabled": true,
+      "sourceAuthenticationVerified": false
+    },
+    {
+      "schema": 1,
+      "kind": "independent-joint-acceptance",
+      "base": "ETH",
+      "sha256": "349935cd0348b2717991e06b66a8d7f6c8fcf1fb3df06e110844cca540d5660b",
+      "archiveBytes": 258249,
+      "rawBytes": 44525,
+      "elapsedMs": 3207,
+      "replay": true,
+      "independentRawBookReconstruction": true,
+      "bootstrapVPlusOneBridge": true,
+      "allRawVersionsContinuous": true,
+      "profileWarmup250ms": true,
+      "warmupAfterFirstDeltaMs": 252,
+      "requestCount": 8,
+      "connections": 1,
+      "subscriptions": 1,
+      "frames": 11,
+      "coveredDeltas": 0,
+      "appliedDeltas": 10,
+      "recoveryUsed": false,
+      "bridgeVersions": 0,
+      "overlapVersions": 0,
+      "allOverlapMatched": true,
+      "ctsFromWsOnly": true,
+      "markets": [
+        {
+          "id": "mexc-perpetual",
+          "sourceAgeMs": 440,
+          "metadataAgeMs": 2032,
+          "metadataBound": true,
+          "usable": true
+        },
+        {
+          "id": "okx-perpetual",
+          "sourceAgeMs": 144,
+          "metadataAgeMs": 2865,
+          "metadataBound": true,
+          "usable": true
+        },
+        {
+          "id": "okx-spot",
+          "sourceAgeMs": 144,
+          "metadataAgeMs": 2588,
+          "metadataBound": true,
+          "usable": true
+        }
+      ],
+      "pairs": [
+        {
+          "longMarket": "mexc-perpetual",
+          "shortMarket": "okx-perpetual",
+          "sourceSkewMs": 296,
+          "receiptSkewMs": 290,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-perpetual",
+          "shortMarket": "mexc-perpetual",
+          "sourceSkewMs": 296,
+          "receiptSkewMs": 290,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-spot",
+          "shortMarket": "mexc-perpetual",
+          "sourceSkewMs": 296,
+          "receiptSkewMs": 280,
+          "usable": true
+        },
+        {
+          "longMarket": "okx-spot",
+          "shortMarket": "okx-perpetual",
+          "sourceSkewMs": 0,
+          "receiptSkewMs": 10,
+          "usable": true
+        }
+      ],
+      "supportedPairsUsable": 4,
+      "mexcSpotExcluded": true,
+      "privateFieldCount": 0,
+      "accountRequests": false,
+      "netEdgeBps": null,
+      "executable": false,
+      "networkDisabled": true,
+      "sourceAuthenticationVerified": false
+    }
+  ],
+  "attempts": {
+    "total": 7,
+    "failed": 5,
+    "successful": 2,
+    "publicGetRequests": 46,
+    "wsConnections": 7,
+    "automaticRetries": 0
+  },
+  "recoveryRealCaptureVerified": false,
+  "recoverySyntheticAndReplayVerified": true,
+  "recurringObservationStarted": false,
+  "accountRequests": false,
+  "runtimeDeployment": false,
+  "ordersSent": 0,
+  "netProfitDemonstrated": false
+}

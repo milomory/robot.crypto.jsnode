@@ -1,68 +1,49 @@
 # Public code-review snapshot
 
-This branch contains a tracked source snapshot for review, layered on existing
-public review history. It does not publish the private intervening local Git history.
+Source: `efb413723de6ff887ae0ec02e1996c4285cae3b8`.
+Publication parent: `6a1498c3dfe44032b0ef6ce349fea81dc2f267e4` on `codex/mexc-okx`.
+The public main/base remains `4345d0c9f868e830bb2b2034d0b78864c4309575`.
+Private intervening source history is not published.
 
-- Source snapshot commit: `7a54547ba5f484a54473fb9496b51427ecd20ddc`.
-- Public history base commit: `4345d0c9f868e830bb2b2034d0b78864c4309575`.
-- Mathematical, strategy, reader and test source is preserved. The only source
-  substitutions are stable placeholders for private environment references.
-- Private account captures, deployment receipts and mixed operational notes are
-  omitted. Where useful, Markdown links lead to an explicit omission notice.
-- See `PUBLIC-REVIEW-PARITY.json` for the complete omitted-path list, changed
-  reference paths and source/tests/fixtures parity counts.
+## Current milestone
 
-This is **not a deployment release**. Private key-vault reference placeholders
-and receipt/profile pins are intentionally nonfunctional. Passing tests does not
-make this snapshot suitable for production deployment or authorize trading.
-The original protected deployment remains separate and unchanged.
+Joint BTC/ETH MEXC perpetual + OKX perpetual/Spot public captures are accepted:
+8 GET / 1 WS per base, four time-compatible directed pairs per base. MEXC Spot
+REST stays diagnostic because its update timestamp and exact grid are unconfirmed.
+Two independent raw reconstructions/replays match. No net profit is asserted.
 
-The export uses only tracked Git objects. It does not copy untracked files,
-private configuration or environment files. A redacted pattern scan found no
-known private vault references, extracted private receipt identifiers or supported
-high-confidence credential patterns. Gitleaks/trufflehog were not available;
-this scan is not a complete proof that all sensitive prose is absent.
+- `src/market-data/joint-*`: bounded acquisition, exact raw replay, quality and
+  an offline four-fill cost scenario with explicit exit books/fees/funding/costs.
+  Unknown costs or missing exit evidence keep net unknown.
+- `mexc-depth-recovery.ts` and book session/client/replay: one initial commits
+  bridge under an explicit profile. Version gaps and REST/WS conflicts fail closed.
+  The two successful captures did not need that GET; recovery is synthetic/replay
+  verified, not claimed as a successful live recovery acceptance.
+- `mexc-depth-book.ts`: exact-price WeakMap cache; full sorts and all checks retained.
+  The preserved 1904-update burst now merges in about1.44s offline; raw/old-new parity passed.
+- `fixtures/market-data/joint-*`: two successful and five incomplete public captures,
+  kept separately. These are historical public data, not account evidence.
+- [Contract, evidence and limits](docs/DERIVATIVES-JOINT-BOOKS.md),
+  [research roadmap](docs/DERIVATIVES-OPPORTUNITY-PLAN.md).
 
-Unit tests/build results must be reported separately for this exported snapshot.
-Synthetic fixtures and public market evidence are review materials; they do not
-prove actual profitability, real account fills or execution readiness.
+Source validation: 5470 PASS,15 existing PostgreSQL skips; API/UI build and strict
+market-data test types PASS. Review-copy validation is recorded below separately.
+D1 recurring collection is not started: repeated bootstraps exceed the provisional
+storage budget. Funding event timing and a bounded persistent observation protocol
+come next. No account requests, exchange orders or runtime deployment occurred.
 
-## Current review starting points
+## Publication boundaries
 
-- `src/accounts`: account/Earn readers and explicit asset/fee semantics.
-- `src/paper-pair`: exact spot pair model, settlement, journals and risk.
-- `src/live`: preparation and recovery; no exchange order sender.
-- `src/market-data`: exact perpetual specs, funding, books/metrics, bounded WS evidence and verified top50 reconstruction.
-- `docs/DERIVATIVES-MEXC-BOOK.md`: new BTC/ETH bootstrap/stream acceptance and limits.
-- `docs/DERIVATIVES-OPPORTUNITY-PLAN.md`: remaining D0–D5 gates.
+This is **not a deployment release**. Stable placeholders replace private environment
+references. Private account captures, deployment receipts and mixed operational notes
+are omitted or explicitly stubbed. Main trading/account code and existing safety gates
+are preserved; placeholders are intentionally nonfunctional.
 
-## Current acceptance — 2026-10-01
+The export copies only tracked Git objects, never untracked files, private configuration
+or env files. All source/tests/fixtures match except one pre-existing environment-reference
+substitution. `PUBLIC-REVIEW-PARITY.json` records the exact exclusions/substitutions.
+A pattern scan found no known private vault references, extracted receipt identifiers
+or supported high-confidence credential patterns. This is not a proof of absence of all
+sensitive prose. Gitleaks/trufflehog were unavailable.
 
-The full BTC/ETH D0b 24-read capture remains accepted. Its historical REST MEXC
-quality flags are unchanged; this new work uses separate fresh metadata, snapshots
-and continuous WS updates to reconstruct verified top50 within immutable known
-depth boundaries. It never claims the entire exchange book is known.
-
-Real BTC and ETH captures each used 2 GETs and 1 public WS connection, followed
-by independent replay and a separate raw-to-Map reconstruction. BTC applied 52
-buffered updates after the snapshot; ETH applied 10. Final source ages were 770
-and 169 ms respectively. These are short samples, not steady-state performance
-or pure network-latency claims. Credentials/runtime/trades were not modified.
-
-Source validation: 4,910 passed, 15 existing PostgreSQL skips with maxWorkers=2;
-API/UI build and strict market-data types passed. An initial default-concurrency
-run had one 5-second timeout in an existing study case; isolated and full reruns
-passed without changing assertions or timeouts. One SIGTERM-interrupted retry was
-not counted. This change adds 336 tests, including real BTC/ETH archives.
-
-Independent review strengthened covered-version continuity, explicit socket-start
-time and replay validation of impossible incomplete-failure stages. All new
-source/tests/fixtures match the source snapshot byte-for-byte; only previously
-approved private environment reference placeholders differ elsewhere.
-
-Next: align MEXC perpetual books with OKX/Spot observations, resolve required
-metric timestamps and accept the D1 request/storage budget before a campaign.
-Net advantage, executable capital, derivatives fees and real execution remain
-unverified. No new recurring observer or real trading was enabled.
-
-The exported snapshot passed all 1,238 market-data tests and the API/UI build.
+Review-copy validation: **1798 market-data tests PASS**, API/UI build PASS.

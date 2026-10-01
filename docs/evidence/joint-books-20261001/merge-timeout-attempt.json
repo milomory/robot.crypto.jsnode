@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "status": "incomplete",
+  "failure": "book-stream-timeout",
+  "profile": "joint-recovery-v1",
+  "requests": 6,
+  "connections": 1,
+  "elapsedMs": 22494,
+  "frames": 1913,
+  "appliedDeltas": 1904,
+  "bootstrapAccepted": true,
+  "recoveryUsed": false,
+  "bootstrapReceiptToFinishMs": 19995,
+  "sha256": "2d7fc542b4ba71d74dec1784d48e95bc6e7c7fbf54c2462bc25a88e34983d47b",
+  "archiveBytes": 1670331,
+  "replay": "passed",
+  "privateFieldPatternScan": "passed",
+  "conclusion": "A 1912-delta burst was continuous but synchronous bootstrap merge consumed the socket deadline. Preserve incomplete evidence; optimize exact sorting without relaxing any gate before another capture."
+}

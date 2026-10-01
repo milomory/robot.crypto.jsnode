@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "sourceCommit": "7a54547ba5f484a54473fb9496b51427ecd20ddc",
+  "preparedReviewCommit": "6a1498c3dfe44032b0ef6ce349fea81dc2f267e4",
+  "reviewParent": "d25bdf1f890c9b40fce4297cb34fa96e9dde0b4a",
+  "destination": "https://github.com/milomory/robot.crypto.jsnode/tree/codex/mexc-okx",
+  "status": "published-and-verified",
+  "pushExecuted": true,
+  "publicRepositoryVerified": true,
+  "publicParentVerified": true,
+  "changedFiles": 27,
+  "publicReviewTestsPassed": 1238,
+  "publicApiUiBuild": "passed",
+  "sourceTestsFixturesChecked": 310,
+  "byteIdentical": 309,
+  "referenceOnlyChanges": [
+    "src/accounts/account-binding.ts"
+  ],
+  "excludedPrivatePaths": 103,
+  "userAuthRequestIncluded": false,
+  "autoReviewReason": "Specific payload and public destination require explicit confirmation; repeated rejection after read-only scope and privacy evidence",
+  "approvalQuestionSent": true,
+  "runtimeChanged": false,
+  "publishedReviewCommit": "6a1498c3dfe44032b0ef6ce349fea81dc2f267e4",
+  "explicitPayloadDestinationApprovalReceived": true,
+  "approvalBlockerResolved": true,
+  "verification": {
+    "verifiedAt": "2026-10-01T12:48:57.752Z",
+    "anonymousGitHubVerification": true,
+    "publicRepository": true,
+    "branchCommit": "6a1498c3dfe44032b0ef6ce349fea81dc2f267e4",
+    "branchMatches": true,
+    "guideBlob": "22c4176ea481f56810a02db470c346cea3ddfbe1",
+    "guideMatches": true,
+    "mainCommit": "4345d0c9f868e830bb2b2034d0b78864c4309575",
+    "mainUnchanged": true
+  }
+}

@@ -41,8 +41,10 @@ The [D0b observation/replay profile](docs/DERIVATIVES-PUBLIC-D0B.md) adds books,
 mark/index/OI and historical funding. The full 24-read capture and replay passed.
 A separate [MEXC WS source-time probe](docs/DERIVATIVES-MEXC-DEPTH-SOURCE.md) verifies
 matching-engine timestamps. [BTC/ETH book reconstruction](docs/DERIVATIVES-MEXC-BOOK.md)
-now joins fresh snapshots and continuous deltas into verified top50; joint OKX/Spot
-observation and the D1 budget remain next.
+now joins fresh snapshots and continuous deltas into verified top50. A separate
+[joint Spot/perpetual capture](docs/DERIVATIVES-JOINT-BOOKS.md) adds common-time
+quality and an explicit four-fill offline cost calculator. The D1 storage/stream
+protocol and funding event accounting remain separate next steps.
 
 ## Local Checks
 

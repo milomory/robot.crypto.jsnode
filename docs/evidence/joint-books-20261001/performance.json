@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "fixture": "joint-btc-merge-timeout-public-20261001.json",
+  "optimization": "class-owned weak cache of exact price conversions; full sort and gates unchanged",
+  "offlineMeasurements": {
+    "first200FramesOldMs": 1595.44,
+    "first200FramesCachedMs": 142.31,
+    "appliedUpdates": 1904,
+    "fullMergeDecorateOnlyMs": 4964.17,
+    "fullMergeCachedMs": 1440.87,
+    "fullSessionCachedMs": 1555.77
+  },
+  "originalCaptureReceiptToFinishMs": 19995,
+  "originalCaptureHadConcurrentLocalTests": true,
+  "measurementsAreNotLatencySla": true,
+  "independentRawMapParity": true,
+  "oldNewSyntheticSnapshotParityUpdates": 80,
+  "historicalFixtureUnchanged": true
+}

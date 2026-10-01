@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "status": "incomplete",
+  "failure": "depth-book-version-discontinuity",
+  "profile": "joint-4096",
+  "requests": 6,
+  "connections": 1,
+  "elapsedMs": 2484,
+  "frames": 12,
+  "sha256": "bfa9bfe6e087a96640dca61ec62ff6baef5b7524fa4381ade89c46552fa0e448",
+  "archiveBytes": 30326,
+  "bootstrapAccepted": false,
+  "replay": "passed",
+  "conclusion": "A fixed250ms warmup alone does not establish the required bridge. Implement one explicit bounded official depth_commits read, not repeated snapshot requests."
+}

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { replayMexcBook } from '../src/market-data/mexc-book-replay.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MexcBookClient, BOOK_CAPTURE_LIMITS, BOOK_CLIENT_FAILURES } from '../src/market-data/mexc-book-client.js';
+import { MexcBookClient, BOOK_CAPTURE_LIMITS, JOINT_BOOK_CAPTURE_LIMITS, RECOVERY_BOOK_CAPTURE_LIMITS, BOOK_CLIENT_FAILURES } from '../src/market-data/mexc-book-client.js';
 import type { DepthSocket } from '../src/market-data/mexc-depth-source-client.js';
 import type { ResearchBase } from '../src/market-data/model.js';
 // All HTTP and WebSocket inputs here are synthetic; these tests open no network connections.
@@ -27,10 +27,10 @@ function delta(version:number,base:ResearchBase='BTC',cts:unknown=Date.now()){
 }
 const flush=()=>vi.advanceTimersByTimeAsync(0);
 function deferred<T>(){let resolve!:(value:T)=>void;let reject!:(error:unknown)=>void;const promise=new Promise<T>((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
-async function setup(options:{base?:ResearchBase;fetch?:typeof fetch;clock?:()=>number;factory?:(url:string)=>DepthSocket}={}){
+async function setup(options:{base?:ResearchBase;fetch?:typeof fetch;clock?:()=>number;factory?:(url:string)=>DepthSocket;profile?:'joint-4096'|'joint-recovery-v1'}={}){
   const base=options.base??'BTC',socket=new Socket(),factory=vi.fn(options.factory??(()=>socket));
   const fetcher=vi.fn(options.fetch??(async(url:string|URL|Request)=>new Response(String(url).includes('/detail/')?metadata(base):snapshot())));
-  const client=new MexcBookClient(base,{fetch:fetcher as typeof fetch,factory,clock:options.clock});const promise=client.capture().then(result=>{
+  const client=new MexcBookClient(base,{fetch:fetcher as typeof fetch,factory,clock:options.clock,...(options.profile?{profile:options.profile}:{})});const promise=client.capture().then(result=>{
     const bytes=Buffer.from(JSON.stringify(result)+'\n'),digest=createHash('sha256').update(bytes).digest('hex');
     expect(replayMexcBook(bytes,digest)).toEqual(result);return result;
   });await flush();
@@ -192,4 +192,235 @@ describe('MEXC book WS lifecycle and freshness budgets',()=>{
     const factory=vi.fn(()=>{throw new Error('hidden socket secret');});const run=await setup({factory});const result=await run.promise;expect(result.failure).toBe('book-stream-unavailable');expect(JSON.stringify(result)).not.toContain('hidden');expect(vi.getTimerCount()).toBe(0);
   });
   it('exports immutable fixed limits and closed failure codes',()=>{expect(Object.isFrozen(BOOK_CAPTURE_LIMITS)).toBe(true);expect(Object.isFrozen(BOOK_CLIENT_FAILURES)).toBe(true);expect(BOOK_CAPTURE_LIMITS.maximumRequests).toBe(2);expect(new Set(BOOK_CLIENT_FAILURES).size).toBe(BOOK_CLIENT_FAILURES.length);});
+});
+
+
+describe('explicit joint-4096 frame profile retains historical and resource boundaries',()=>{
+  it('adds explicit frame and warmup settings; byte, timeout, request and subscription budgets stay fixed',()=>{
+    expect(BOOK_CAPTURE_LIMITS.maximumFrames).toBe(256);
+    expect(JOINT_BOOK_CAPTURE_LIMITS).toEqual({...BOOK_CAPTURE_LIMITS,maximumFrames:4096,bootstrapWarmupMs:250});
+    expect(Object.isFrozen(JOINT_BOOK_CAPTURE_LIMITS)).toBe(true);
+  });
+  it.each([undefined,null,'','default-256','joint-256','joint-4097',4096,true])('rejects explicit unknown profile %s before transport',profile=>{
+    const fetcher=vi.fn(),factory=vi.fn();
+    expect(()=>new MexcBookClient('BTC',{fetch:fetcher,factory,profile} as never)).toThrow('invalid-public-options');
+    expect(fetcher).not.toHaveBeenCalled();expect(factory).not.toHaveBeenCalled();
+  });
+  it('keeps the default capture byte shape without a profile marker',async()=>{
+    const run=await setup();await boot(run);ten(run);const result=await run.promise;
+    expect(Object.hasOwn(result,'profile')).toBe(false);expect(JSON.stringify(result)).not.toContain('"profile"');closed(run);
+  });
+  it('does not auto-upgrade, retry or reconnect after the historical 256-frame limit',async()=>{
+    const run=await setup();run.socket.open();for(let i=0;i<257;i++)run.socket.message(pong());
+    const result=await run.promise;expect(result).toMatchObject({failure:'book-stream-frame-budget',requestCount:1,connections:1});
+    expect(result.events).toHaveLength(256);expect(Object.hasOwn(result,'profile')).toBe(false);
+    run.socket.message(ack());await vi.advanceTimersByTimeAsync(60_000);
+    expect(run.fetcher).toHaveBeenCalledTimes(1);expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it.each(['BTC','ETH'] as const)('buffers 4095 %s deltas plus ACK and completes exactly 4096 frames with one bootstrap',async base=>{
+    const pending=deferred<Response>();const run=await setup({base,profile:'joint-4096',
+      fetch:vi.fn().mockResolvedValueOnce(new Response(metadata(base))).mockImplementationOnce(()=>pending.promise)});
+    run.socket.open();run.socket.message(ack());for(let v=101;v<=4195;v++)run.socket.message(delta(v,base));
+    expect(run.socket.close).not.toHaveBeenCalled();expect(run.fetcher).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(250);expect(run.fetcher).toHaveBeenCalledTimes(2);
+    pending.resolve(new Response(snapshot(100)));await flush();const result=await run.promise;
+    expect(result).toMatchObject({profile:'joint-4096',status:'complete',failure:null,appliedDeltas:4095,requestCount:2,connections:1,subscriptions:1,pings:0});
+    expect(result.events).toHaveLength(4097);expect(result.events.at(-1)?.kind).toBe('bootstrap');
+    expect(result.book?.version).toBe('4195');expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it('stops before the 4097th frame, aborts the bootstrap and never retries',async()=>{
+    const pending=deferred<Response>();const run=await setup({profile:'joint-4096',
+      fetch:vi.fn().mockResolvedValueOnce(new Response(metadata())).mockImplementationOnce(()=>pending.promise)});
+    run.socket.open();run.socket.message(ack());run.socket.message(delta(101));await vi.advanceTimersByTimeAsync(250);
+    for(let v=102;v<=4196;v++)run.socket.message(delta(v));
+    const result=await run.promise;expect(result).toMatchObject({profile:'joint-4096',failure:'book-stream-frame-budget',requestCount:2,
+      connections:1,appliedDeltas:0,book:null});expect(result.events).toHaveLength(4096);
+    expect((run.fetcher.mock.calls[1][1] as RequestInit).signal?.aborted).toBe(true);
+    pending.resolve(new Response(snapshot()));await vi.advanceTimersByTimeAsync(60_000);
+    expect(result.events).toHaveLength(4096);expect(run.fetcher).toHaveBeenCalledTimes(2);expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it('still stops at 4 MiB total raw even when the selected frame allowance is larger',async()=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();
+    const raw=pong('x'.repeat(524288-Buffer.byteLength(pong())));
+    for(let i=0;i<8;i++)run.socket.message(raw);const result=await run.promise;
+    expect(result).toMatchObject({profile:'joint-4096',failure:'book-raw-budget'});expect(result.events).toHaveLength(7);closed(run);
+  });
+  it('retains the 512 KiB per-frame bound in joint mode',async()=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();run.socket.message('x'.repeat(524289));
+    expect(await run.promise).toMatchObject({profile:'joint-4096',failure:'book-stream-frame-budget',events:[]});closed(run);
+  });
+  it('retains the three-second bootstrap deadline in joint mode',async()=>{
+    const run=await setup({profile:'joint-4096',fetch:vi.fn().mockResolvedValueOnce(new Response(metadata())).mockImplementationOnce(()=>new Promise(()=>{}))});
+    run.socket.open();run.socket.message(ack());run.socket.message(delta(101));await vi.advanceTimersByTimeAsync(3250);
+    expect(await run.promise).toMatchObject({profile:'joint-4096',failure:'book-http-timeout',requestCount:2,connections:1});closed(run);
+  });
+  it('retains the twenty-second socket deadline in joint mode',async()=>{
+    const run=await setup({profile:'joint-4096'});await vi.advanceTimersByTimeAsync(20_000);
+    expect(await run.promise).toMatchObject({profile:'joint-4096',failure:'book-stream-timeout',requestCount:1,connections:1});closed(run);
+  });
+});
+
+
+describe('joint snapshot begins after observed delta warmup',()=>{
+  it('requires ACK, first delta and the full 250 ms warmup before the sole bootstrap GET',async()=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();run.socket.message(ack());
+    await vi.advanceTimersByTimeAsync(500);run.socket.message(pong());expect(run.fetcher).toHaveBeenCalledTimes(1);
+    run.socket.message(delta(101));await vi.advanceTimersByTimeAsync(249);expect(run.fetcher).toHaveBeenCalledTimes(1);
+    run.socket.message(delta(102));await vi.advanceTimersByTimeAsync(1);expect(run.fetcher).toHaveBeenCalledTimes(2);
+    for(let v=103;v<=110;v++)run.socket.message(delta(v));const result=await run.promise;
+    const boot=result.events.find(e=>e.kind==='bootstrap');expect(boot?.kind).toBe('bootstrap');
+    if(boot?.kind==='bootstrap')expect(boot.receipt.requestedAt).toBe(start+750);
+    expect(result).toMatchObject({profile:'joint-4096',status:'complete',appliedDeltas:10,requestCount:2});closed(run);
+  });
+  it.each([100,300])('handles first delta before ACK at +%i ms using max(ACK, firstDelta+250)',async ackDelay=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();run.socket.message(delta(101));
+    await vi.advanceTimersByTimeAsync(ackDelay);expect(run.fetcher).toHaveBeenCalledTimes(1);run.socket.message(ack());
+    const wait=Math.max(0,250-ackDelay);if(wait>0){await vi.advanceTimersByTimeAsync(wait-1);expect(run.fetcher).toHaveBeenCalledTimes(1);}
+    await vi.advanceTimersByTimeAsync(wait>0?1:0);expect(run.fetcher).toHaveBeenCalledTimes(2);
+    for(let v=102;v<=110;v++)run.socket.message(delta(v));const result=await run.promise;
+    const event=result.events.find(e=>e.kind==='bootstrap');if(event?.kind==='bootstrap')expect(event.receipt.requestedAt).toBe(start+Math.max(ackDelay,250));
+    expect(result.status).toBe('complete');closed(run);
+  });
+  it('cancels the warmup timer on socket closure, without a bootstrap request or retry',async()=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();run.socket.message(ack());run.socket.message(delta(101));
+    await vi.advanceTimersByTimeAsync(249);run.socket.closed();const result=await run.promise;
+    expect(result).toMatchObject({profile:'joint-4096',failure:'book-stream-closed',requestCount:1,appliedDeltas:0});
+    await vi.advanceTimersByTimeAsync(60_000);expect(run.fetcher).toHaveBeenCalledTimes(1);expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it('keeps default ACK-immediate bootstrap without requiring a delta or warmup',async()=>{
+    const run=await setup();run.socket.open();run.socket.message(ack());await flush();
+    expect(run.fetcher).toHaveBeenCalledTimes(2);ten(run);const result=await run.promise;
+    const event=result.events.find(e=>e.kind==='bootstrap');if(event?.kind==='bootstrap')expect(event.receipt.requestedAt).toBe(start);
+    expect(Object.hasOwn(result,'profile')).toBe(false);closed(run);
+  });
+  it('still rejects a snapshot older than first observed WS version after warmup, with no retry',async()=>{
+    const run=await setup({profile:'joint-4096'});run.socket.open();run.socket.message(ack());run.socket.message(delta(107));
+    await vi.advanceTimersByTimeAsync(250);const result=await run.promise;
+    expect(result).toMatchObject({profile:'joint-4096',failure:'depth-book-version-discontinuity',requestCount:2,appliedDeltas:0,book:null});
+    expect(result.events.every(e=>e.kind==='frame')).toBe(true);await vi.advanceTimersByTimeAsync(60_000);
+    expect(run.fetcher).toHaveBeenCalledTimes(2);expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it('does not stretch the one scheduled warmup on later frames',async()=>{
+    const pending=deferred<Response>();const run=await setup({profile:'joint-4096',fetch:vi.fn().mockResolvedValueOnce(new Response(metadata())).mockImplementationOnce(()=>pending.promise)});
+    run.socket.open();run.socket.message(ack());run.socket.message(delta(101));
+    for(let v=102;v<=106;v++){await vi.advanceTimersByTimeAsync(40);run.socket.message(delta(v));}
+    await vi.advanceTimersByTimeAsync(50);expect(run.fetcher).toHaveBeenCalledTimes(2);
+    for(let v=107;v<=110;v++)run.socket.message(delta(v));pending.resolve(new Response(snapshot()));await flush();
+    const result=await run.promise;expect(result.status).toBe('complete');expect(result.appliedDeltas).toBe(10);
+    const event=result.events.find(e=>e.kind==='bootstrap');if(event?.kind==='bootstrap')expect(event.receipt.requestedAt).toBe(start+250);closed(run);
+  });
+  it('fails closed if an injected clock has not reached the scheduled warmup deadline',async()=>{
+    const run=await setup({profile:'joint-4096',clock:()=>start});run.socket.open();run.socket.message(ack());run.socket.message(delta(101));
+    await vi.advanceTimersByTimeAsync(250);expect(await run.promise).toMatchObject({failure:'book-bootstrap-warmup-incomplete',requestCount:1,book:null});
+    expect(run.fetcher).toHaveBeenCalledTimes(1);closed(run);
+  });
+});
+
+
+describe('explicit one-time initial snapshot bridge',()=>{
+  function commits(first=101,last=106,patch?:(row:Record<string,unknown>)=>void):string {
+    return JSON.stringify({success:true,code:0,data:Array.from({length:last-first+1},(_,i)=>{
+      const row:Record<string,unknown>={version:first+i,bids:[['1000','2','1']],asks:[]};patch?.(row);return row;
+    })});
+  }
+  async function gap(options:{base?:ResearchBase;response?:string|Response|Promise<Response>;first?:number}={}){
+    const base=options.base??'BTC';
+    const fetcher=vi.fn().mockResolvedValueOnce(new Response(metadata(base))).mockResolvedValueOnce(new Response(snapshot(100)))
+      .mockImplementationOnce(()=>options.response instanceof Promise?options.response:options.response instanceof Response?options.response:new Response(options.response??commits()));
+    const run=await setup({base,profile:'joint-recovery-v1',fetch:fetcher});
+    run.socket.open();run.socket.message(ack());run.socket.message(delta(options.first??107,base));
+    await vi.advanceTimersByTimeAsync(250);return run;
+  }
+  it('changes only the request count in the recovery profile',()=>{
+    expect(RECOVERY_BOOK_CAPTURE_LIMITS).toEqual({...JOINT_BOOK_CAPTURE_LIMITS,maximumRequests:3});
+    expect(Object.isFrozen(RECOVERY_BOOK_CAPTURE_LIMITS)).toBe(true);
+  });
+  it.each(['BTC','ETH'] as const)('bridges %s once while buffering live frames; only WS cts establishes freshness',async base=>{
+    const pending=deferred<Response>(),run=await gap({base,response:pending.promise});
+    expect(run.fetcher).toHaveBeenCalledTimes(3);
+    run.socket.message(delta(108,base));pending.resolve(new Response(commits(101,108)));await flush();
+    for(let v=109;v<=116;v++)run.socket.message(delta(v,base));const result=await run.promise;
+    expect(result).toMatchObject({profile:'joint-recovery-v1',status:'complete',requestCount:3,connections:1,appliedDeltas:10,
+      book:{bootstrapVersion:'106',version:'116',sourceTime:{meaning:'matching-engine-book-production'}}});
+    expect(Object.hasOwn(result,'recoveryPending')).toBe(false);
+    const event=result.events.find(e=>e.kind==='bootstrap');expect(event?.kind).toBe('bootstrap');
+    if(event?.kind==='bootstrap'){
+      expect(event.parsed.version).toBe('100');expect(event.bridged?.version).toBe('106');
+      expect(event.recovery?.parsed).toMatchObject({sourceFreshnessVerified:false,executable:false});
+      expect(event.receipt.receivedAt).toBeLessThanOrEqual(event.recovery!.receipt.requestedAt);
+      expect(event.bridged?.receipt).toEqual(event.receipt);
+    }
+    expect(String(run.fetcher.mock.calls[2][0])).toBe(`https://api.mexc.com/api/v1/contract/depth_commits/${base}_USDT/1000`);
+    expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it('retains two GETs when bootstrap already bridges to the first observed WS delta',async()=>{
+    const run=await setup({profile:'joint-recovery-v1'});run.socket.open();run.socket.message(ack());run.socket.message(delta(101));
+    await vi.advanceTimersByTimeAsync(250);for(let v=102;v<=110;v++)run.socket.message(delta(v));
+    expect(await run.promise).toMatchObject({status:'complete',requestCount:2,profile:'joint-recovery-v1'});
+    expect(run.fetcher).toHaveBeenCalledTimes(2);closed(run);
+  });
+  it.each([403,429,500])('preserves the proven bootstrap gap when recovery HTTP returns %i without retry',async status=>{
+    const run=await gap({response:new Response('private error is not archive evidence',{status})}),result=await run.promise;
+    expect(result).toMatchObject({status:'incomplete',requestCount:3,appliedDeltas:0,book:null,recoveryPending:{parsed:{version:'100'}}});
+    expect(JSON.stringify(result)).not.toContain('private error');await vi.advanceTimersByTimeAsync(60_000);
+    expect(run.fetcher).toHaveBeenCalledTimes(3);expect(run.factory).toHaveBeenCalledTimes(1);closed(run);
+  });
+  it.each([
+    ['too-short',()=>commits(102,106),'depth-recovery-missing-version'],
+    ['missing-middle',()=>{const x=JSON.parse(commits());x.data.splice(2,1);return JSON.stringify(x);},'depth-recovery-missing-version'],
+    ['duplicate',()=>{const x=JSON.parse(commits());x.data[1]=x.data[0];return JSON.stringify(x);},'depth-commits-version-order'],
+    ['wrong-symbol',()=>commits(101,106,row=>{row.symbol='ETH_USDT';}),'unsupported-public-contract'],
+    ['overlap-quantity',()=>commits(101,107,row=>{if(row.version===107)row.bids=[['1000','999','1']];}),'book-session-recovery-conflict'],
+    ['overlap-count',()=>commits(101,107,row=>{if(row.version===107)row.bids=[['1000','2','9']];}),'book-session-recovery-conflict'],
+    ['overlap-delete',()=>commits(101,107,row=>{if(row.version===107)row.bids=[['1000','0','1']];}),'book-session-recovery-conflict'],
+  ] as const)('rejects %s commits with no second recovery request',async(_name,raw,reason)=>{
+    const run=await gap({response:raw()}),result=await run.promise;
+    expect(result).toMatchObject({status:'incomplete',failure:reason,requestCount:3,appliedDeltas:0,recoveryPending:{parsed:{version:'100'}},book:null});
+    expect(result.events.every(e=>e.kind==='frame')).toBe(true);closed(run);
+  });
+  it('compares buffered overlapping level updates independently of array order',async()=>{
+    const pending=deferred<Response>(),run=await setup({profile:'joint-recovery-v1',fetch:vi.fn()
+      .mockResolvedValueOnce(new Response(metadata())).mockResolvedValueOnce(new Response(snapshot())).mockImplementationOnce(()=>pending.promise)});
+    run.socket.open();run.socket.message(ack());const first=JSON.parse(delta(107));first.data.bids.push(['999','3','2']);run.socket.message(JSON.stringify(first));
+    await vi.advanceTimersByTimeAsync(250);pending.resolve(new Response(commits(101,107,row=>{if(row.version===107)row.bids=[['999','3','2'],['1000','2','1']];})));await flush();
+    for(let v=108;v<=116;v++)run.socket.message(delta(v));expect((await run.promise).status).toBe('complete');closed(run);
+  });
+  it.each([false,true])('checks future committed overlap when the actual WS version arrives: conflict=%s',async conflict=>{
+    const run=await gap({response:commits(101,108,row=>{if(conflict&&row.version===108)row.bids=[['1000','999','1']];})});
+    run.socket.message(delta(108));
+    if(conflict){
+      const result=await run.promise;expect(result).toMatchObject({failure:'book-session-recovery-conflict',requestCount:3,appliedDeltas:1,book:null});
+      expect(Object.hasOwn(result,'recoveryPending')).toBe(false);expect(result.events.at(-1)?.kind).toBe('bootstrap');
+    }else{for(let v=109;v<=116;v++)run.socket.message(delta(v));expect((await run.promise).status).toBe('complete');}
+    closed(run);
+  });
+  it('never recovers a later WS version gap after successful initial bridging',async()=>{
+    const run=await gap();run.socket.message(delta(109));expect(await run.promise).toMatchObject({failure:'stream-version-discontinuity',requestCount:3,appliedDeltas:1});
+    expect(run.fetcher).toHaveBeenCalledTimes(3);closed(run);
+  });
+  it('never recovers a gap inside the buffered WS sequence',async()=>{
+    const run=await setup({profile:'joint-recovery-v1'});run.socket.open();run.socket.message(ack());run.socket.message(delta(107));run.socket.message(delta(109));
+    expect(await run.promise).toMatchObject({failure:'stream-version-discontinuity',requestCount:1});closed(run);
+  });
+  it('aborts recovery after three seconds and ignores late body completion',async()=>{
+    const pending=deferred<Response>(),run=await gap({response:pending.promise});await vi.advanceTimersByTimeAsync(3000);
+    const result=await run.promise,copy=JSON.stringify(result);expect(result).toMatchObject({failure:'book-http-timeout',requestCount:3,recoveryPending:{parsed:{version:'100'}}});
+    expect((run.fetcher.mock.calls[2][1] as RequestInit).signal?.aborted).toBe(true);pending.resolve(new Response(commits()));await flush();
+    expect(JSON.stringify(result)).toBe(copy);closed(run);
+  });
+  it('cancels recovery when the WS closes, preserving pending evidence and accepted frames',async()=>{
+    const pending=deferred<Response>(),run=await gap({response:pending.promise});run.socket.message(delta(108));run.socket.closed();
+    const result=await run.promise;expect(result).toMatchObject({failure:'book-stream-closed',requestCount:3,appliedDeltas:0,recoveryPending:{parsed:{version:'100'}}});
+    pending.resolve(new Response(commits()));await flush();expect(result.events.every(e=>e.kind==='frame')).toBe(true);closed(run);
+  });
+  it('retains the 512 KiB recovery body bound',async()=>{
+    const run=await gap({response:new Response('x'.repeat(524289))});expect(await run.promise).toMatchObject({failure:'book-response-too-large',requestCount:3,recoveryPending:{parsed:{version:'100'}}});closed(run);
+  });
+  it('counts successful snapshot and recovery body in the unchanged 4 MiB raw budget',async()=>{
+    const body=JSON.parse(commits());body.padding='x'.repeat(500000);
+    const run=await setup({profile:'joint-recovery-v1',fetch:vi.fn().mockResolvedValueOnce(new Response(metadata()))
+      .mockResolvedValueOnce(new Response(snapshot())).mockResolvedValueOnce(new Response(JSON.stringify(body)))});
+    run.socket.open();run.socket.message(ack());run.socket.message(delta(107));for(let i=0;i<8;i++)run.socket.message(pong('x'.repeat(500000)));
+    await vi.advanceTimersByTimeAsync(250);expect(await run.promise).toMatchObject({failure:'book-raw-budget',requestCount:3,recoveryPending:{parsed:{version:'100'}}});closed(run);
+  });
 });

@@ -36,7 +36,8 @@
     "lab:derivatives-capabilities": "tsx src/scripts/derivatives-capabilities.ts",
     "lab:derivatives-observe": "tsx src/scripts/derivatives-observe.ts",
     "lab:mexc-depth-source": "tsx src/scripts/mexc-depth-source.ts",
-    "lab:mexc-book": "tsx src/scripts/mexc-book.ts"
+    "lab:mexc-book": "tsx src/scripts/mexc-book.ts",
+    "lab:joint-books": "tsx src/scripts/joint-books.ts"
   },
   "dependencies": {
     "@fastify/static": "^9.1.3",

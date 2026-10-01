@@ -76,9 +76,15 @@ export function parseMexcDepthBootstrap(raw: unknown, base: ResearchBase, receip
     sourceFreshnessVerified: false, bookReconstructed: false, executable: false });
 }
 function validTime(at: number): boolean { return Number.isSafeInteger(at) && at > 0 && at <= 8_640_000_000_000_000; }
-function sorted(rows: Map<string, BookLevel>, side: 'bids' | 'asks'): BookLevel[] {
-  return [...rows.values()].sort((a, b) => units(a.price) === units(b.price) ? 0 :
-    (units(a.price) < units(b.price) ? -1 : 1) * (side === 'bids' ? -1 : 1));
+function sorted(rows: Map<string, BookLevel>, side: 'bids' | 'asks', prices: WeakMap<BookLevel, bigint>): BookLevel[] {
+  // Internal levels are replaced, never edited. Cache exact conversions by owned row
+  // identity; deleted/replaced levels can be reclaimed without an ever-growing cache.
+  return [...rows.values()].map(row => {
+    let price = prices.get(row);if (price === undefined) { price = units(row.price);prices.set(row, price); }
+    return { row, price };
+  })
+    .sort((a, b) => a.price === b.price ? 0 : (a.price < b.price ? -1 : 1) * (side === 'bids' ? -1 : 1))
+    .map(({ row }) => row);
 }
 
 /** Any invalid input/evaluation permanently rejects this instance; no implicit rebootstrap. */
@@ -87,6 +93,7 @@ export class MexcDepthBook {
   readonly #bootstrap: MexcDepthBootstrap;
   readonly #bids: Map<string, BookLevel>;
   readonly #asks: Map<string, BookLevel>;
+  readonly #prices = new WeakMap<BookLevel, bigint>();
   #version: string;
   #updates = 0;
   #lastObservedVersion: string | null = null;
@@ -181,7 +188,7 @@ export class MexcDepthBook {
 
   #assertDepth(bidMap: Map<string, BookLevel>, askMap: Map<string, BookLevel>) {
     if (bidMap.size < 50 || askMap.size < 50) return reject('depth-book-range-exhausted');
-    const bids = sorted(bidMap, 'bids'), asks = sorted(askMap, 'asks');
+    const bids = sorted(bidMap, 'bids', this.#prices), asks = sorted(askMap, 'asks', this.#prices);
     assertUncrossed(bids, asks);
     if (units(bids[49].price) < units(this.#bootstrap.knownRange.bidFloor) || units(asks[49].price) > units(this.#bootstrap.knownRange.askCeiling)) return reject('depth-book-range-exhausted');
     return { bids, asks };
