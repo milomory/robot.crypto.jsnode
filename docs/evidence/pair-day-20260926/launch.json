@@ -1,0 +1,28 @@
+{
+  "container": "592e9a53b439646a32a259986410b703307a3f7cb2d5e6a2c8fb12e2d1ebf5a0",
+  "name": "crypto-pair-paper-20260926T132434Z-41096fa8",
+  "remoteRoot": "/home/mil/crypto-pair-paper-20260926T132434Z-41096fa8",
+  "image": "sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08",
+  "bundleSha256": "41096fa8e5c08cface7d01102860699777dfa2ccc3ea5463759ef7e71af25402",
+  "sourceRevision": "3a6dd03715ef4570b406cc8ddff33e851faace4c",
+  "profile": "study-24h",
+  "limits": {
+    "samples": 1440,
+    "command": "collect-day",
+    "watchdog": "86450s",
+    "maxDurationMs": 86430000,
+    "maxFileBytes": 32768,
+    "maxArchiveBytes": 50331648,
+    "maxTransferBytes": 52428800,
+    "transferTimeout": 300,
+    "minimumFreeBytes": 268435456
+  },
+  "appBefore": {
+    "id": "39314a69449aa5bb74b200eddbf11d41bf73c85bff73c04819829ce2a3cd0390",
+    "image": "sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08",
+    "startedAt": "2026-09-25T16:27:05.257673359Z",
+    "status": "running",
+    "restarts": 0
+  },
+  "feeProjectionReady": true
+}

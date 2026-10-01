@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "source": "synthetic",
+  "unrelatedFieldsRemoved": true,
+  "rawIdentifiersRemoved": true,
+  "stdoutFinancialAmountsExcluded": true,
+  "existingReportPreserved": true
+}

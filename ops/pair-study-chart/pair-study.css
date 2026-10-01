@@ -1,0 +1,19 @@
+.pair-study-chart { display: grid; gap: 28px; padding: 36px; box-sizing: border-box; line-height: 1.6; }
+.pair-study-chart .report-hero h1 { margin: 0 0 16px; font-size: 36px; line-height: 1.15; letter-spacing: -0.8px; overflow-wrap: anywhere; }
+.pair-study-chart .report-hero .report-deck { margin: 0; color: var(--secondary); }
+.pair-study-chart .pair-study-coverage { display: flex; flex-wrap: wrap; gap: 12px 24px; font-size: 15px; line-height: 1.6; }
+.pair-study-chart .pair-study-coverage strong { display: block; font-size: 22px; font-variant-numeric: tabular-nums; color: var(--text); }
+.pair-study-chart .pair-study-period { margin: 12px 0 0; color: var(--secondary); font-size: 14px; line-height: 1.6; }
+@media (max-width: 600px) { .pair-study-chart { padding: 24px 20px; gap: 24px; } .pair-study-chart .report-hero h1 { font-size: 30px; } }
+
+.pair-study-chart .pair-study-endpoints { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; color: var(--secondary); font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+.pair-study-chart .pair-study-endpoints span:last-child { text-align: right; }
+.pair-study-chart .pair-study-endpoints strong { color: var(--text); font-weight: 500; }
+
+.pair-study-chart .pair-study-warning { margin: 0; padding-inline-start: 14px; border-inline-start: 3px solid var(--text); color: var(--text); font-weight: 600; line-height: 1.6; }
+
+.pair-study-chart .pair-study-positive { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 20px; font-size: 15px; }
+.pair-study-chart .pair-study-positive > strong, .pair-study-chart .pair-study-positive > small { flex-basis: 100%; }
+.pair-study-chart .pair-study-positive > small { color: var(--secondary); font-size: 13px; }
+.pair-study-chart .pair-study-fees { margin: 16px 0 0; font-size: 14px; color: var(--secondary); }
+.pair-study-chart .pair-study-fixture { padding: 12px 16px; background: #fff1cc; color: #573c00; border-color: #a66b00; }

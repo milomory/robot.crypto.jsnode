@@ -1,0 +1,134 @@
+{
+  "status": "pass",
+  "scope": "Independent local decimal recomputation and archive consistency; no network/runtime changes",
+  "protocolAccepted": true,
+  "completeUsableMarketData": false,
+  "captureId": "7a976c9c-27a1-4fc0-8aff-9631aa69dd35",
+  "archiveFiles": 1443,
+  "archiveBytes": 8246779,
+  "archiveFileHashesMatchAcceptance": true,
+  "byteIdenticalReplay": true,
+  "reportSha256": "ca489947c3b2e1c97c50387bbfeba5a851c40e86f6c9332a9e812e16d1114f8a",
+  "samplingStartedAtUtc": "2026-09-26T13:24:42.769000+00:00",
+  "endedAtUtc": "2026-09-27T13:23:43.524000+00:00",
+  "scheduledSamples": 1440,
+  "archivedSamples": 1440,
+  "missedSlots": 0,
+  "earlySlots": 0,
+  "minimumStartLatenessMs": 1,
+  "maximumStartLatenessMs": 65,
+  "usablePairs": 1419,
+  "unusablePairs": 21,
+  "unusableReasonCounts": {
+    "receipt-skew": 12,
+    "missing-book": 9
+  },
+  "rawBookFailureCounts": {
+    "mexc:public-data-unavailable": 9
+  },
+  "unusableSequences": [
+    47,
+    48,
+    52,
+    58,
+    59,
+    203,
+    208,
+    266,
+    267,
+    456,
+    766,
+    767,
+    962,
+    1004,
+    1052,
+    1226,
+    1294,
+    1322,
+    1327,
+    1382,
+    1412
+  ],
+  "freshUsdIndexSamples": 1440,
+  "ruleRefreshCoverage": {
+    "mexc": 47,
+    "okx": 48
+  },
+  "ruleRefreshFailures": [
+    {
+      "sequence": 1200,
+      "venue": "mexc",
+      "reason": "public-data-unavailable"
+    }
+  ],
+  "maximumReceiptSkewMsAll": 4305,
+  "maximumReceiptSkewMsAccepted": 958,
+  "maximumFrozenFeeAgeMs": 86431739,
+  "independentlyRecomputedDirectionRows": 2838,
+  "selectedFeeScenario": "okx-received-base",
+  "scenarios": {
+    "quote": {
+      "mexc": {
+        "buyVenue": "mexc",
+        "sellVenue": "okx",
+        "evaluated": 1419,
+        "positive": 0,
+        "minimumNetUsdt": "-0.02392446",
+        "maximumNetUsdt": "-0.01568865",
+        "meanNetUsdtRounded18": "-0.021151699175475687",
+        "longestConsecutivePositive": 0,
+        "longestSampledSpanMs": 0
+      },
+      "okx": {
+        "buyVenue": "okx",
+        "sellVenue": "mexc",
+        "evaluated": 1419,
+        "positive": 0,
+        "minimumNetUsdt": "-0.02672392",
+        "maximumNetUsdt": "-0.01826412",
+        "meanNetUsdtRounded18": "-0.021061455764622974",
+        "longestConsecutivePositive": 0,
+        "longestSampledSpanMs": 0
+      }
+    },
+    "okxReceivedBase": {
+      "mexc": {
+        "buyVenue": "mexc",
+        "sellVenue": "okx",
+        "evaluated": 1419,
+        "positive": 0,
+        "minimumNetUsdt": "-0.02392446",
+        "maximumNetUsdt": "-0.01568865",
+        "meanNetUsdtRounded18": "-0.021151699175475687",
+        "longestConsecutivePositive": 0,
+        "longestSampledSpanMs": 0
+      },
+      "okx": {
+        "buyVenue": "okx",
+        "sellVenue": "mexc",
+        "evaluated": 1419,
+        "positive": 0,
+        "minimumNetUsdt": "-0.02757259",
+        "maximumNetUsdt": "-0.01910515",
+        "meanNetUsdtRounded18": "-0.021905792170542636",
+        "longestConsecutivePositive": 0,
+        "longestSampledSpanMs": 0
+      }
+    }
+  },
+  "ruleReasonCounts": {
+    "mexc:quantity-step-unconfirmed": 2780,
+    "okx:usd-admission-basis-unconfirmed": 2838,
+    "frozen-fees-sensitivity-only": 2838,
+    "base-fee-scenario-only": 1419,
+    "mexc:missing-instrument": 58
+  },
+  "paperFills": 0,
+  "caveats": [
+    "Protocol and deterministic calculation accepted, market coverage incomplete.",
+    "Negative selected-scenario price/cost sensitivities are not realized loss or P/L.",
+    "Initial fees frozen and not continuously verified; source synchronization absent at MEXC.",
+    "1 minute samples do not establish absence of opportunities between samples or on other pairs.",
+    "MEXC quantity and market-buy semantics and OKX admission/fee quantum remain unresolved."
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "kind": "synthetic-fault-acceptance",
+  "marketData": "synthetic",
+  "funding": "synthetic",
+  "executable": false,
+  "oneLegPartialFailure": {
+    "schemaVersion": 1,
+    "mode": "paper",
+    "executable": false,
+    "funding": "synthetic",
+    "balances": {
+      "mexc": {
+        "btc": "1.1",
+        "usdt": "989.984995"
+      },
+      "okx": {
+        "btc": "0.96",
+        "usdt": "1004.07388204"
+      }
+    },
+    "reserved": {
+      "mexc": {
+        "btc": "0",
+        "usdt": "0"
+      },
+      "okx": {
+        "btc": "0",
+        "usdt": "0"
+      }
+    },
+    "available": {
+      "mexc": {
+        "btc": "1.1",
+        "usdt": "989.984995"
+      },
+      "okx": {
+        "btc": "0.96",
+        "usdt": "1004.07388204"
+      }
+    },
+    "journalEvents": 3,
+    "positions": [
+      {
+        "pairId": "p",
+        "buyVenue": "mexc",
+        "sellVenue": "okx",
+        "plannedQuantity": "0.1",
+        "projectedNetUsdt": "0.1697001",
+        "residualBtc": "0.06",
+        "cashDeltaUsdt": "-5.94112296",
+        "settlement": "residual-exposure",
+        "legs": {
+          "buy": {
+            "status": "filled",
+            "filledQuantity": "0.1",
+            "cashUsdt": "10.015005",
+            "feeUsdt": "0.010005"
+          },
+          "sell": {
+            "status": "rejected",
+            "filledQuantity": "0.04",
+            "cashUsdt": "4.07388204",
+            "feeUsdt": "0.00407796"
+          }
+        }
+      }
+    ]
+  },
+  "unknown": {
+    "schemaVersion": 1,
+    "mode": "paper",
+    "executable": false,
+    "funding": "synthetic",
+    "balances": {
+      "mexc": {
+        "btc": "1.02",
+        "usdt": "997.996999"
+      },
+      "okx": {
+        "btc": "1",
+        "usdt": "1000"
+      }
+    },
+    "reserved": {
+      "mexc": {
+        "btc": "0",
+        "usdt": "8.012004"
+      },
+      "okx": {
+        "btc": "0.1",
+        "usdt": "0"
+      }
+    },
+    "available": {
+      "mexc": {
+        "btc": "1.02",
+        "usdt": "989.984995"
+      },
+      "okx": {
+        "btc": "0.9",
+        "usdt": "1000"
+      }
+    },
+    "journalEvents": 2,
+    "positions": [
+      {
+        "pairId": "p",
+        "buyVenue": "mexc",
+        "sellVenue": "okx",
+        "plannedQuantity": "0.1",
+        "projectedNetUsdt": "0.1697001",
+        "residualBtc": "0.02",
+        "cashDeltaUsdt": "-2.003001",
+        "settlement": "pending",
+        "legs": {
+          "buy": {
+            "status": "unknown",
+            "filledQuantity": "0.02",
+            "cashUsdt": "2.003001",
+            "feeUsdt": "0.002001"
+          },
+          "sell": {
+            "status": "pending",
+            "filledQuantity": "0",
+            "cashUsdt": "0",
+            "feeUsdt": "0"
+          }
+        }
+      }
+    ]
+  },
+  "reconciled": {
+    "schemaVersion": 1,
+    "mode": "paper",
+    "executable": false,
+    "funding": "synthetic",
+    "balances": {
+      "mexc": {
+        "btc": "1.1",
+        "usdt": "989.984995"
+      },
+      "okx": {
+        "btc": "1",
+        "usdt": "1000"
+      }
+    },
+    "reserved": {
+      "mexc": {
+        "btc": "0",
+        "usdt": "0"
+      },
+      "okx": {
+        "btc": "0",
+        "usdt": "0"
+      }
+    },
+    "available": {
+      "mexc": {
+        "btc": "1.1",
+        "usdt": "989.984995"
+      },
+      "okx": {
+        "btc": "1",
+        "usdt": "1000"
+      }
+    },
+    "journalEvents": 4,
+    "positions": [
+      {
+        "pairId": "p",
+        "buyVenue": "mexc",
+        "sellVenue": "okx",
+        "plannedQuantity": "0.1",
+        "projectedNetUsdt": "0.1697001",
+        "residualBtc": "0.1",
+        "cashDeltaUsdt": "-10.015005",
+        "settlement": "residual-exposure",
+        "legs": {
+          "buy": {
+            "status": "filled",
+            "filledQuantity": "0.1",
+            "cashUsdt": "10.015005",
+            "feeUsdt": "0.010005"
+          },
+          "sell": {
+            "status": "rejected",
+            "filledQuantity": "0",
+            "cashUsdt": "0",
+            "feeUsdt": "0"
+          }
+        }
+      }
+    ]
+  },
+  "ordinaryRetryBlocked": true,
+  "restartEquivalent": true,
+  "exactDuplicateNoOp": true,
+  "journalSha256": "d1e24ae7d5d58bc1a251ebeb19856ca64513c3b4f6dafa62f5392073a988b44b"
+}

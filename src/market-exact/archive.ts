@@ -66,6 +66,10 @@ export async function writeArchiveFile(path: string, data: unknown, replace = fa
 export async function writeReplayFile(path: string, data: unknown) {
   return writeJsonFile(path, data, REPLAY_FILE_LIMIT, false);
 }
+// Separate day-study writer; legacy replay bounds stay unchanged.
+export async function writeDayStudyReplayFile(path: string, data: unknown) {
+  return writeJsonFile(path, data, 16 * 1024 * 1024, false);
+}
 async function writeJsonFile(path: string, data: unknown, limit: number, replace: boolean) {
   const bytes = canonical(data) + '\n';
   if (Buffer.byteLength(bytes) > limit) throw new PaperError('archive-file-too-large');

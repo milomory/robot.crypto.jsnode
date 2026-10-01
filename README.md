@@ -2,6 +2,17 @@
 
 Standalone crypto trading robot MVP.
 
+The [longer delivery roadmap](docs/ROADMAP.md) records completed work, the current
+protected recovery/identity stage and the gates before a limited real launch.
+
+The dashboard separates real account history from the simulator;
+[Earn accounting and live preparation](docs/EARN-ACCOUNTING.md) describe their limits.
+
+Private Bybit/OKX/HitBTC/MEXC account readers and key-vault preparation:
+[account integration status](docs/EXCHANGE-ACCOUNTS.md).
+MEXC/OKX recurring read-only observation is active on Hyperion:
+[scope, acceptance and rollback](docs/PAIR-OBSERVER.md).
+
 The current implementation is intentionally paper-only:
 
 - Node.js + TypeScript
@@ -17,10 +28,22 @@ The current implementation is intentionally paper-only:
 
 No T-Invest SDK, FIGI model, or broker account logic is used here.
 
+## Current research architecture
+
+The legacy directional simulator remains separate from the newer exact spot pair
+ledger and recovery workflow. The [current module map](docs/ARCHITECTURE.md)
+identifies their boundaries; the spot pair layer is already implemented.
+A new [public derivatives D0a capture](docs/DERIVATIVES-PUBLIC-D0.md) reads BTC/ETH
+contract specifications and funding forecasts on MEXC/OKX without keys. The
+[funding/basis roadmap](docs/DERIVATIVES-OPPORTUNITY-PLAN.md) keeps public observation,
+funding event accounting, hedged simulation and private readiness separate.
+
 ## Local Checks
 
 Public multi-exchange observation lab (separate from the running paper robot):
 [plan, usage and limitations](docs/MARKET-LAB-PLAN.md). No account keys required.
+An opt-in [five-venue comparison](docs/EXCHANGE-PUBLIC-DATA.md) now adds public
+MEXC and HitBTC books: `npm run lab:venues -- BTC/USDT 0.0001 10 5`.
 
 ```bash
 npm run lab:markets -- BTC/USDT 0.0001 10 5
@@ -35,6 +58,48 @@ For decimal-preserving public Bybit data and observed-period replay, see
 [exact observation workflow](docs/MARKET-EXACT.md).
 A bounded 30-minute capture and causal offline comparison are described in
 [the fixed study protocol](docs/PAPER-STUDY.md).
+The separate MEXC/OKX paired probe and failure-aware paper model are documented
+in [the paired paper protocol](docs/PAIR-PAPER.md).
+The follow-up [thirty-minute study](docs/PAIR-STUDY-20260926.md) adds observed
+fee-payment settings and a separately labelled USD-limit proxy.
+An independent [explicit-fill settlement ledger](docs/PAIR-SETTLEMENT.md) checks
+BTC/USDT/MX fees, quote budgets and unknown outcomes using synthetic scenarios.
+Its [durable local journal](docs/PAIR-SETTLEMENT-JOURNAL.md) preserves events and
+reservations across process restarts, with an optional external checkpoint.
+A separate [synthetic risk gate](docs/PAIR-RISK.md) adds per-pair debit/exposure,
+whole-session cash/fee budgets and minimum free funds on each venue.
+The [policy-bound journal](docs/PAIR-RISK-JOURNAL.md) persists that policy and
+checks admission against the same journal head used for atomic publication.
+The [recorded-order audit boundary](docs/EXECUTION-AUDIT.md) validates MEXC/OKX
+response formats and blocks incomplete or only-derived settlement evidence.
+A separate [protected history capture](docs/EXECUTION-HISTORY.md) now reads
+execution records and OKX bills into a private Hyperion archive.
+The [offline cash comparison](docs/CASH-AUDIT.md) checks recorded net movements
+against explicit execution amounts while retaining unresolved exchange contracts.
+For the completed integration and remaining milestones, see
+[the MEXC/OKX next steps](docs/PAIR-NEXT-STEPS.md).
+An isolated [order lifecycle and recovery rehearsal](docs/LIVE-ORDER-RECOVERY.md)
+now prepares durable intents, unknown-outcome recovery and exact fill accounting;
+it has no exchange sender and cannot enable the real launch.
+The [read-only response binding](docs/ORDER-RECOVERY-EVIDENCE.md) adds narrowly
+scoped lookup, three-read evidence capture and resumable local reconciliation.
+A [policy-bound order journal](docs/LIVE-ORDER-ADMISSION-POLICY.md) now enforces
+explicit synthetic capital/reservation/exposure bounds on preparation and dispatch
+markers; its conservative outflow ceiling is not production P&L.
+A separate [account-funds preparation workflow](docs/ACCOUNT-FUNDS-PREPARATION.md)
+now connects a verified private capture, declared fee math, draft limits and durable
+local reservations. `npm run lab:account-funds -- ...` is offline and preparation-only;
+it cannot dispatch orders or certify live readiness. A separate
+[fee-bound capture and journal](docs/ACCOUNT-FEES-OBSERVATION.md) now derives rates
+from the selected accounts and forbids caller-supplied tariffs. Production ownership
+and actual fill currency/rounding remain unaccepted.
+The [recorded fee summary](docs/RECORDED-FEES.md) now keeps observed charges/rebates
+separate, detects duplicate conflicts and distinguishes empty from incomplete history.
+Documented OKX Spot isoLiab N/A is explicit and never synthesized as a zero debt.
+The [bounded day study](docs/PAIR-DAY-STUDY-20260926.md) samples public books once a minute,
+refreshes rules every half hour and labels frozen initial fees as sensitivity assumptions.
+Its [accepted day result](docs/PAIR-DAY-RESULT-20260928.md) retains all 1,440 slots,
+1,419 usable book pairs and zero positive selected-scenario comparisons.
 
 ```bash
 mkdir -p output

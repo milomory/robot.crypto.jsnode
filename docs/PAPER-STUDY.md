@@ -109,8 +109,8 @@ Bundle SHA256: `4a7bce29a715ff5ea6ce7ee6ba14ce2516a9523c25bd1d111621e8aa9e16dbf5
 [Launch evidence](evidence/paper-study-20260921/launch.json) confirms the pinned
 image, resources, mounts, first available sample and unchanged application.
 The internal deadline is 08:11:07.816 UTC (10:11 Amsterdam); the final scheduled
-sample is 30 seconds earlier. At 07:45:47 UTC, 10/60 samples were recorded and
-all 10 were available. This is progress, not a completed study or return estimate.
+sample is 30 seconds earlier. The interim check at 07:45:47 UTC recorded
+10/60 available samples. Final acceptance below supersedes that progress snapshot.
 
 The [read-only acceptance helper](../ops/verify-paper-study-20260921.py) is ready:
 
@@ -127,13 +127,14 @@ all checks. Non-comparable findings remain explicit and are not discarded.
 Source and build configuration must match `4b2dede`; later documentation-only
 commits are allowed. Python optimization is refused locally and remotely so
 assertion checks cannot disappear. Syntax, both optimization guards and the
-running-state exit were checked; the completed path is NOT RUN yet.
+running-state exit were checked. The completed path subsequently passed as
+recorded below.
 
-Source publication remains pending. Automatic approval rejected pushing the
-new commit to default `main`, judging the previous user approval specific to the
-earlier commits. No retry or alternative publication route was used. The
-separate bounded collection was authorized and launch evidence records
-`sourcePublishedAtLaunch:false` accurately.
+Source and launch/verification commits `4b2dede` and `4345d0c` were published
+to `main` of `milomory/robot.crypto.jsnode` after explicit user approval. Remote
+`main` was verified at `4345d0c9f868e830bb2b2034d0b78864c4309575` immediately
+after that push. The earlier publication blocker is resolved. Historical launch
+evidence correctly retains `sourcePublishedAtLaunch:false`.
 
 Private inventory follow-up on Mac: add Hyperion's named bounded collector,
 archive/bundle paths and lifecycle above. Credentials and access methods did not
@@ -145,3 +146,35 @@ The running application's verified start remains 2026-09-20T07:06:47.864812714Z.
 A running collection is not a completed study; only a complete validated archive
 may produce a period comparison. Future collection/research remains separate
 from the existing paper engine and historical journal.
+
+
+## Completed campaign acceptance
+
+The collector exited 0 at 2026-09-21 08:10:38.842 UTC, with no OOM or restart.
+All 60 observations and both metadata/state files were copied and verified by
+SHA256. Both local and remote archives were unchanged after replay. The
+application remained on its original running container and release.
+
+The first acceptance attempt timed out copying separate remote file operands;
+31 copied public files remain in `/tmp/crypto-study-acceptance-20260921` as
+partial local evidence. The corrected helper uses one connection for the fixed
+public archive glob, retaining exact 62-name/type/size/hash checks before replay
+and a second remote hash verification afterward. No collection was restarted.
+The complete run is `/tmp/crypto-study-acceptance-20260921-v2`.
+
+All three paths have 61/61 valuation points and are comparable over the full
+period. The fixed strategy made no entries: 60 marks, 0 fills, 0 rejected intents.
+Parameters were not adjusted to force activity. Zero strategy return here means
+no exposure, not demonstrated strategy effectiveness.
+
+| Hypothetical starting 1000 USDT / same period | Final liquidation equity | Equity change |
+| --- | --- | --- |
+| Lagged SMA 3/6 | 1000.00000000 USDT | 0.00000000 USDT |
+| Cash | 1000.00000000 USDT | 0.00000000 USDT |
+| Buy-and-hold 0.001 BTC | 1000.13071542 USDT | +0.13071542 USDT |
+
+These are virtual balances with assumed costs, not actual trades or evidence of
+sustainable returns. [Final machine-readable acceptance](evidence/paper-study-20260921/acceptance.json)
+records the dataset/result hashes, full period, reconciliation, comparison and
+unchanged application. This bounded collector is now stopped; there is no
+continuous collection implied by this acceptance.

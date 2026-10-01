@@ -1,0 +1,16 @@
+[
+  {
+    "venue": "okx",
+    "pythonDecimalExpectedNetMatches": true,
+    "source": "synthetic",
+    "reportMode": "0o600",
+    "outputDirectoryMode": "0o700"
+  },
+  {
+    "venue": "mexc",
+    "pythonDecimalExpectedNetMatches": true,
+    "source": "synthetic",
+    "reportMode": "0o600",
+    "outputDirectoryMode": "0o700"
+  }
+]

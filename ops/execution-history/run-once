@@ -1,0 +1,177 @@
+#!/usr/bin/python3 -I
+"""Hyperion-only bounded history capture. Credentials travel only through stdin.
+
+The observer lock is held across capture and cleanup. /observer-state is mounted
+only for the collector's strict cooldown reader/writer; no dashboard writes are
+performed here. This runner does not invalidate the observer's current report.
+"""
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import select
+import signal
+import stat
+import subprocess
+import sys
+import time
+
+IMAGE = 'sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08'
+BASE = Path('/home/mil/crypto-execution-history')
+STATE = BASE / 'state'
+OBSERVER_STATE = Path('/home/mil/crypto-pair-observer/state')
+NAME = 'crypto-execution-history-readonly'
+LABEL = 'crypto-execution-history.release'
+MAX_OUTPUT = 4096
+RUN_SECONDS = 45
+CLEANUP_SECONDS = 10
+
+
+def interrupted(_signal, _frame):
+    raise InterruptedError()
+
+
+def private_directory(path):
+    info = path.lstat()
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise ValueError()
+
+
+def locked_file(path, create=False):
+    flags = os.O_RDWR | os.O_NOFOLLOW | (os.O_CREAT if create else 0)
+    descriptor = os.open(str(path), flags, 0o600)
+    try:
+        info = os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                or info.st_nlink != 1 or info.st_mode & 0o077):
+            raise ValueError()
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return os.fdopen(descriptor, 'r+')
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def command(args, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError()
+    return subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, timeout=min(3, remaining), check=False)
+
+
+def no_container(deadline):
+    result = command(['/usr/bin/docker', 'ps', '--all', '--quiet', '--no-trunc',
+                      '--filter', 'name=^/' + NAME + '$'], deadline)
+    return result.returncode == 0 and not result.stdout.strip()
+
+
+def cleanup_container(cidfile, release, deadline):
+    """Remove only our recorded CID with the exact release label; prove absence."""
+    if cidfile.exists() or cidfile.is_symlink():
+        info = cidfile.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                or info.st_nlink != 1 or info.st_mode & 0o077 or info.st_size > 65):
+            raise ValueError()
+        identity = cidfile.read_text().strip()
+        if not re.fullmatch('[a-f0-9]{64}', identity):
+            raise ValueError()
+        result = command(['/usr/bin/docker', 'inspect', '--format',
+                          '{{.Id}} {{ index .Config.Labels "' + LABEL + '" }}', identity], deadline)
+        if result.returncode == 0:
+            if result.stdout.strip() != (identity + ' ' + release).encode('ascii'):
+                raise ValueError()
+            removed = command(['/usr/bin/docker', 'rm', '-f', identity], deadline)
+            if removed.returncode != 0:
+                raise RuntimeError()
+        # A failed inspect is acceptable only when a successful daemon query
+        # below proves the exact container is absent. Docker-down is not absence.
+        if not no_container(deadline):
+            raise RuntimeError()
+        cidfile.unlink()
+    elif not no_container(deadline):
+        raise RuntimeError()
+
+
+def bounded_output(process, seconds):
+    deadline = time.monotonic() + seconds
+    output = bytearray()
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError()
+        ready, _, _ = select.select([process.stdout], [], [], remaining)
+        if not ready:
+            raise TimeoutError()
+        chunk = os.read(process.stdout.fileno(), min(4096, MAX_OUTPUT - len(output) + 1))
+        if not chunk:
+            break
+        output.extend(chunk)
+        if len(output) > MAX_OUTPUT:
+            raise ValueError()
+    process.wait(timeout=max(.001, deadline - time.monotonic()))
+    if process.returncode != 0:
+        raise ValueError()
+    return bytes(output)
+
+
+def docker_arguments(release, cidfile):
+    return ['/usr/bin/docker', 'run', '--rm', '-i', '--pull=never', '--name', NAME,
+            '--cidfile', str(cidfile), '--label', LABEL + '=' + release.name,
+            '--log-driver=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
+            '--user=1002:27', '--pids-limit=64', '--memory=256m', '--cpus=0.5', '--ulimit=core=0',
+            '--network=bridge', '--tmpfs=/tmp:rw,noexec,nosuid,size=16m',
+            '--mount', 'type=bind,src=' + str(release) + ',dst=/code,readonly',
+            '--mount', 'type=bind,src=' + str(STATE) + ',dst=/state',
+            '--mount', 'type=bind,src=' + str(OBSERVER_STATE) + ',dst=/observer-state',
+            '--workdir=/code', IMAGE, 'node', '--disable-proto=throw', 'dist/scripts/execution-history.js']
+
+
+def main():
+    if len(sys.argv) != 1 or os.getuid() != 1002 or sys.stdin.isatty():
+        raise ValueError()
+    release = Path(__file__).resolve().parent
+    if release.parent != BASE / 'releases' or not re.fullmatch('[a-f0-9]{64}', release.name):
+        raise ValueError()
+    private_directory(STATE)
+    private_directory(OBSERVER_STATE)
+    with locked_file(OBSERVER_STATE / '.observer.lock'), locked_file(STATE / '.history.lock', create=True):
+        if not no_container(time.monotonic() + 3):
+            raise ValueError()
+        cidfile = STATE / ('.container-' + str(os.getpid()))
+        if cidfile.exists() or cidfile.is_symlink():
+            raise ValueError()
+        process = None
+        value = None
+        try:
+            process = subprocess.Popen(docker_arguments(release, cidfile), stdin=sys.stdin.buffer,
+                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                       start_new_session=True)
+            value = json.loads(bounded_output(process, RUN_SECONDS))
+            if not isinstance(value, dict) or value.get('reportWritten') is not True or value.get('executable') is not False:
+                raise ValueError()
+        finally:
+            for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]:
+                signal.signal(sig, signal.SIG_IGN)
+            deadline = time.monotonic() + CLEANUP_SECONDS
+            try:
+                if process is not None and process.poll() is None:
+                    process.kill()
+                    process.wait(timeout=min(1, max(.001, deadline - time.monotonic())))
+            finally:
+                cleanup_container(cidfile, release.name, deadline)
+        # Never acknowledge success before exact-container cleanup finishes.
+        # The Athena bridge applies the full strict metadata schema afterwards.
+        print(json.dumps(value, separators=(',', ':')))
+
+
+if __name__ == '__main__':
+    os.umask(0o077)
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]:
+        signal.signal(sig, interrupted)
+    try:
+        main()
+    except Exception:
+        print('{"schema":1,"error":"history-failed"}')
+        sys.exit(1)

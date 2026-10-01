@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "captureId": "7a976c9c-27a1-4fc0-8aff-9631aa69dd35",
+  "sourceRevision": "3a6dd03715ef4570b406cc8ddff33e851faace4c",
+  "bundleSha256": "41096fa8e5c08cface7d01102860699777dfa2ccc3ea5463759ef7e71af25402",
+  "container": "crypto-pair-paper-20260926T132434Z-41096fa8",
+  "status": "running",
+  "completed": false,
+  "protocolAccepted": null,
+  "samplingStartedAt": "2026-09-26T13:24:42.769+00:00",
+  "lastSlotScheduledAt": "2026-09-27T13:23:42.769+00:00",
+  "collectorDeadlineAt": "2026-09-27T13:25:11.783+00:00",
+  "initialReadChecksPassed": true,
+  "appUnchangedAtStartup": true,
+  "isolationVerifiedAtStartup": true,
+  "privateExchangeRequestsByStudy": 0,
+  "automaticReportNotificationConfigured": false
+}

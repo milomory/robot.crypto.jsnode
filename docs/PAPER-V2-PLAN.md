@@ -121,3 +121,8 @@ Cross-venue arbitrage remains a separate stage. Two independently simulated
 single-venue fills are not an atomic arbitrage transaction. Funding on both
 venues, latency, one-leg failures, partial fills, residual exposure, settlement
 and rebalancing require their own model and acceptance before execution claims.
+
+The first isolated MEXC/OKX paired public probe and two-leg failure model were
+completed on 2026-09-26. See [paired-paper acceptance](PAIR-PAPER-RESULT-20260926.md).
+This is a bounded lab, with explicit unresolved instrument/fee/execution gates;
+it does not enable an ongoing worker or real execution.

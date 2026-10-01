@@ -1,0 +1,31 @@
+.live-readiness { display: grid; gap: 16px; max-width: 920px; }
+.live-launch { padding: 22px; border: 1px solid #3c4653; border-radius: 12px; background: #121a23; }
+.live-launch-heading { display: flex; align-items: center; gap: 13px; margin-bottom: 15px; }
+.live-launch-heading > svg { flex-shrink: 0; color: #a0bbdb; }
+.live-launch-heading span { font-size: 12px; color: #aab9c9; }
+.live-launch-heading h2 { margin: 3px 0 0; font-size: 22px; line-height: 1.3; }
+.live-launch > p { max-width: 700px; color: #b4c1ce; font-size: 13px; line-height: 1.65; }
+.live-launch-state { display: flex; align-items: center; gap: 8px; margin-top: 20px; color: #e2c58d; font-size: 13px; font-weight: 650; }
+.live-launch .live-runtime-time { margin-top: 5px; font-size: 11px; color: #93a6b8; }
+.live-start { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; margin-top: 22px; }
+.live-start:disabled { color: #a0b0c0; background: #253343; cursor: default; opacity: 1; }
+.live-launch .live-start-reason { margin-top: 9px; color: #a2b0c0; font-size: 12px; }
+.live-launch .live-access-note { margin-top: 18px; padding-top: 13px; border-top: 1px solid #2c3744; color: #aab8c7; font-size: 12px; }
+.live-plan .panel-header { padding: 15px 20px; }
+.live-plan .panel-header h2 { font-size: 16px; }
+.live-plan .panel-header > span { font-size: 11px; color: #98a9b9; }
+.live-plan-caption { padding: 15px 20px 0; color: #99acbd; font-size: 12px; }
+.live-plan ol { margin: 0; padding: 6px 20px 12px 44px; }
+.live-plan li { padding: 13px 0 13px 4px; border-bottom: 1px solid #28323e; }
+.live-plan li:last-child { border-bottom: none; }
+.live-plan li::marker { color: #92aac1; font-size: 12px; }
+.live-plan li strong { color: #dce6ef; font-size: 13px; }
+.live-plan li p { max-width: 740px; margin-top: 5px; color: #a6b6c6; font-size: 12px; line-height: 1.6; }
+@media (max-width: 560px) {
+  .live-launch { padding: 18px 16px; }
+  .live-launch-heading h2 { font-size: 20px; }
+  .live-start { width: 100%; font-size: 13px; }
+  .live-plan .panel-header { padding-inline: 16px; }
+  .live-plan-caption { padding-inline: 16px; }
+  .live-plan ol { padding-right: 16px; padding-left: 37px; }
+}

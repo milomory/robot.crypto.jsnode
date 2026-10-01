@@ -1,0 +1,111 @@
+{
+  "audit": {
+    "captureProvenanceVerified": false,
+    "cash": {
+      "billRows": 0,
+      "blockers": [],
+      "checks": {
+        "currencyCoverage": null,
+        "tradeCoverage": null,
+        "uncappedResponse": null,
+        "windowCoversOrder": null
+      },
+      "comparison": "not-requested",
+      "difference": null,
+      "duplicateBills": 0,
+      "expectedNet": {
+        "BTC": "0.0001",
+        "MX": "-0.001",
+        "USDT": "-8.40252"
+      },
+      "expectedSource": "reported-fill-amounts",
+      "grossQuoteProven": true,
+      "reportedNet": null,
+      "uniqueBills": 0
+    },
+    "executable": false,
+    "kind": "order-cash-audit-result",
+    "orderAudit": {
+      "account": "main",
+      "blockers": [],
+      "checks": {
+        "baseTotalMatches": true,
+        "feeTotalMatches": null,
+        "quoteTotalMatches": true,
+        "stableOrder": true,
+        "terminal": true,
+        "uncappedResponse": true
+      },
+      "duplicateRows": 1,
+      "executable": false,
+      "fills": [
+        {
+          "baseQuantity": "0.00006",
+          "executedAt": 1100,
+          "fees": {
+            "BTC": "0",
+            "MX": "0",
+            "USDT": "0.00252"
+          },
+          "fillId": "6ddd98ea386d8b8f8bffa41ad007f767395fc3835b8bece0eb2968bd1e653c45",
+          "quoteQuantity": "5.04"
+        },
+        {
+          "baseQuantity": "0.00004",
+          "executedAt": 1200,
+          "fees": {
+            "BTC": "0",
+            "MX": "0.001",
+            "USDT": "0"
+          },
+          "fillId": "e5dfcc144f5d3f26a192ff294f350d6ce4bc22864583e32d4da3828d1aeeeadc",
+          "quoteQuantity": "3.36"
+        }
+      ],
+      "kind": "recorded-order-audit-result",
+      "observedAt": 2000,
+      "orderKey": "mexc_130a3347f3e3c2cdb0eec7a4085cde064a61aae07dc99830b703e9a079519de0",
+      "orderStatus": "PARTIALLY_CANCELED",
+      "outcome": "cancelled",
+      "quoteSource": "reported-fill-quote",
+      "schema": 1,
+      "settlementReady": true,
+      "side": "buy",
+      "source": "synthetic",
+      "symbol": "BTC/USDT",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "fees": {
+          "BTC": "0",
+          "MX": "0.001",
+          "USDT": "0.00252"
+        },
+        "quoteQuantity": "8.4"
+      },
+      "uniqueFills": 2,
+      "venue": "mexc",
+      "wholeAccountHistoryProven": false
+    },
+    "orderKey": "mexc_130a3347f3e3c2cdb0eec7a4085cde064a61aae07dc99830b703e9a079519de0",
+    "quoteSource": "reported-fill-quote",
+    "schema": 1,
+    "settlementReady": true,
+    "side": "buy",
+    "source": "synthetic",
+    "venue": "mexc",
+    "wholeAccountHistoryProven": false
+  },
+  "captureProvenanceVerified": false,
+  "exchangeOrders": 0,
+  "kind": "offline-cash-audit-report",
+  "limitations": [
+    "A source label cannot authenticate exchange provenance",
+    "Reported cash is the sum of supplied unique bills; matching an economic model cannot establish complete history",
+    "Bill fee currency and gross-quote semantics are not inferred from ccy, sz or balChg",
+    "OKX gross quote remains derived and blocked for nonzero settlement",
+    "No support for rebates, cash rounding assumptions or precision truncation"
+  ],
+  "networkUsed": false,
+  "normalizedSha256": "70b8ffdfd7c0e8dbf2f010b9ea8a9a1cd963fa6d451b322eb87d65ae7c146dab",
+  "schema": 1
+}

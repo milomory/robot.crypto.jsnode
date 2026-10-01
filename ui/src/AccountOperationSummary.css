@@ -1,0 +1,15 @@
+/* Counts refer to observed records in the existing private account snapshot. */
+.account-refresh-note { margin: -9px 0 0; color: #94a5b5; font-size: 11px; line-height: 1.5; }
+.account-operation-summary { display: grid; gap: 7px; }
+.operation-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.operation-counts button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; padding: 12px 16px; border: 1px solid #2c3845; border-radius: 9px; background: #101921; color: #bdcad6; text-align: left; cursor: pointer; }
+.operation-counts button:hover:not(:disabled) { background: #192432; border-color: #526c8f; }
+.operation-counts button:disabled { cursor: default; }
+.operation-counts span { font-size: 12px; line-height: 1.4; }
+.operation-counts strong { flex-shrink: 0; font-size: 21px; color: #e7eff7; font-variant-numeric: tabular-nums; }
+.account-operation-summary > p { margin: 0; color: #9caebe; font-size: 11px; line-height: 1.5; }
+@media (max-width: 560px) {
+  .operation-counts { gap: 8px; }
+  .operation-counts button { padding: 11px 12px; gap: 8px; }
+  .account-operations .operation-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

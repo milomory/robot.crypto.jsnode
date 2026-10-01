@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "sourceBaseCommit": "26d63cb37948728f749bd471733fd22315a174fe",
+  "typescript": {
+    "numTotalTests": 1564,
+    "numPassedTests": 1549,
+    "numFailedTests": 0,
+    "numPendingTests": 15,
+    "numPassedTestSuites": 139
+  },
+  "newCashAuditTests": 99,
+  "newQuoteAndFeeContractTests": 37,
+  "apiBuild": "passed",
+  "separateStrictTypecheck": "cash audit and changed contract tests passed",
+  "independentArithmetic": "Python Decimal(precision=100), both synthetic fixtures matched",
+  "independentReview": "Missing-fill expected zero found, corrected to null with cash blocker and regression tests",
+  "runtimeDeployment": false,
+  "newPrivateReads": false,
+  "sourcePublication": false,
+  "sharedMemorySearch": "available, no relevant project context returned"
+}

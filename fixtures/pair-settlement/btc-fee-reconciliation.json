@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "kind": "synthetic-settlement-scenario",
+  "scenarioId": "btc-fee-reconciliation",
+  "initialBalances": {
+    "mexc": {
+      "BTC": "0.001",
+      "USDT": "100",
+      "MX": "2"
+    },
+    "okx": {
+      "BTC": "0",
+      "USDT": "100",
+      "MX": "1"
+    }
+  },
+  "events": [
+    {
+      "type": "prepare",
+      "id": "prepare",
+      "at": 1000,
+      "pairId": "pair-1",
+      "buy": {
+        "venue": "okx",
+        "orderId": "okx-buy-1",
+        "sizing": {
+          "kind": "base",
+          "baseQuantity": "0.00010011",
+          "maxQuoteAmount": "9"
+        },
+        "feeCaps": {
+          "BTC": "0.00000011",
+          "USDT": "0",
+          "MX": "0"
+        }
+      },
+      "sell": {
+        "venue": "mexc",
+        "orderId": "mexc-sell-1",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0.005",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "buy-partial",
+      "at": 1100,
+      "pairId": "pair-1",
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-1",
+        "executedAt": 1050,
+        "baseQuantity": "0.00006",
+        "quoteQuantity": "5.04",
+        "fees": {
+          "BTC": "0.00000006",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "unknown",
+      "id": "buy-unknown",
+      "at": 1200,
+      "pairId": "pair-1",
+      "side": "buy"
+    },
+    {
+      "type": "fill",
+      "id": "sell-fill",
+      "at": 1300,
+      "pairId": "pair-1",
+      "side": "sell",
+      "fill": {
+        "fillId": "sell-1",
+        "executedAt": 1200,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.0042",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "sell-settled",
+      "at": 1400,
+      "pairId": "pair-1",
+      "side": "sell",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.0042",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "reconcile",
+      "id": "buy-reconciled",
+      "at": 20000,
+      "pairId": "pair-1",
+      "side": "buy",
+      "outcome": "filled",
+      "fills": [
+        {
+          "fillId": "buy-2",
+          "executedAt": 1150,
+          "baseQuantity": "0.00004011",
+          "quoteQuantity": "3.36924",
+          "fees": {
+            "BTC": "0.00000005",
+            "USDT": "0",
+            "MX": "0"
+          }
+        }
+      ],
+      "totals": {
+        "baseQuantity": "0.00010011",
+        "quoteQuantity": "8.40924",
+        "fees": {
+          "BTC": "0.00000011",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "duplicate-delivery",
+      "at": 20001,
+      "pairId": "pair-1",
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-1",
+        "executedAt": 1050,
+        "baseQuantity": "0.00006",
+        "quoteQuantity": "5.04",
+        "fees": {
+          "BTC": "0.00000006",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    }
+  ]
+}

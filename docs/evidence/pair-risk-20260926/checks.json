@@ -1,0 +1,35 @@
+{
+  "kind": "synthetic-risk-acceptance",
+  "checks": [
+    {
+      "scenario": "session-cash-stop",
+      "synthetic": true,
+      "sourceCompiledByteIdentical": true,
+      "independentDecimalChecks": true,
+      "reportHash": "d1938087e34d90de009eceacc6931c7f67eaa7693ac1e4a8681a1e1ced8c6394"
+    },
+    {
+      "scenario": "venue-depletion",
+      "synthetic": true,
+      "sourceCompiledByteIdentical": true,
+      "independentDecimalChecks": true,
+      "reportHash": "a5d55c9626777131c2fcd6741c1a6717285cbdb480fdb26312a832a8daf58527"
+    },
+    {
+      "scenario": "quote-budget-exposure",
+      "synthetic": true,
+      "sourceCompiledByteIdentical": true,
+      "independentDecimalChecks": true,
+      "reportHash": "d840348b54db949fba53eb9550ed97498e04be5acb3a313716b37c61c7d95d60"
+    }
+  ],
+  "checkedAtDate": "2026-09-26",
+  "newRiskAndCliTestsPassed": 49,
+  "fullSuitePassed": 1664,
+  "existingPostgresSkipped": 15,
+  "apiBuild": "passed",
+  "strictTestTypecheck": "passed",
+  "deploymentPerformed": false,
+  "sourcePublicationPerformed": false,
+  "evidenceScope": "synthetic-offline-only"
+}

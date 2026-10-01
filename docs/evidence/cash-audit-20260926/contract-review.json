@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "reviewedOn": "2026-09-26",
+  "sources": [
+    {
+      "url": "https://www.okx.com/help/okx-to-introduce-spot-fee-payment-option-in-quote-currency",
+      "usedFor": "Narrow ordinary taker buy BTC/USDT fee currencies and sell USDT fee currency."
+    },
+    {
+      "url": "https://app.okx.com/docs-v5/en/#trading-account-rest-api-get-bills-details-last-7-days",
+      "usedFor": "Signed balChg in ccy; cash trade scope and identities. No fee currency or gross-quote formula inferred."
+    },
+    {
+      "url": "https://app.okx.com/docs-v5/en/#order-book-trading-trade-get-transaction-details-last-3-months",
+      "usedFor": "Retain optional tradeQuoteCcy and require USDT for narrow audit."
+    },
+    {
+      "url": "https://www.mexc.com/api-docs/spot-v3/market-data-endpoints/exchange-information",
+      "usedFor": "Minimum quantity and asset precision do not establish confirmed quantity step."
+    },
+    {
+      "url": "https://www.mexc.com/api-docs/spot-v3/spot-account-trade/new-order",
+      "usedFor": "Quote-budget and rounding questions remain unresolved."
+    }
+  ],
+  "mexcPublicObservation": {
+    "url": "https://api.mexc.com/api/v3/exchangeInfo?symbol=BTCUSDT",
+    "observedAt": "2026-09-26T12:20:50.802758Z",
+    "httpStatus": 200,
+    "subsetOnly": true,
+    "baseAssetPrecision": 8,
+    "baseSizePrecision": "0.000001",
+    "quoteCommissionPrecision": 2,
+    "lotSizeFilterPresent": false,
+    "stepSizePresent": false,
+    "quantityStepConfirmed": false
+  },
+  "privateApiRequests": 0,
+  "ordersCreated": 0,
+  "transfersCreated": 0,
+  "runtimeChanged": false,
+  "supportMessagesSent": false,
+  "unknowns": [
+    "OKX cash bill cardinality, fee currency, gross quote mapping and rounding",
+    "MEXC quantity increment, quoteOrderQty fee inclusion and rounding"
+  ]
+}

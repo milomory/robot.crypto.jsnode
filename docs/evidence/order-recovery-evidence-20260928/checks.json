@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "kind": "read-only-recovery-code-acceptance",
+  "checkedAt": "2026-09-28T13:16:52.515629+00:00",
+  "scope": "local-synthetic-responses-private-files-no-production-deploy",
+  "tests": {
+    "fullPassed": 2059,
+    "existingPostgresSkipped": 15,
+    "failed": 0,
+    "command": "npx vitest run --maxWorkers=2",
+    "newReader": 107,
+    "newBinding": 52,
+    "newIntegrationAndCli": 7,
+    "newIndependentBoundary": 8,
+    "newSourceTimes": 2
+  },
+  "apiUiBuild": "pass",
+  "strictNewTestTypes": "pass",
+  "independentReview": "no-blocking-findings-after-fixes",
+  "checks": {
+    "exactReadOnlyRouteScope": true,
+    "signedRequestAndNoCredentialOutput": true,
+    "immutableVenueBinding": true,
+    "threeReadsNoRetry": true,
+    "independentClockContainment": true,
+    "identityAndSourceTimeBinding": true,
+    "mexcExactFillAccounting": true,
+    "okxDerivedQuoteNeverPostedAsReportedCash": true,
+    "incompleteOrChangedCaptureBlocksTerminalRelease": true,
+    "deterministicPrefixResume": true,
+    "staleUnstartedCaptureBlocked": true,
+    "historicalResumeExplicit": true,
+    "concurrentUnrelatedPrefixPreserved": true,
+    "cliNetworkEntrypointsTrapped": true,
+    "privateReportsAndNoOverwrite": true
+  },
+  "captureProvenanceVerified": false,
+  "accountIdentityVerified": false,
+  "executable": false,
+  "privateAccountRequests": 0,
+  "realOrders": 0,
+  "productionChanged": false,
+  "sourcePublished": false,
+  "sourceSha256": {
+    "src/accounts/transport.ts": "474c74aa153d7aae755bc365a7529ac117f47fd285a65ae6a834cecf148f6c21",
+    "src/accounts/order-recovery-reader.ts": "94db9c4b314dcd754fe95b5aaf1c195a846aaed9b1f8ed91b6adbf3af1f4c444",
+    "src/live/order-lifecycle.ts": "af051e3f75d6d8fc12cb0e467ecbbfd0b89b2957e194dfd1f204ab2a2c0d6983",
+    "src/live/order-recovery-collection.ts": "9896ceea21df421d344eddf5a50b266dd3da1deee99d3d2f6ebf6c2e6076406f",
+    "src/live/order-recovery-evidence.ts": "bae328ad1f1a8d44bfb306080f737c8979cd7bbb132a2fcb954a164fd6cc640b",
+    "src/live/order-recovery-journal.ts": "13c57ab6165cb0fc25e13d1eab194c2baf86627db699dba663ff454e9cef0f16",
+    "src/scripts/order-recovery.ts": "4e5f30693c9c6f398be4ab548bc075602636f864ebf01fea83b45feda699b7a7"
+  },
+  "remaining": [
+    "protected-account-bound-composition",
+    "real-authenticated-lookup-acceptance",
+    "account-global-order-registry",
+    "durable-trading-risk-admission",
+    "nonzero-cash-evidence",
+    "late-corrections-and-clock-policy",
+    "strategy-qualification",
+    "explicit-user-capital-loss-residual-limits"
+  ],
+  "reviewCorrections": [
+    "runtime-readonly-venue-enforced",
+    "capture-clock-equality-replaced-with-containment",
+    "contradictory-client-alias-rejected",
+    "zero-execution-order-cost-blocked",
+    "source-time-regression-persisted"
+  ]
+}

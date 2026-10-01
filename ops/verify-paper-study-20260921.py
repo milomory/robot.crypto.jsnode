@@ -88,8 +88,11 @@ def main():
     output.mkdir(mode=0o700)
     archive = output / 'archive'
     archive.mkdir(mode=0o700)
-    checked(['scp', '-q', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10'] +
-            [HOST + ':' + ARCHIVE + '/' + name for name in sorted(expected)] + [str(archive) + '/'])
+    # One fixed public-directory glob uses one connection. Enumerating each remote
+    # file separately makes scp open many sessions and can exhaust the copy deadline.
+    # The exact file set is verified remotely above and locally below before replay.
+    checked(['scp', '-q', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10',
+             HOST + ':' + ARCHIVE + '/*.json', str(archive) + '/'])
     assert set(p.name for p in archive.iterdir()) == expected
     assert all(p.is_file() and not p.is_symlink() and p.stat().st_size <= 128 * 1024 for p in archive.iterdir())
     assert hashes(archive) == evidence['files']

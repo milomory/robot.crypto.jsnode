@@ -1,0 +1,16 @@
+[Unit]
+Description=Read-only MEXC and OKX account observation on Hyperion
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+LimitCORE=0
+ExecStart=/usr/bin/python3 -I /opt/crypto-pair-observer/ops/pair-observer/run-pair-observer-once.py
+TimeoutStartSec=140
+TimeoutStopSec=20
+KillMode=control-group
+StandardOutput=journal
+StandardError=null

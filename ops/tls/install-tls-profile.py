@@ -16,7 +16,7 @@ def main():
     backup = Path('/var/lib/agent-secrets-broker/backups') / ('crypto-robot-tls-' + stamp)
     backup.mkdir(mode=0o700)
     shutil.copy2(registry, backup / 'registry.before.json')
-    ref = 'secret://inbox/web-20260904t230513z-hlpfublwbctp'
+    ref = 'secret://inbox/public-review-record-3269b76eb0f0'
     destination = 'hyperion.crypto-robot-tls'
     profile = 'hyperion-crypto-robot-tls-deploy'
     original = registry.read_bytes()

@@ -1,0 +1,118 @@
+#!/usr/bin/python3 -I
+"""Hyperion-only bounded isolated observer. No secret values in files or arguments."""
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import signal
+import subprocess
+import sys
+import time
+
+IMAGE = 'sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08'
+BASE = Path('/home/mil/crypto-pair-observer')
+STATE = BASE / 'state'
+NAME = 'crypto-pair-observer-readonly'
+
+def interrupted(_signal, _frame):
+    raise InterruptedError()
+
+def command(args, timeout=10):
+    return subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, timeout=timeout, check=False)
+
+def invalidate(reason):
+    # The dashboard is a separate private projection. Remove a previous success
+    # before starting and after any failure, including failures outside Node.
+    dashboard = STATE / 'dashboard'
+    if dashboard.exists():
+        info = dashboard.lstat()
+        if dashboard.is_symlink() or not dashboard.is_dir() or info.st_uid != os.getuid() or info.st_mode & 0o077:
+            raise ValueError()
+        current = dashboard / 'current.json'
+        if current.exists() or current.is_symlink():
+            info = current.lstat()
+            if current.is_symlink() or not current.is_file() or info.st_nlink != 1 or info.st_uid != os.getuid() or info.st_mode & 0o077:
+                raise ValueError()
+            current.unlink()
+    temp = STATE / ('.current-' + str(os.getpid()))
+    content = {'schema': 1, 'mode': 'observation-only', 'executable': False,
+               'checkedAt': int(time.time() * 1000), 'status': 'blocked', 'reason': reason, 'comparisons': []}
+    try:
+        with temp.open('x') as stream:
+            json.dump(content, stream, separators=(',', ':'))
+            stream.flush()
+            os.fsync(stream.fileno())
+        temp.replace(STATE / 'current.json')
+    finally:
+        if temp.exists():
+            temp.unlink()
+
+def main():
+    if len(sys.argv) != 1 or os.getuid() != 1002 or sys.stdin.isatty():
+        raise ValueError()
+    release = Path(__file__).resolve().parent
+    if release.parent != BASE / 'releases' or not re.fullmatch('[a-f0-9]{64}', release.name):
+        raise ValueError()
+    info = STATE.lstat()
+    if STATE.is_symlink() or not STATE.is_dir() or info.st_uid != os.getuid() or info.st_mode & 0o077:
+        raise ValueError()
+    with (STATE / '.observer.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # Never return yesterday's success after a failed startup or interrupted cycle.
+        invalidate('observation-in-progress')
+        cidfile = STATE / ('.container-' + str(os.getpid()))
+        if cidfile.exists() or cidfile.is_symlink():
+            raise ValueError()
+        process = None
+        succeeded = False
+        try:
+            args = ['/usr/bin/docker', 'run', '--rm', '-i', '--pull=never', '--name', NAME,
+                '--cidfile', str(cidfile), '--label', 'crypto-observer.release=' + release.name,
+                '--log-driver=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges:true',
+                '--user=1002:27', '--pids-limit=64', '--memory=256m', '--cpus=0.5', '--ulimit=core=0',
+                '--network=bridge', '--tmpfs=/tmp:rw,noexec,nosuid,size=16m',
+                '--mount', 'type=bind,src=' + str(release) + ',dst=/code,readonly',
+                '--mount', 'type=bind,src=' + str(STATE) + ',dst=/state',
+                '--workdir=/code', IMAGE, 'node', '--disable-proto=throw', 'dist/scripts/pair-observer.js']
+            process = subprocess.Popen(args, stdin=sys.stdin.buffer, stdout=subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL, start_new_session=True)
+            output, _ = process.communicate(timeout=55)
+            if process.returncode != 0 or len(output) > 16384:
+                raise ValueError()
+            # Only the node consumer's metadata leaves this wrapper. The upstream
+            # root bridge performs strict schema validation before model output.
+            value = json.loads(output)
+            if not isinstance(value, dict) or value.get('reportWritten') is not True or value.get('executable') is not False:
+                raise ValueError()
+            print(json.dumps(value, separators=(',', ':')))
+            succeeded = True
+        finally:
+            for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]:
+                signal.signal(sig, signal.SIG_IGN)
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+            if cidfile.is_file() and not cidfile.is_symlink():
+                identity = cidfile.read_text().strip()
+                if re.fullmatch('[a-f0-9]{64}', identity):
+                    label = command(['/usr/bin/docker', 'inspect', '--format', '{{ index .Config.Labels "crypto-observer.release" }}', identity])
+                    if label.returncode == 0 and label.stdout.strip().decode('ascii') == release.name:
+                        removed = command(['/usr/bin/docker', 'rm', '-f', identity])
+                        if removed.returncode != 0 and command(['/usr/bin/docker', 'inspect', identity]).returncode == 0:
+                            invalidate('observer-cleanup-failed')
+                            raise RuntimeError()
+                cidfile.unlink()
+            if not succeeded:
+                invalidate('observer-failed')
+
+if __name__ == '__main__':
+    os.umask(0o077)
+    for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]:
+        signal.signal(sig, interrupted)
+    try:
+        main()
+    except Exception:
+        print('{"schema":1,"error":"observer-failed"}')
+        sys.exit(1)

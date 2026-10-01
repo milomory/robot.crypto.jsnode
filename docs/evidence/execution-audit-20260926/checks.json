@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "baseCommit": "fdb6c63842296f85ea621f1e081d29b26b956241",
+  "buildApi": "passed",
+  "newTests": 70,
+  "tests": {
+    "success": true,
+    "numTotalTests": 1220,
+    "numPassedTests": 1205,
+    "numFailedTests": 0,
+    "numPendingTests": 15
+  },
+  "skippedReason": "15 existing PostgreSQL-dependent integration cases",
+  "independentReview": {
+    "mexc": "Original-quantity/status consistency and changed-price duplicate conflicts found and fixed; regression tests pass",
+    "okx": "Nonzero derived quote cannot reach settlement; empty rebate and sizing/currency snapshot stability fixed and covered"
+  },
+  "fileSha256": {
+    "src/paper-pair/execution-audit.ts": "defc0f5a116d9f47ceda6c5955c7c719dfc7d25b9936f1ca0ba4de35f1356fd4",
+    "src/paper-pair/execution-audit-report.ts": "3e341416d1b3f26d2a60db2ff0e04a34a777e68eaaddaa29525338228323d6af",
+    "src/scripts/execution-audit.ts": "2d934f21d2f9ea1727f30a5433f89454698ef4056b564f5e1ecbd54c5073a5c8",
+    "tests/paper-pair-execution-audit.test.ts": "0cb7a162cc5216006feafb8d527bc7d5b842f9f05cb3326eb656a4efa28e0788"
+  },
+  "acceptanceInput": "synthetic fixtures only",
+  "exchangeOrders": 0,
+  "runtimeChanged": false,
+  "sourcePushed": false
+}

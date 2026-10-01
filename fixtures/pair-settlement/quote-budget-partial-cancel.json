@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "kind": "synthetic-settlement-scenario",
+  "scenarioId": "quote-budget-partial-cancel",
+  "initialBalances": {
+    "mexc": {
+      "BTC": "0",
+      "USDT": "100",
+      "MX": "0.2"
+    },
+    "okx": {
+      "BTC": "0.001",
+      "USDT": "100",
+      "MX": "0"
+    }
+  },
+  "events": [
+    {
+      "type": "prepare",
+      "id": "prepare",
+      "at": 1000,
+      "pairId": "pair-1",
+      "buy": {
+        "venue": "mexc",
+        "orderId": "mexc-budget-buy",
+        "sizing": {
+          "kind": "quote-budget",
+          "quoteAmount": "10"
+        },
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0.02",
+          "MX": "0.01"
+        }
+      },
+      "sell": {
+        "venue": "okx",
+        "orderId": "okx-partial-sell",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0.01",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "buy-usdt",
+      "at": 1100,
+      "pairId": "pair-1",
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-1",
+        "executedAt": 1050,
+        "baseQuantity": "0.00003",
+        "quoteQuantity": "2.52",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.00126",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "buy-mx",
+      "at": 1200,
+      "pairId": "pair-1",
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-2",
+        "executedAt": 1150,
+        "baseQuantity": "0.00002",
+        "quoteQuantity": "1.68",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0.0007"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "buy-cancelled",
+      "at": 1300,
+      "pairId": "pair-1",
+      "side": "buy",
+      "outcome": "cancelled",
+      "totals": {
+        "baseQuantity": "0.00005",
+        "quoteQuantity": "4.2",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.00126",
+          "MX": "0.0007"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "sell-partial",
+      "at": 1400,
+      "pairId": "pair-1",
+      "side": "sell",
+      "fill": {
+        "fillId": "sell-1",
+        "executedAt": 1350,
+        "baseQuantity": "0.00005",
+        "quoteQuantity": "4.19",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.00419",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "sell-cancelled",
+      "at": 1500,
+      "pairId": "pair-1",
+      "side": "sell",
+      "outcome": "cancelled",
+      "totals": {
+        "baseQuantity": "0.00005",
+        "quoteQuantity": "4.19",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.00419",
+          "MX": "0"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "date": "2026-09-26",
+  "baseCommit": "a2c7b7f2da9faa16b61e9e74f0422b8c715b8686",
+  "scope": "local offline synthetic accounting only",
+  "buildApi": "passed after fixing explicit reduce accumulator type",
+  "tests": {
+    "success": true,
+    "numTotalTests": 1150,
+    "numPassedTests": 1135,
+    "numFailedTests": 0,
+    "numPendingTests": 15
+  },
+  "newTests": 52,
+  "skippedReason": "15 existing PostgreSQL-dependent integration cases",
+  "independentReview": "No blocking arithmetic or state-transition defects; explicit fees, reserves, unknown/reconcile, duplicate delivery and replay checked",
+  "fileSha256": {
+    "src/paper-pair/settlement.ts": "36c72b5b807b7159c0ef7b27f6ea143cc904085db02f781555d264f34d63861a",
+    "src/paper-pair/settlement-scenario.ts": "376c24a03425b09b1118dd57d7eb008c52aa579a97f6d7e25163769c1b620d95",
+    "src/scripts/pair-settlement.ts": "1a98b85270c97c2cadf51da9821e90d93abc2784af9a1e52d4dd8486f4caa739",
+    "tests/paper-pair-settlement.test.ts": "57037193088538609e08054d89ee2e8f1b1f77f7ed52eabddef7dccae58dd334",
+    "tests/paper-pair-settlement-scenario.test.ts": "a0e2dcb60c5ca6789432ddd2e96ce834036f863194a7d8d2168d4e1721511db8"
+  },
+  "runtimeChanged": false,
+  "sourcePushed": false,
+  "exchangeOrders": 0,
+  "privateApiCalls": 0,
+  "credentialsChanged": false
+}

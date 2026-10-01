@@ -1,0 +1,51 @@
+{
+  "ready": true,
+  "appUnchanged": true,
+  "isolationVerified": true,
+  "sampledCount": 1440,
+  "archiveBytes": 8246779,
+  "startedAt": 1790429081783,
+  "deadlineAt": 1790515511783,
+  "captureId": "7a976c9c-27a1-4fc0-8aff-9631aa69dd35",
+  "collector": {
+    "name": "crypto-pair-paper-20260926T132434Z-41096fa8",
+    "status": "exited",
+    "exitCode": 0,
+    "startedAt": "2026-09-26T13:24:41.359095694Z",
+    "finishedAt": "2026-09-27T13:23:43.759741783Z",
+    "oomKilled": false,
+    "restarts": 0
+  },
+  "sourceRevision": "3a6dd03715ef4570b406cc8ddff33e851faace4c",
+  "bundleSha256": "41096fa8e5c08cface7d01102860699777dfa2ccc3ea5463759ef7e71af25402",
+  "reportSha256": "ca489947c3b2e1c97c50387bbfeba5a851c40e86f6c9332a9e812e16d1114f8a",
+  "deterministicReplay": true,
+  "report": {
+    "captureId": "7a976c9c-27a1-4fc0-8aff-9631aa69dd35",
+    "archiveHash": "44be35d067d0ce4e47b502f4e31fda0695556b8cc2d25ee5955ef0c4015d9b2d",
+    "coverage": {
+      "scheduledPairs": 1440,
+      "availablePairs": 1419,
+      "unavailablePairs": 21,
+      "complete": false,
+      "sourceSynchronizationProven": false
+    },
+    "counts": {
+      "directionalComparisons": 2838,
+      "positiveDirections": 0,
+      "ruleEligibleDirections": 0,
+      "paperPairs": 0
+    },
+    "netRangeUsdt": {
+      "minimum": "-0.02672392",
+      "maximum": "-0.01568865"
+    },
+    "output": "/home/anton/Projects/trading/robot.crypto.jsnode/output/pair-day-20260926/hyperion/report"
+  },
+  "analysisMode": "strict",
+  "protocolAccepted": true,
+  "archiveFileCount": 1443,
+  "verifiedAtUtc": "2026-09-28T05:22:42Z",
+  "verificationTimeMeaning": "Acceptance completion observed locally; original archive timestamps retained.",
+  "fileManifestLocation": "output/pair-day-20260926/hyperion/acceptance.json"
+}

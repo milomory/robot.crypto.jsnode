@@ -20,6 +20,8 @@ const envSchema = z.object({
   AUTH_CORE_APP_ORIGIN: z.string().default(''),
   AUTH_CORE_CLIENT_SECRET: z.string().default(''),
   AUTH_CORE_VIEWER_IDS: z.string().default(''),
+  AUTH_CORE_OWNER_IDS: z.string().default(''),
+  ACCOUNT_DASHBOARD_DIR: z.string().default(''),
   NODE_ENV: z.string().default('development'),
   HTTP_HOST: z.string().default('127.0.0.1'),
   HTTP_PORT: z.coerce.number().int().positive().default(3000),
@@ -62,6 +64,12 @@ export type AppConfig = ReturnType<typeof getConfig>;
 
 export const getConfig = () => {
   const env = envSchema.parse(process.env);
+  const viewerIds = env.AUTH_CORE_VIEWER_IDS.split(',').map(value => value.trim()).filter(Boolean);
+  const ownerIds = env.AUTH_CORE_OWNER_IDS.split(',').map(value => value.trim()).filter(Boolean);
+  if (new Set(ownerIds).size !== ownerIds.length ||
+      ownerIds.some(id => !z.string().uuid().safeParse(id).success || !viewerIds.includes(id))) {
+    throw new Error('Invalid account owner authorization configuration');
+  }
   const symbols = env.SYMBOLS.split(',')
     .map((symbol) => symbol.trim().toUpperCase())
     .filter(Boolean);
@@ -69,12 +77,14 @@ export const getConfig = () => {
   return {
     nodeEnv: env.NODE_ENV,
     labObservationRunDir: env.LAB_OBSERVATION_RUN_DIR,
+    accountDashboardDir: env.ACCOUNT_DASHBOARD_DIR,
     authCore: {
       enabled: env.AUTH_CORE_ENABLED === 'true',
       origin: env.AUTH_CORE_ORIGIN,
       appOrigin: env.AUTH_CORE_APP_ORIGIN,
       clientSecret: env.AUTH_CORE_CLIENT_SECRET,
-      viewerIds: env.AUTH_CORE_VIEWER_IDS.split(',').map(value => value.trim()).filter(Boolean)
+      viewerIds,
+      ownerIds
     },
     http: {
       host: env.HTTP_HOST,

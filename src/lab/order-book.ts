@@ -1,8 +1,10 @@
 // Deliberately independent of the production journal, credentials and order routes.
 export type Venue = 'binance' | 'bybit' | 'okx';
+// Legacy archives remain restricted to Venue. New public sources are opt-in.
+export type PublicVenue = Venue | 'mexc' | 'hitbtc';
 export type Level = readonly [price: number, quantity: number];
-export interface OrderBook {
-  venue: Venue;
+export interface OrderBook<V extends PublicVenue = Venue> {
+  venue: V;
   symbol: string;
   bids: Level[];
   asks: Level[];
@@ -14,7 +16,7 @@ export interface OrderBook {
 export class LabError extends Error {}
 export const positive = (value: number): boolean => Number.isFinite(value) && value > 0;
 
-export function validateBook(book: OrderBook, now: number, maxAgeMs = 5_000): void {
+export function validateBook(book: OrderBook<PublicVenue>, now: number, maxAgeMs = 5_000): void {
   if (!positive(now) || !positive(maxAgeMs) || !positive(book.requestedAt) ||
       !positive(book.receivedAt) || book.receivedAt < book.requestedAt ||
       book.receivedAt > now || now - book.requestedAt > maxAgeMs) {
@@ -49,7 +51,7 @@ export interface SimulatedFill {
 }
 
 // Fees are assumed paid in quote currency; slippage is an adverse additional buffer.
-export function simulateFill(book: OrderBook, side: 'buy' | 'sell', quantity: number,
+export function simulateFill(book: OrderBook<PublicVenue>, side: 'buy' | 'sell', quantity: number,
   assumptions: FillAssumptions, now: number): SimulatedFill {
   validateBook(book, now);
   if (!positive(quantity) || !['buy', 'sell'].includes(side)) throw new LabError('invalid-order');
@@ -74,8 +76,8 @@ export function simulateFill(book: OrderBook, side: 'buy' | 'sell', quantity: nu
     quoteBeforeSlippage: quote, slippageQuote, feeQuote, cashQuote };
 }
 
-export function compareVenues(buy: OrderBook, sell: OrderBook, quantity: number,
-  costs: Record<Venue, FillAssumptions>, now: number) {
+export function compareVenues<V extends PublicVenue>(buy: OrderBook<V>, sell: OrderBook<V>, quantity: number,
+  costs: Record<V, FillAssumptions>, now: number) {
   if (buy.venue === sell.venue || buy.symbol !== sell.symbol) throw new LabError('incompatible-books');
   validateBook(buy, now);
   validateBook(sell, now);

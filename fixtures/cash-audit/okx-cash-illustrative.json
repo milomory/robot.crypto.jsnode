@@ -1,0 +1,179 @@
+{
+  "schema": 1,
+  "kind": "order-cash-audit",
+  "order": {
+    "schema": 1,
+    "kind": "recorded-order-audit",
+    "source": "synthetic",
+    "account": "main",
+    "observedAt": 2000,
+    "limit": 100,
+    "venue": "okx",
+    "expected": {
+      "orderId": "synthetic-cash-order",
+      "side": "buy"
+    },
+    "orderBefore": {
+      "code": "0",
+      "data": [
+        {
+          "instType": "SPOT",
+          "instId": "BTC-USDT",
+          "tdMode": "cash",
+          "category": "normal",
+          "ordId": "synthetic-cash-order",
+          "side": "buy",
+          "ordType": "market",
+          "state": "filled",
+          "sz": "0.0001",
+          "tgtCcy": "base_ccy",
+          "tradeQuoteCcy": "USDT",
+          "accFillSz": "0.0001",
+          "avgPx": "84000",
+          "fee": "-0.0000001",
+          "feeCcy": "BTC",
+          "rebate": "",
+          "rebateCcy": "",
+          "cTime": "1000",
+          "uTime": "1500"
+        }
+      ]
+    },
+    "orderAfter": {
+      "code": "0",
+      "data": [
+        {
+          "instType": "SPOT",
+          "instId": "BTC-USDT",
+          "tdMode": "cash",
+          "category": "normal",
+          "ordId": "synthetic-cash-order",
+          "side": "buy",
+          "ordType": "market",
+          "state": "filled",
+          "sz": "0.0001",
+          "tgtCcy": "base_ccy",
+          "tradeQuoteCcy": "USDT",
+          "accFillSz": "0.0001",
+          "avgPx": "84000",
+          "fee": "-0.0000001",
+          "feeCcy": "BTC",
+          "rebate": "",
+          "rebateCcy": "",
+          "cTime": "1000",
+          "uTime": "1500"
+        }
+      ]
+    },
+    "fills": {
+      "code": "0",
+      "data": [
+        {
+          "instType": "SPOT",
+          "instId": "BTC-USDT",
+          "ordId": "synthetic-cash-order",
+          "tradeId": "synthetic-trade-1",
+          "billId": "synthetic-base-bill-1",
+          "side": "buy",
+          "subType": "1",
+          "execType": "T",
+          "fillSz": "0.00006",
+          "fillPx": "83990",
+          "fee": "-0.00000006",
+          "feeCcy": "BTC",
+          "fillTime": "1100",
+          "ts": "1110"
+        },
+        {
+          "instType": "SPOT",
+          "instId": "BTC-USDT",
+          "ordId": "synthetic-cash-order",
+          "tradeId": "synthetic-trade-2",
+          "billId": "synthetic-base-bill-2",
+          "side": "buy",
+          "subType": "1",
+          "execType": "T",
+          "fillSz": "0.00004",
+          "fillPx": "84015",
+          "fee": "-0.00000004",
+          "feeCcy": "BTC",
+          "fillTime": "1200",
+          "ts": "1210"
+        }
+      ]
+    }
+  },
+  "bills": {
+    "window": {
+      "from": 1000,
+      "to": 2000
+    },
+    "limit": 100,
+    "rows": [
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "synthetic-cash-order",
+        "tradeId": "synthetic-trade-1",
+        "type": "2",
+        "subType": "1",
+        "mgnMode": "cash",
+        "execType": "T",
+        "ts": "1110",
+        "billId": "synthetic-base-bill-1",
+        "ccy": "BTC",
+        "balChg": "0.00005994",
+        "fee": "-0.00000006",
+        "sz": "0.00006"
+      },
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "synthetic-cash-order",
+        "tradeId": "synthetic-trade-1",
+        "type": "2",
+        "subType": "1",
+        "mgnMode": "cash",
+        "execType": "T",
+        "ts": "1110",
+        "billId": "synthetic-quote-bill-1",
+        "ccy": "USDT",
+        "balChg": "-5.0394",
+        "fee": "0",
+        "sz": "-5.0394"
+      },
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "synthetic-cash-order",
+        "tradeId": "synthetic-trade-2",
+        "type": "2",
+        "subType": "1",
+        "mgnMode": "cash",
+        "execType": "T",
+        "ts": "1210",
+        "billId": "synthetic-base-bill-2",
+        "ccy": "BTC",
+        "balChg": "0.00003996",
+        "fee": "-0.00000004",
+        "sz": "0.00004"
+      },
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "synthetic-cash-order",
+        "tradeId": "synthetic-trade-2",
+        "type": "2",
+        "subType": "1",
+        "mgnMode": "cash",
+        "execType": "T",
+        "ts": "1210",
+        "billId": "synthetic-quote-bill-2",
+        "ccy": "USDT",
+        "balChg": "-3.3606",
+        "fee": "0",
+        "sz": "-3.3606"
+      }
+    ]
+  }
+}

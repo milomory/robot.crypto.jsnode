@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "scope": "synthetic offline fixtures, not live account acceptance",
+  "cases": [
+    {
+      "fixture": "mexc-partial-cancel",
+      "settlementReady": true,
+      "blockers": [],
+      "uniqueFills": 2,
+      "normalizedSha256": "986e0bd9c2fa824cabace505c25e2811755041688ae0302922b3a24e4f00e735",
+      "reportSha256": "13fdbff6e16a610517e7e68f0f9f161410ef974a2999dc0f86298f1a1411fc3c"
+    },
+    {
+      "fixture": "mexc-missing-fill",
+      "settlementReady": false,
+      "blockers": [
+        "base-total-mismatch",
+        "quote-total-mismatch"
+      ],
+      "uniqueFills": 1,
+      "normalizedSha256": "7e0f8d12b9f68a31201dd632973e9593ca08621e96529b4db4afb120fdfdffd6",
+      "reportSha256": "ad50de412eca493867572edbef65fef996d3f450b67122c37f0432209ba452f8"
+    },
+    {
+      "fixture": "okx-derived-quote",
+      "settlementReady": false,
+      "blockers": [
+        "quote-amount-not-reported"
+      ],
+      "uniqueFills": 2,
+      "normalizedSha256": "5548616de9486eb52a6d157ada2da8e5a66f081edd53011f5ba08171e641ab4d",
+      "reportSha256": "92583e0fa1357df653abd3c9e05bdddd5e289c9725ffa5ae47b6c5e1975bd600"
+    },
+    {
+      "fixture": "okx-zero-cancel",
+      "settlementReady": true,
+      "blockers": [],
+      "uniqueFills": 0,
+      "normalizedSha256": "6c42b54a9077fe026a8aae25434a3cd44d23e4f05688e5e8e6156f87c1665337",
+      "reportSha256": "231e1b67851a1be0256625df606ef790d2b7acf9294b4a88b8707dd91ceea5cc"
+    }
+  ],
+  "networkUsed": false,
+  "exchangeOrders": 0
+}

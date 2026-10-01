@@ -7,11 +7,13 @@ import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
 import { z } from 'zod';
 
-import { isOperatorPath, logSafeRequest, registerAuthCore } from '../auth/auth-core.js';
+import { isAccountOwnerPath, isOperatorPath, logSafeRequest, registerAuthCore } from '../auth/auth-core.js';
 import { getConfig } from '../config/env.js';
 import type { DbPool } from '../db/pool.js';
 import type { MarketTicker, PaperOrderRequest } from '../domain/types.js';
 import { registerBinanceReadOnlyRoutes } from './binance-readonly-routes.js';
+import { registerAccountDashboardRoutes } from './account-dashboard-routes.js';
+import { registerBalanceHistoryRoutes } from './balance-history-routes.js';
 import { BinancePublicMarketDataAdapter } from '../exchange/binance-public-market-data.js';
 import { isFallbackMarketTicker, type MarketDataAdapter } from '../exchange/exchange-adapter.js';
 import { PaperExchange } from '../exchange/paper-exchange.js';
@@ -137,7 +139,7 @@ export const buildServer = async (pool: DbPool) => {
   if (config.authCore.enabled) {
     // Explicit operational API aliases; never a fallback for viewer authentication.
     app.addHook('onRoute', (route) => {
-      if (typeof route.method === 'string' && ['GET', 'POST'].includes(route.method) && route.url.startsWith('/api/')) {
+      if (typeof route.method === 'string' && ['GET', 'POST'].includes(route.method) && route.url.startsWith('/api/') && !isAccountOwnerPath(route.url)) {
         app.route({ ...route, url: `/operator${route.url}`, exposeHeadRoute: false });
       }
     });
@@ -180,7 +182,11 @@ export const buildServer = async (pool: DbPool) => {
     }
   });
 
-  registerAuthCore(app, config.authCore);
+  const authAccess = registerAuthCore(app, config.authCore);
+  registerAccountDashboardRoutes(app, { directory: config.accountDashboardDir,
+    isAccountOwner: authAccess.isAccountOwner });
+  registerBalanceHistoryRoutes(app, { directory: config.accountDashboardDir,
+    isAccountOwner: authAccess.isAccountOwner });
 
   app.get('/api/lab/report', async (_request, reply) => {
     reply.header('Cache-Control', 'no-store');
@@ -240,7 +246,8 @@ export const buildServer = async (pool: DbPool) => {
       mode: config.trading.mode,
       liveTradingLocked: config.trading.liveTradingLocked,
       dashboardAuth: config.dashboard.authEnabled ? 'enabled' : 'disabled',
-      access: { role: config.authCore.enabled && !isOperatorPath(request.url) ? 'viewer' : 'operator' },
+      access: { role: config.authCore.enabled && !isOperatorPath(request.url) ? 'viewer' : 'operator',
+        accountOwner: authAccess.isAccountOwner(request) },
       autoTrader: autoTrader.getStatus(),
       exchange: config.exchange.id,
       marketData: marketData.id,
@@ -447,7 +454,7 @@ export const buildServer = async (pool: DbPool) => {
   );
 
   app.setNotFoundHandler(async (request, reply) => {
-    if (request.url.startsWith('/api/')) {
+    if (request.url.startsWith('/api/') || request.url.startsWith('/operator/api/')) {
       return reply.code(404).send({ ok: false, error: 'API route not found' });
     }
 

@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "kind": "synthetic-live-order-rehearsal",
+  "events": [
+    {
+      "eventId": "10000000-0000-4000-8000-000000000001",
+      "at": "2026-09-28T12:00:01.000Z",
+      "type": "intent-created",
+      "intent": {
+        "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "venue": "mexc",
+        "account": "main",
+        "symbol": "BTC/USDT",
+        "side": "buy",
+        "orderType": "limit",
+        "baseQuantity": "0.001",
+        "limitPrice": "100000",
+        "maxQuoteAmount": "100",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0.1",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000002",
+      "at": "2026-09-28T12:00:02.000Z",
+      "type": "dispatch-marked",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "clientOrderId": "CRM31773cc257f7e35f684975c6924da"
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000003",
+      "at": "2026-09-28T12:00:03.000Z",
+      "type": "dispatch-uncertain",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "reason": "timeout"
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000004",
+      "at": "2026-09-28T12:00:04.000Z",
+      "type": "lookup-not-found",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "venue": "mexc",
+      "account": "main",
+      "clientOrderId": "CRM31773cc257f7e35f684975c6924da",
+      "source": "synthetic"
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000005",
+      "at": "2026-09-28T12:00:05.000Z",
+      "type": "fill-recorded",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "identity": {
+        "venue": "mexc",
+        "account": "main",
+        "symbol": "BTC/USDT",
+        "side": "buy",
+        "clientOrderId": "CRM31773cc257f7e35f684975c6924da",
+        "exchangeOrderId": "synthetic-order-1"
+      },
+      "source": "synthetic",
+      "fill": {
+        "fillId": "synthetic-fill-1",
+        "executedAt": "2026-09-28T12:00:02.500Z",
+        "baseQuantity": "0.0004",
+        "quoteQuantity": "40",
+        "quoteAmountSource": "reported",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0.04",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000006",
+      "at": "2026-09-28T12:00:06.000Z",
+      "type": "cancel-requested",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000007",
+      "at": "2026-09-28T12:00:07.000Z",
+      "type": "cancel-acknowledged",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000008",
+      "at": "2026-09-28T12:00:08.000Z",
+      "type": "order-observed",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "observation": {
+        "identity": {
+          "venue": "mexc",
+          "account": "main",
+          "symbol": "BTC/USDT",
+          "side": "buy",
+          "clientOrderId": "CRM31773cc257f7e35f684975c6924da",
+          "exchangeOrderId": "synthetic-order-1"
+        },
+        "source": "synthetic",
+        "status": "canceled",
+        "cumulativeBaseQuantity": "0.0004",
+        "cumulativeQuoteQuantity": "40",
+        "quoteAmountSource": "reported"
+      }
+    },
+    {
+      "eventId": "10000000-0000-4000-8000-000000000009",
+      "at": "2026-09-28T12:00:09.000Z",
+      "type": "terminal-reconciled",
+      "orderIntentId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "observationEventId": "10000000-0000-4000-8000-000000000008"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "fullSuite": {
+    "passed": 1596,
+    "skipped": 15,
+    "failed": 0,
+    "workers": 1
+  },
+  "pythonOpsTests": {
+    "passed": 22,
+    "failed": 0
+  },
+  "newDayTests": {
+    "capture": 8,
+    "report": 14
+  },
+  "apiBuild": true,
+  "newTestsStrictTyping": true,
+  "legacyReports": [
+    {
+      "name": "five-minute",
+      "byteIdentical": true,
+      "sha256": "9002eaec67c12c38e787dc362e33b638e805070952b4da0c427904f11ed1712d"
+    },
+    {
+      "name": "thirty-minute-diagnostic",
+      "byteIdentical": true,
+      "sha256": "c65fd1aa07cb68904a3004332f791bcba6a0a21e86a581b716402a2fac8cb1e4"
+    }
+  ],
+  "bundle": {
+    "file": "output/pair-day-20260926/pair-paper.mjs",
+    "bytes": 201629,
+    "sha256": "41096fa8e5c08cface7d01102860699777dfa2ccc3ea5463759ef7e71af25402"
+  },
+  "liveDayCaptureCompleted": false,
+  "bundleLegacyReplayByteIdentical": true
+}

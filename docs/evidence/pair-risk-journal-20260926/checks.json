@@ -1,0 +1,23 @@
+{
+  "kind": "synthetic-risk-journal-acceptance",
+  "synthetic": true,
+  "mixedFreshSourceCompiledProcesses": true,
+  "reportBytesIdentical": true,
+  "independentDecimalLossCheck": true,
+  "blockedPreparationLeavesFilesUnchanged": true,
+  "smallerPreparationAcceptedUnderSamePolicy": true,
+  "policyHash": "cdc13a532a7321d865872777ce980fcbec18c7212b8ae9974c287bc539e9c086",
+  "reportHash": "b7780ee72062181357b7cadb36ede264817386338e4367b8190697ad5dc92694",
+  "checkedAtDate": "2026-09-26",
+  "newCoreTestsPassed": 28,
+  "newCliTestsPassed": 4,
+  "legacyJournalTestsPassed": 19,
+  "fullSuitePassed": 1696,
+  "existingPostgresSkipped": 15,
+  "apiBuild": "passed",
+  "strictNewTestsTypecheck": "passed",
+  "directedCrossProcessCAS": "passed",
+  "sigkillBeforeAndAfterPublication": "passed",
+  "deploymentPerformed": false,
+  "sourcePublicationPerformed": false
+}

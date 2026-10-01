@@ -1,6 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { ACCOUNT_DASHBOARD_PATH } from '../accounts/dashboard-contract.js';
 
 export interface AuthCoreConfig {
   enabled: boolean;
@@ -8,6 +9,7 @@ export interface AuthCoreConfig {
   appOrigin: string;
   clientSecret: string;
   viewerIds: readonly string[];
+  ownerIds?: readonly string[];
 }
 const clientId = 'crypto.robot';
 const sessionCookie = '__Host-crypto_sso';
@@ -37,6 +39,9 @@ export const viewerPaths = new Set([
   '/api/positions', '/api/risk-events', '/api/auto-trader/status', '/api/lab/report'
 ]);
 const operatorMutations = new Set(['/operator/api/auto-trader/scan', '/operator/api/paper/orders', '/operator/api/admin/live-unlock']);
+export const ACCOUNT_BALANCE_HISTORY_PATH = '/api/accounts/balance-history';
+export const isAccountOwnerPath = (path: string) =>
+  path === ACCOUNT_DASHBOARD_PATH || path === ACCOUNT_BALANCE_HISTORY_PATH;
 export const isOperatorPath = (url: string) => url.split('?')[0].startsWith('/operator/');
 export const logSafeRequest = (request: { id?: string; method?: string; url?: string }) => ({
   id: request.id, method: request.method, url: request.url?.split('?')[0]
@@ -45,7 +50,13 @@ interface Session { token: string; expires: number; csrf: string; userId?: strin
 class Unavailable extends Error {}
 
 export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, transport: typeof fetch = fetch) {
-  if (!config.enabled) return;
+  const actors = new WeakMap<FastifyRequest, Session>();
+  const owners = new Set(config.ownerIds ?? []);
+  const access = { isAccountOwner: (request: FastifyRequest) => {
+    const actor = actors.get(request);
+    return config.enabled && actor?.userId !== undefined && owners.has(actor.userId);
+  } };
+  if (!config.enabled) return access;
   function origin(value: string) {
     try {
       const url = new URL(value);
@@ -55,7 +66,8 @@ export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, t
   }
   const authOrigin = origin(config.origin);
   const appOrigin = origin(config.appOrigin);
-  if (config.clientSecret.length < 32 || !config.viewerIds.every(id => subject.safeParse(id).success)) {
+  if (config.clientSecret.length < 32 || !config.viewerIds.every(id => subject.safeParse(id).success) ||
+      [...owners].some(id => !subject.safeParse(id).success || !config.viewerIds.includes(id))) {
     throw new Error('Invalid Auth Core client configuration');
   }
   const viewers = new Set(config.viewerIds);
@@ -63,7 +75,6 @@ export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, t
   const sessions = new Map<string, Session>();
   const pending = new Map<string, { verifier: string; expires: number }>();
   const operators = new Map<string, { csrf: string; expires: number }>();
-  const actors = new WeakMap<FastifyRequest, Session>();
   const prune = () => {
     for (const map of [sessions, pending, operators]) {
       for (const [id, value] of map) if (value.expires <= Date.now()) map.delete(id);
@@ -131,9 +142,13 @@ export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, t
       const info = await introspect(session);
       if (!info) return unauthenticated();
       if (!viewers.has(info.user.id)) { clear(request, reply); return fail(reply, 403, 'viewer_not_authorized'); }
+      if (isAccountOwnerPath(path) && !owners.has(info.user.id)) {
+        return fail(reply, 403, 'account_owner_required');
+      }
       const safeAsset = /^\/assets\/[A-Za-z0-9_-]+\.(js|css)$/.test(path);
       if (!['GET', 'HEAD'].includes(request.method) ||
-          !(viewerPaths.has(path) || path === '/' || path === '/auth/session' || safeAsset)) {
+          !(viewerPaths.has(path) || (isAccountOwnerPath(path) && owners.has(info.user.id)) ||
+            path === '/' || path === '/auth/session' || safeAsset)) {
         return fail(reply, 403, 'viewer_operation_denied');
       }
       actors.set(request, session);
@@ -208,4 +223,5 @@ export function registerAuthCore(app: FastifyInstance, config: AuthCoreConfig, t
     return { role: 'operator', csrfToken: session.csrf };
   });
   app.addHook('onClose', async () => { sessions.clear(); pending.clear(); operators.clear(); });
+  return access;
 }

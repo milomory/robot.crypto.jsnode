@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "kind": "live-order-admission-policy",
+  "source": "declared-synthetic",
+  "limits": {
+    "schema": 1,
+    "kind": "live-limits-draft",
+    "account": "main",
+    "symbol": "BTC/USDT",
+    "totalCapitalUsdt": "40",
+    "capitalByVenueUsdt": { "mexc": "20", "okx": "20" },
+    "maxOrderDebitUsdt": "15",
+    "maxCumulativeLossUsdt": "30",
+    "maxUnhedgedBtc": "0.001",
+    "includeEarn": false,
+    "transfersEnabled": false,
+    "withdrawalsEnabled": false
+  },
+  "initialBalances": {
+    "mexc": { "BTC": "0", "USDT": "100", "MX": "0" },
+    "okx": { "BTC": "0", "USDT": "100", "MX": "0" }
+  }
+}

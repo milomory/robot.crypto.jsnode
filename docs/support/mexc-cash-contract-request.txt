@@ -1,0 +1,15 @@
+To: service@mexc.com
+Subject: Spot API contract clarification: BTCUSDT quantity step, quoteOrderQty and fees
+
+Hello MEXC Support,
+
+Please forward these technical questions to the Spot API team. We are implementing read-only reconciliation and an offline simulator for ordinary BTCUSDT Spot activity. This request contains no account credentials or identifiers.
+
+1. Which API field defines the exact permitted BTC quantity increment for LIMIT and MARKET SELL? exchangeInfo documents baseSizePrecision as a minimum quantity, separately from baseAssetPrecision. Please confirm the increment, divisibility rule and whether excess precision is rejected or rounded.
+2. For MARKET BUY, is quoteOrderQty gross trade consideration or the total debit including fees? With MX deduction off, what additional quote-currency reserve is needed? What precision, increment and rounding apply to this parameter and the resulting BTC amount?
+3. What precision and rounding apply to commissions, per fill or per order? How do baseCommissionPrecision and quoteCommissionPrecision relate to the final commission returned by myTrades? Are the fee currency rules different for partial fills or MX-insufficient fallback?
+4. Which terminal status and aggregate fields establish the actual executed BTC, quote spent, commission and unused budget after a partially executed MARKET BUY?
+
+Please link the applicable API contract and effective date. Anonymized examples are sufficient. We do not need any order to be placed or account setting changed.
+
+Thank you.

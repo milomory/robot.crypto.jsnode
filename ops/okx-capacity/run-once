@@ -1,0 +1,335 @@
+#!/usr/bin/python3 -I
+"""Fixed three-GET OKX identity/configuration and capacity observation only. No caller paths, commands, environment or orders.
+
+The observer and capacity locks cover validation, observation and exact-CID
+cleanup. The observer-state mount permits file writes; pinned code restricts its
+use to cooldowns. This is not a filesystem capability limited to one file.
+"""
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import select
+import signal
+import stat
+import subprocess
+import sys
+import time
+import uuid
+
+IMAGE = 'sha256:404c49b93e47f2eacecd16448ad73e021bf7f5edb621721f545667e8a58e9c08'
+BASE = Path('/home/mil/crypto-okx-capacity')
+BINDING_BASE = Path('/home/mil/crypto-account-funds')
+BINDING_SOURCE_HASH = 'da4ad8a2e69855c9a49e1556287e55b2a7703e6e3aa67efe115969fb8105d7c5'
+BINDING_SOURCE = BINDING_BASE / 'releases' / BINDING_SOURCE_HASH
+OBSERVER_STATE = Path('/home/mil/crypto-pair-observer/state')
+DOCKER = '/usr/bin/docker'
+UID = 1002
+NAME = 'crypto-okx-capacity-readonly'
+LABEL = 'crypto-okx-capacity.release'
+INVOCATION_LABEL = 'crypto-okx-capacity.invocation'
+ENTRYPOINT = 'dist/accounts/okx-capacity-main.js'
+MAX_OUTPUT = 4096
+FAILURE = {'schema': 1, 'error': 'capacity-failed'}
+RUN_SECONDS = 45
+CLEANUP_SECONDS = 10
+MAX_FILES = 4096
+MAX_TOTAL = 32 * 1024 * 1024
+
+
+def unique_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError()
+        result[key] = value
+    return result
+
+
+def reject_constant(_value):
+    raise ValueError()
+
+
+def decode(raw):
+    return json.loads(raw.decode('utf-8'), object_pairs_hook=unique_pairs, parse_constant=reject_constant)
+
+
+def sha(value):
+    return hashlib.sha256(value).hexdigest()
+
+
+def is_hash(value):
+    return type(value) is str and re.fullmatch('[a-f0-9]{64}', value) is not None
+
+
+def private_directory(path):
+    info = path.lstat()
+    if (path.resolve() != path or not stat.S_ISDIR(info.st_mode)
+            or info.st_uid != UID or stat.S_IMODE(info.st_mode) != 0o700):
+        raise ValueError()
+
+
+def read_private(path, bound, executable=False):
+    descriptor = os.open(str(path), os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(descriptor, 'rb') as source:
+        info = os.fstat(source.fileno())
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != UID or info.st_nlink != 1
+                or stat.S_IMODE(info.st_mode) != (0o700 if executable else 0o600) or info.st_size > bound):
+            raise ValueError()
+        raw = source.read(bound + 1)
+        if len(raw) > bound:
+            raise ValueError()
+        return raw
+
+
+def safe_name(name):
+    return (type(name) is str and len(name) <= 240 and re.fullmatch('[A-Za-z0-9_./-]+', name)
+            and not name.startswith('/') and all(part not in ('', '.', '..') for part in name.split('/')))
+
+
+def verify_release(release):
+    if release.parent != BASE / 'releases' or not is_hash(release.name):
+        raise ValueError()
+    for directory in (BASE, BASE / 'releases', release):
+        private_directory(directory)
+    raw = read_private(release / 'manifest.json', 512 * 1024)
+    if sha(raw) != release.name:
+        raise ValueError()
+    manifest = decode(raw)
+    if (type(manifest) is not dict or not 3 <= len(manifest) <= MAX_FILES
+            or not {'run-once', 'check-installed.py', 'package.json', ENTRYPOINT}.issubset(manifest)
+            or any(not safe_name(name) or name == 'manifest.json' or not is_hash(value) for name, value in manifest.items())):
+        raise ValueError()
+    observed = set()
+    total = 0
+    expected_dirs = set()
+    for name in manifest:
+        parts = name.split('/')
+        expected_dirs.update('/'.join(parts[:i]) for i in range(1, len(parts)))
+    seen_dirs = set()
+    for directory, dirs, files in os.walk(str(release), followlinks=False):
+        parent = Path(directory)
+        private_directory(parent)
+        for name in dirs:
+            child = parent / name
+            private_directory(child)
+            relative_dir = str(child.relative_to(release))
+            if relative_dir not in expected_dirs:
+                raise ValueError()
+            seen_dirs.add(relative_dir)
+        for name in files:
+            child = parent / name
+            relative = str(child.relative_to(release))
+            if relative == 'manifest.json':
+                continue
+            if relative not in manifest:
+                raise ValueError()
+            content = read_private(child, 8 * 1024 * 1024, relative == 'run-once')
+            total += len(content)
+            if total > MAX_TOTAL or sha(content) != manifest[relative]:
+                raise ValueError()
+            observed.add(relative)
+    if observed != set(manifest) or seen_dirs != expected_dirs:
+        raise ValueError()
+
+
+def verify_binding_files():
+    # Independently fixed accepted binding source. No re-enrollment or rewrite.
+    for directory in (BINDING_BASE, BINDING_BASE / 'binding', BINDING_BASE / 'releases', BINDING_SOURCE):
+        private_directory(directory)
+    original = read_private(BINDING_SOURCE / 'manifest.json', 512 * 1024)
+    if sha(original) != BINDING_SOURCE_HASH:
+        raise ValueError()
+    for name, bound in (('selection.json', 65536), ('pin.json', 65536), ('binding-key', 32)):
+        raw = read_private(BINDING_BASE / 'binding' / name, bound)
+        if not raw or (name == 'binding-key' and len(raw) != 32):
+            raise ValueError()
+
+
+def verify_cooldowns():
+    value = decode(read_private(OBSERVER_STATE / 'cooldowns.json', 4096))
+    if (type(value) is not dict or set(value) != {'schema', 'mexc', 'okx'}
+            or type(value['schema']) is not int or value['schema'] != 1
+            or any(type(value[venue]) is not int or not 0 <= value[venue] <= 8640000000000000
+                   for venue in ('mexc', 'okx'))):
+        raise ValueError()
+    if any(value[venue] > int(time.time() * 1000) for venue in ('mexc', 'okx')):
+        raise ValueError()
+
+
+def locked_file(path, create=False):
+    descriptor = os.open(str(path), os.O_RDWR | os.O_NOFOLLOW | (os.O_CREAT if create else 0), 0o600)
+    try:
+        info = os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != UID or info.st_nlink != 1
+                or stat.S_IMODE(info.st_mode) != 0o600):
+            raise ValueError()
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return os.fdopen(descriptor, 'r+')
+    except Exception:
+        os.close(descriptor)
+        raise
+
+
+def command(args, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError()
+    return subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL, timeout=min(3, remaining), check=False)
+
+
+def absent_container(deadline, identity=None):
+    selector = 'id=' + identity if identity else 'name=^/' + NAME + '$'
+    result = command([DOCKER, 'ps', '--all', '--quiet', '--no-trunc', '--filter', selector], deadline)
+    return result.returncode == 0 and not result.stdout.strip()
+
+
+def cleanup_container(cidfile, release_digest, invocation, deadline):
+    if cidfile.exists() or cidfile.is_symlink():
+        identity = read_private(cidfile, 65).decode('ascii').strip()
+        if not is_hash(identity):
+            raise ValueError()
+        template = '{{.Id}} {{ index .Config.Labels "' + LABEL + '" }} {{ index .Config.Labels "' + INVOCATION_LABEL + '" }}'
+        result = command([DOCKER, 'inspect', '--format', template, identity], deadline)
+        if result.returncode == 0:
+            if result.stdout.strip() != (' '.join((identity, release_digest, invocation))).encode('ascii'):
+                raise ValueError()
+            if command([DOCKER, 'rm', '-f', identity], deadline).returncode != 0:
+                raise RuntimeError()
+        if not absent_container(deadline, identity) or not absent_container(deadline):
+            raise RuntimeError()
+        cidfile.unlink()
+    elif not absent_container(deadline):
+        raise RuntimeError()
+
+
+def decode_report(raw):
+    if not 0 < len(raw) <= MAX_OUTPUT:
+        raise ValueError()
+    value = decode(raw)
+    fields = {'schema', 'mode', 'reportWritten', 'executable', 'identityEnrolled', 'capacityBound',
+              'capacityAdmission', 'credentialBundleMatched', 'requestCount', 'okx', 'receipt'}
+    if (type(value) is not dict or set(value) != fields
+            or type(value['schema']) is not int or value['schema'] != 1
+            or value['mode'] != 'okx-capacity-readonly' or value['reportWritten'] is not True
+            or value['executable'] is not False or value['identityEnrolled'] is not True
+            or value['capacityBound'] is not True or value['capacityAdmission'] is not False
+            or value['credentialBundleMatched'] is not True
+            or type(value['requestCount']) is not int or value['requestCount'] != 3):
+        raise ValueError()
+    observed = value['okx']
+    if (type(observed) is not dict or set(observed) != {'observed', 'identityMatched', 'mainAccountConfirmed', 'configurationStable'}
+            or any(observed[name] is not True for name in ('observed', 'identityMatched', 'mainAccountConfirmed', 'configurationStable'))):
+        raise ValueError()
+    receipt = value['receipt']
+    if (type(receipt) is not dict or set(receipt) != {'schema', 'kind', 'archiveId', 'archiveHash'}
+            or type(receipt['schema']) is not int or receipt['schema'] != 1
+            or receipt['kind'] != 'okx-capacity-observation-receipt' or not is_hash(receipt['archiveHash'])
+            or type(receipt['archiveId']) is not str
+            or re.fullmatch('[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}', receipt['archiveId']) is None):
+        raise ValueError()
+    return value
+
+
+def bounded_output(process, seconds):
+    deadline = time.monotonic() + seconds
+    output = bytearray()
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError()
+        ready, _, _ = select.select([process.stdout], [], [], remaining)
+        if not ready:
+            raise TimeoutError()
+        chunk = os.read(process.stdout.fileno(), min(4096, MAX_OUTPUT - len(output) + 1))
+        if not chunk:
+            break
+        output.extend(chunk)
+        if len(output) > MAX_OUTPUT:
+            raise ValueError()
+    process.wait(timeout=max(.001, deadline - time.monotonic()))
+    if process.returncode != 0:
+        raise ValueError()
+    return bytes(output)
+
+
+def docker_arguments(release, cidfile, invocation):
+    return [DOCKER, 'run', '--rm', '-i', '--pull=never', '--name', NAME,
+            '--cidfile', str(cidfile), '--label', LABEL + '=' + release.name,
+            '--label', INVOCATION_LABEL + '=' + invocation, '--log-driver=none', '--read-only',
+            '--cap-drop=ALL', '--security-opt=no-new-privileges:true', '--user=1002:27',
+            '--pids-limit=64', '--memory=256m', '--cpus=0.5', '--ulimit=core=0',
+            '--network=bridge', '--tmpfs=/tmp:rw,noexec,nosuid,size=16m',
+            '--mount', 'type=bind,src=' + str(release) + ',dst=/code,readonly',
+            '--mount', 'type=bind,src=' + str(BASE / 'state') + ',dst=/state',
+            '--mount', 'type=bind,src=' + str(BINDING_BASE / 'binding') + ',dst=/binding,readonly',
+            '--mount', 'type=bind,src=' + str(BINDING_SOURCE) + ',dst=/binding-source,readonly',
+            '--mount', 'type=bind,src=' + str(OBSERVER_STATE) + ',dst=/observer-state',
+            '--workdir=/code', IMAGE, 'node', '--disable-proto=throw', ENTRYPOINT]
+
+
+def run_phase(release):
+    if not absent_container(time.monotonic() + 3):
+        raise ValueError()
+    invocation = str(uuid.uuid4())
+    cidfile = BASE / 'state' / ('.container-' + invocation)
+    if cidfile.exists() or cidfile.is_symlink():
+        raise ValueError()
+    process = None
+    try:
+        process = subprocess.Popen(docker_arguments(release, cidfile, invocation),
+                                   stdin=sys.stdin.buffer,
+                                   stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, start_new_session=True)
+        value = decode_report(bounded_output(process, RUN_SECONDS))
+    finally:
+        prior = []
+        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            prior.append((sig, signal.signal(sig, signal.SIG_IGN)))
+        deadline = time.monotonic() + CLEANUP_SECONDS
+        try:
+            try:
+                if process is not None and process.poll() is None:
+                    process.kill()
+                    process.wait(timeout=min(1, max(.001, deadline - time.monotonic())))
+            finally:
+                cleanup_container(cidfile, release.name, invocation, deadline)
+        finally:
+            if process is not None and process.stdout is not None:
+                process.stdout.close()
+            for sig, handler in prior:
+                signal.signal(sig, handler)
+    return value
+
+
+def main():
+    if os.getuid() != UID or len(sys.argv) != 1:
+        raise ValueError()
+    release = Path(__file__).resolve().parent
+    verify_release(release)
+    private_directory(BASE / 'state')
+    verify_binding_files()
+    private_directory(OBSERVER_STATE)
+    with locked_file(OBSERVER_STATE / '.observer.lock'), locked_file(BASE / 'state' / '.capacity.lock', create=True):
+        # No credential stream is consumed until immutable code and both private
+        # writable locations have been checked while holding the shared lock.
+        verify_cooldowns()
+        value = run_phase(release)
+        print(json.dumps(value, separators=(',', ':')))
+
+
+def interrupted(_signal, _frame):
+    raise InterruptedError()
+
+
+if __name__ == '__main__':
+    os.umask(0o077)
+    for selected_signal in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(selected_signal, interrupted)
+    try:
+        main()
+    except Exception:
+        print(json.dumps(FAILURE, separators=(',', ':')))
+        sys.exit(1)

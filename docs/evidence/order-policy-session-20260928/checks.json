@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "kind": "order-policy-and-recovery-session-local-acceptance",
+  "date": "2026-09-28",
+  "sourceBaseCommit": "7120e90795f65665f5958a124dcf082c10d4b991",
+  "sourcePublished": false,
+  "productionDeployed": false,
+  "productionLimitsEnforced": false,
+  "userLimitsSelected": false,
+  "captureProvenanceVerified": false,
+  "accountIdentityVerified": false,
+  "exchangeRequestsWithRealCredentials": 0,
+  "readOnlyInfrastructureMetadataChecked": true,
+  "sourceAcceptance": "synthetic-http-and-private-local-journals",
+  "checks": {
+    "repository": {
+      "command": "npm test -- --maxWorkers=2",
+      "passed": 2139,
+      "skipped": 15,
+      "skips": "existing PostgreSQL-dependent checks"
+    },
+    "build": "npm run build: PASS",
+    "strictNewTests": "tsc --noEmit --strict: PASS",
+    "newTests": {
+      "admissionPolicy": 32,
+      "policyJournal": 8,
+      "independentPolicyBoundary": 7,
+      "recoverySessionAndArchive": 33
+    }
+  },
+  "reviewCorrections": [
+    "Preserve per-venue HTTP and API cooldown across captures; latch persistence failures, including concurrent captures.",
+    "Preserve schema 1 CLI metadata shape while exposing bound policy only on schema 2."
+  ],
+  "notProven": [
+    "Real account/credential identity and authenticated order recovery.",
+    "Installed pinned recovery bridge/helper, cross-process locking and persisted shared cooldown.",
+    "Nonzero real cash reconciliation and final inventory/cumulative-loss accounting.",
+    "Qualified strategy and selected user capital/loss/residual limits."
+  ],
+  "sourceSha256": {
+    "src/live/order-admission-policy.ts": "b2b672a3b2e0f6cd8fe36a5d8ca232f7280a9213094d2a6e9cf4cb6aa8ed3811",
+    "src/live/order-journal.ts": "8617ecbb62f6f82ab5fac4033dce6ad4c21eb93f958dcbe8fdfce67cdd6a2e72",
+    "src/live/order-recovery-session.ts": "44f84f99d45b609f67956b0f7d2c13882d71e3dc43b5c454c92ec0293a59d919",
+    "src/scripts/live-order-rehearsal.ts": "a73034201fdca70e8adb5da414f5a7b79240e3a8394ec300683123ba9f44ed80",
+    "src/scripts/order-recovery.ts": "cdcd0303d696321a190550824892b8b6d7ba8ef0e88cc935260c443ebe783c8c",
+    "tests/live-order-admission-policy.test.ts": "cea4f4a308f3431df6a6c1900e30f87a031d0e26987fa99af52af8a2f9be2156",
+    "tests/live-order-policy-journal.test.ts": "405518067bd43b0f1852eab9ebbe3c4feae4de71224758192272c4c63595bb47",
+    "tests/live-order-policy-boundary.test.ts": "b64772922466c19e69f23ff922f7e02b36914eed6a2688457417da35e250ff75",
+    "tests/live-order-recovery-session.test.ts": "9e975c57f1c4d7d02fb1fe52ad1468940f18a38b196376c3bea91c39ccc08f29",
+    "fixtures/live-order-rehearsal/admission-policy.json": "3e43b64291c5bcf954e9e2222c9d857920a5209106bb44b610ccd06ca3e87df9"
+  }
+}

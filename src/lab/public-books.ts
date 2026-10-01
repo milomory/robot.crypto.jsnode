@@ -18,6 +18,19 @@ const okx = z.object({ code: z.literal('0'), data: z.array(z.object({
 export const LAB_SYMBOLS = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'] as const;
 export const VENUES: Venue[] = ['binance', 'bybit', 'okx'];
 
+export function publicBookUrl(venue: Venue, symbol: string): string {
+  if (!VENUES.includes(venue) || !LAB_SYMBOLS.some(allowed => allowed === symbol)) {
+    throw new LabError('unsupported-market');
+  }
+  const compact = symbol.replace('/', '');
+  const urls: Record<Venue, string> = {
+    binance: `https://data-api.binance.vision/api/v3/depth?symbol=${compact}&limit=50`,
+    bybit: `https://api.bybit.com/v5/market/orderbook?category=spot&symbol=${compact}&limit=50`,
+    okx: `https://www.okx.com/api/v5/market/books?instId=${symbol.replace('/', '-')}&sz=50`
+  };
+  return urls[venue];
+}
+
 export function parseBook(venue: Venue, symbol: string, payload: unknown,
   requestedAt: number, receivedAt: number): OrderBook {
   let bids: Level[], asks: Level[], sourceAt: number | undefined;
@@ -57,14 +70,9 @@ export class PublicBookClient {
     }
     const requestedAt = this.clock();
     if ((this.cooldown.get(venue) ?? 0) > requestedAt) throw new LabError('rate-limit-cooldown');
-    const compact = symbol.replace('/', '');
-    const urls: Record<Venue, string> = {
-      binance: `https://data-api.binance.vision/api/v3/depth?symbol=${compact}&limit=50`,
-      bybit: `https://api.bybit.com/v5/market/orderbook?category=spot&symbol=${compact}&limit=50`,
-      okx: `https://www.okx.com/api/v5/market/books?instId=${symbol.replace('/', '-')}&sz=50`
-    };
+
     try {
-      const response = await this.request(urls[venue], {
+      const response = await this.request(publicBookUrl(venue, symbol), {
         method: 'GET', redirect: 'error', credentials: 'omit', signal: AbortSignal.timeout(5_000)
       });
       if ([418, 429].includes(response.status)) {

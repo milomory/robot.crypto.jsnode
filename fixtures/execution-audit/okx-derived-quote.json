@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "kind": "recorded-order-audit",
+  "source": "synthetic",
+  "account": "main",
+  "observedAt": 2000,
+  "limit": 100,
+  "venue": "okx",
+  "expected": {
+    "orderId": "12345",
+    "side": "buy"
+  },
+  "orderBefore": {
+    "code": "0",
+    "data": [
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "tdMode": "cash",
+        "category": "normal",
+        "ordId": "12345",
+        "side": "buy",
+        "ordType": "market",
+        "state": "filled",
+        "sz": "0.0001",
+        "tgtCcy": "base_ccy",
+        "tradeQuoteCcy": "USDT",
+        "accFillSz": "0.0001",
+        "avgPx": "84000",
+        "fee": "-0.0000001",
+        "feeCcy": "BTC",
+        "rebate": "",
+        "rebateCcy": "",
+        "cTime": "1000",
+        "uTime": "1500"
+      }
+    ]
+  },
+  "orderAfter": {
+    "code": "0",
+    "data": [
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "tdMode": "cash",
+        "category": "normal",
+        "ordId": "12345",
+        "side": "buy",
+        "ordType": "market",
+        "state": "filled",
+        "sz": "0.0001",
+        "tgtCcy": "base_ccy",
+        "tradeQuoteCcy": "USDT",
+        "accFillSz": "0.0001",
+        "avgPx": "84000",
+        "fee": "-0.0000001",
+        "feeCcy": "BTC",
+        "rebate": "",
+        "rebateCcy": "",
+        "cTime": "1000",
+        "uTime": "1500"
+      }
+    ]
+  },
+  "fills": {
+    "code": "0",
+    "data": [
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "12345",
+        "tradeId": "1001",
+        "billId": "2001",
+        "side": "buy",
+        "subType": "1",
+        "execType": "T",
+        "fillSz": "0.00006",
+        "fillPx": "83990",
+        "fee": "-0.00000006",
+        "feeCcy": "BTC",
+        "fillTime": "1100",
+        "ts": "1110"
+      },
+      {
+        "instType": "SPOT",
+        "instId": "BTC-USDT",
+        "ordId": "12345",
+        "tradeId": "1002",
+        "billId": "2002",
+        "side": "buy",
+        "subType": "1",
+        "execType": "T",
+        "fillSz": "0.00004",
+        "fillPx": "84015",
+        "fee": "-0.00000004",
+        "feeCcy": "BTC",
+        "fillTime": "1200",
+        "ts": "1210"
+      }
+    ]
+  }
+}

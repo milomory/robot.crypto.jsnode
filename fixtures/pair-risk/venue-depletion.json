@@ -1,0 +1,276 @@
+{
+  "schema": 1,
+  "kind": "synthetic-pair-risk-scenario",
+  "scenarioId": "venue-depletion",
+  "initialBalances": {
+    "mexc": {
+      "BTC": "0.0004",
+      "USDT": "30",
+      "MX": "0"
+    },
+    "okx": {
+      "BTC": "0",
+      "USDT": "30",
+      "MX": "0"
+    }
+  },
+  "policy": {
+    "schema": 1,
+    "kind": "synthetic-pair-risk-policy",
+    "policyId": "synthetic-demo-v1",
+    "maxBuyDebitUsdt": "10",
+    "maxSingleLegBtc": "0.00011",
+    "maxSessionCashLossUsdt": "30",
+    "maxSessionFees": {
+      "BTC": "0.00001",
+      "USDT": "1",
+      "MX": "1"
+    },
+    "minFreeAfterReserve": {
+      "mexc": {
+        "BTC": "0.0001",
+        "USDT": "0",
+        "MX": "0"
+      },
+      "okx": {
+        "BTC": "0",
+        "USDT": "10",
+        "MX": "0"
+      }
+    }
+  },
+  "events": [
+    {
+      "type": "prepare",
+      "id": "prepare-1",
+      "pairId": "pair-1",
+      "at": 1000,
+      "buy": {
+        "venue": "okx",
+        "orderId": "buy-1",
+        "sizing": {
+          "kind": "base",
+          "baseQuantity": "0.0001",
+          "maxQuoteAmount": "8.5"
+        },
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      },
+      "sell": {
+        "venue": "mexc",
+        "orderId": "sell-1",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "fill-buy-1",
+      "pairId": "pair-1",
+      "at": 1020,
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-fill-1",
+        "executedAt": 1010,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "fill-sell-1",
+      "pairId": "pair-1",
+      "at": 1021,
+      "side": "sell",
+      "fill": {
+        "fillId": "sell-fill-1",
+        "executedAt": 1011,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.1",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "settle-buy-1",
+      "pairId": "pair-1",
+      "at": 1030,
+      "side": "buy",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "settle-sell-1",
+      "pairId": "pair-1",
+      "at": 1031,
+      "side": "sell",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.1",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "prepare",
+      "id": "prepare-2",
+      "pairId": "pair-2",
+      "at": 2000,
+      "buy": {
+        "venue": "okx",
+        "orderId": "buy-2",
+        "sizing": {
+          "kind": "base",
+          "baseQuantity": "0.0001",
+          "maxQuoteAmount": "8.5"
+        },
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      },
+      "sell": {
+        "venue": "mexc",
+        "orderId": "sell-2",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "fill-buy-2",
+      "pairId": "pair-2",
+      "at": 2020,
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-fill-2",
+        "executedAt": 2010,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "fill-sell-2",
+      "pairId": "pair-2",
+      "at": 2021,
+      "side": "sell",
+      "fill": {
+        "fillId": "sell-fill-2",
+        "executedAt": 2011,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.1",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "settle-buy-2",
+      "pairId": "pair-2",
+      "at": 2030,
+      "side": "buy",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "settle-sell-2",
+      "pairId": "pair-2",
+      "at": 2031,
+      "side": "sell",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.1",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    }
+  ],
+  "probes": [
+    {
+      "type": "prepare",
+      "id": "prepare-3",
+      "pairId": "pair-3",
+      "at": 3000,
+      "buy": {
+        "venue": "okx",
+        "orderId": "buy-3",
+        "sizing": {
+          "kind": "base",
+          "baseQuantity": "0.0001",
+          "maxQuoteAmount": "8.5"
+        },
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      },
+      "sell": {
+        "venue": "mexc",
+        "orderId": "sell-3",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    }
+  ]
+}

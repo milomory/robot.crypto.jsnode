@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "kind": "recorded-order-audit",
+  "source": "synthetic",
+  "account": "main",
+  "observedAt": 2000,
+  "limit": 100,
+  "venue": "mexc",
+  "expected": {
+    "orderId": "mexc-test-order",
+    "side": "buy"
+  },
+  "orderBefore": {
+    "symbol": "BTCUSDT",
+    "orderId": "mexc-test-order",
+    "side": "BUY",
+    "type": "LIMIT",
+    "status": "PARTIALLY_CANCELED",
+    "Qty": "0.0002",
+    "executedQty": "0.0001",
+    "cumulativeQuoteQty": "8.4",
+    "origQuoteOrderQty": "0",
+    "time": 1000,
+    "updateTime": 1500
+  },
+  "orderAfter": {
+    "symbol": "BTCUSDT",
+    "orderId": "mexc-test-order",
+    "side": "BUY",
+    "type": "LIMIT",
+    "status": "PARTIALLY_CANCELED",
+    "Qty": "0.0002",
+    "executedQty": "0.0001",
+    "cumulativeQuoteQty": "8.4",
+    "origQuoteOrderQty": "0",
+    "time": 1000,
+    "updateTime": 1500
+  },
+  "fills": [
+    {
+      "symbol": "BTCUSDT",
+      "orderId": "mexc-test-order",
+      "id": "mexc-trade-1",
+      "price": "84000",
+      "qty": "0.00006",
+      "quoteQty": "5.04",
+      "commission": "0.00252",
+      "commissionAsset": "USDT",
+      "time": 1100,
+      "isBuyer": true
+    }
+  ]
+}

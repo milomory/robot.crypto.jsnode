@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "kind": "local-order-recovery-checks",
+  "checkedAt": "2026-09-28T12:53:32.809422+00:00",
+  "scope": "offline-rehearsal-no-production-deploy",
+  "fullSuite": {
+    "command": "npx vitest run --maxWorkers=2",
+    "passed": 1883,
+    "skippedExistingPostgres": 15,
+    "failed": 0
+  },
+  "focusedNewTests": {
+    "lifecycle": 59,
+    "journal": 20,
+    "limitsReadiness": 19,
+    "cli": 3,
+    "independentBoundary": 4
+  },
+  "apiAndUiBuild": "pass",
+  "strictNewTestTypes": "pass",
+  "independentReview": "no-blocking-findings",
+  "compiledNetworkDisabledAcceptance": "acceptance.json",
+  "faultInjection": [
+    "SIGKILL-during-write",
+    "SIGKILL-before-publication",
+    "SIGKILL-after-publication",
+    "file-fsync-error",
+    "directory-fsync-error",
+    "competing-writers",
+    "staging-slot-exhaustion"
+  ],
+  "sourcePublished": false,
+  "productionChanged": false,
+  "exchangeCalls": 0,
+  "realOrders": 0,
+  "liveUnlocked": false,
+  "limitations": [
+    "local-rehearsal-only",
+    "risk-draft-not-enforced",
+    "no-authenticated-order-provenance",
+    "no-cross-journal-account-registry",
+    "no-late-correction-workflow",
+    "clock-skew-policy-pending",
+    "no-exchange-order-transport"
+  ],
+  "validationCorrection": "An early new exchange-ID reuse fixture contained an extra orderIntentId field; strict input rejection was correct. Fixture corrected without weakening validation. Final full suite passed."
+}

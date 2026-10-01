@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "kind": "offline-synthetic-settlement-acceptance",
+  "date": "2026-09-26",
+  "arithmetic": "independent Python Decimal, precision 100",
+  "networkUsed": false,
+  "exchangeOrders": 0,
+  "realBalancesUsed": false,
+  "cases": [
+    {
+      "scenarioId": "btc-fee-reconciliation",
+      "sourceSha256": "51635daf7ec8a35bb05449852803732d6980ac5b76586e256dbbfbbbf582382c",
+      "reportSha256": "5a9da7421250cf8cd5614d8a0e83a5ef0d218dccbbb6d3f8a5e1ca7e5f40de44",
+      "uniqueFills": 3,
+      "decimalWalletsAndAssetConservation": true,
+      "allTerminalReservesReleased": true,
+      "settlement": "balanced",
+      "residualBtc": "0",
+      "cashDeltaUsdt": "-0.01344"
+    },
+    {
+      "scenarioId": "quote-budget-partial-cancel",
+      "sourceSha256": "07897b889d40c4f61b86665f2e6e2c31b69b6efd512a2e442f0f2bb8fb9659aa",
+      "reportSha256": "b0747f66cbc92757de77f1f610a3e46a9ab2ae3e64baa16a61721da1b35a2006",
+      "uniqueFills": 3,
+      "decimalWalletsAndAssetConservation": true,
+      "allTerminalReservesReleased": true,
+      "settlement": "balanced",
+      "residualBtc": "0",
+      "cashDeltaUsdt": "-0.01545"
+    },
+    {
+      "scenarioId": "equal-gross-residual",
+      "sourceSha256": "91601235be7637cc40c7eec8c8e6b6a02ee0ba76f4b3601d804358817e8683b2",
+      "reportSha256": "ace9626c13c463733633e2613e2f4561e97ea76cfddc24a8c56bab64b276cd37",
+      "uniqueFills": 2,
+      "decimalWalletsAndAssetConservation": true,
+      "allTerminalReservesReleased": true,
+      "settlement": "residual-exposure",
+      "residualBtc": "-0.0000001",
+      "cashDeltaUsdt": "0"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "captureId": "7a976c9c-27a1-4fc0-8aff-9631aa69dd35",
+  "startedAt": 1790429081783,
+  "samplingStartedAt": 1790429082769,
+  "firstSampleAt": 1790429083538,
+  "firstBooksAvailable": {
+    "mexc": true,
+    "okx": true
+  },
+  "initialInstrumentsAvailable": {
+    "mexc": true,
+    "okx": true
+  },
+  "firstUsdIndexAvailable": true,
+  "feeEvidenceAgeAtStartMs": 87619
+}

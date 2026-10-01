@@ -15,7 +15,7 @@ import time
 
 DESTINATION = 'hyperion.crypto-robot-tls'
 PROFILE = 'hyperion-crypto-robot-tls-deploy'
-REF = 'secret://inbox/web-20260904t230513z-hlpfublwbctp'
+REF = 'secret://inbox/public-review-record-3269b76eb0f0'
 SOCKET = '/run/agent-secrets-broker/crypto-robot-tls.sock'
 SELF = '/usr/local/libexec/crypto-tls-bridge.py'
 REMOTE = '/usr/local/libexec/crypto-tls-remote.py'

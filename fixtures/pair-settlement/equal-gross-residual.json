@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "kind": "synthetic-settlement-scenario",
+  "scenarioId": "equal-gross-residual",
+  "initialBalances": {
+    "mexc": {
+      "BTC": "0.001",
+      "USDT": "100",
+      "MX": "0"
+    },
+    "okx": {
+      "BTC": "0",
+      "USDT": "100",
+      "MX": "0"
+    }
+  },
+  "events": [
+    {
+      "type": "prepare",
+      "id": "prepare",
+      "at": 1000,
+      "pairId": "pair-1",
+      "buy": {
+        "venue": "okx",
+        "orderId": "okx-equal-gross",
+        "sizing": {
+          "kind": "base",
+          "baseQuantity": "0.0001",
+          "maxQuoteAmount": "9"
+        },
+        "feeCaps": {
+          "BTC": "0.0000001",
+          "USDT": "0",
+          "MX": "0"
+        }
+      },
+      "sell": {
+        "venue": "mexc",
+        "orderId": "mexc-equal-gross",
+        "baseQuantity": "0.0001",
+        "feeCaps": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "buy-fill",
+      "at": 1100,
+      "pairId": "pair-1",
+      "side": "buy",
+      "fill": {
+        "fillId": "buy-1",
+        "executedAt": 1050,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0.0000001",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "fill",
+      "id": "sell-fill",
+      "at": 1200,
+      "pairId": "pair-1",
+      "side": "sell",
+      "fill": {
+        "fillId": "sell-1",
+        "executedAt": 1150,
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "buy-settled",
+      "at": 1300,
+      "pairId": "pair-1",
+      "side": "buy",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0.0000001",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    },
+    {
+      "type": "settle",
+      "id": "sell-settled",
+      "at": 1400,
+      "pairId": "pair-1",
+      "side": "sell",
+      "outcome": "filled",
+      "totals": {
+        "baseQuantity": "0.0001",
+        "quoteQuantity": "8.4",
+        "fees": {
+          "BTC": "0",
+          "USDT": "0",
+          "MX": "0"
+        }
+      }
+    }
+  ]
+}

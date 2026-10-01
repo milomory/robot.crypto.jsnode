@@ -1,0 +1,98 @@
+{
+  "browser": "Installed Google Chrome via Playwright 1.61.1; bundled Playwright browser absent",
+  "browserPlugin": "Browser plugin not available",
+  "flow": "Local completed report -> selected-scenario chart -> legend hide/restore and exact source inspection",
+  "url": "http://127.0.0.1:4208/dist/",
+  "sourceReportSha256": "ca489947c3b2e1c97c50387bbfeba5a851c40e86f6c9332a9e812e16d1114f8a",
+  "portableSha256": "b300843166cc6e7f7fc28a404d6a4f207b3a8feadffe5152f32255cdff34d800",
+  "chartRows": 1440,
+  "evaluatedPerDirection": 1419,
+  "gapsPerDirection": 21,
+  "expectedSegments": 18,
+  "selectedScenario": "okx-received-base",
+  "viewports": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "lines": [
+        {
+          "segments": 18,
+          "stroke": "#2764a5"
+        },
+        {
+          "segments": 18,
+          "stroke": "#b37117"
+        },
+        {
+          "segments": 1,
+          "stroke": "#74787f"
+        }
+      ],
+      "title": "MEXC ↔ OKX · 24 часа наблюдения",
+      "blank": false,
+      "overlays": false
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "lines": [
+        {
+          "segments": 18,
+          "stroke": "#2764a5"
+        },
+        {
+          "segments": 18,
+          "stroke": "#b37117"
+        },
+        {
+          "segments": 1,
+          "stroke": "#74787f"
+        }
+      ],
+      "title": "MEXC ↔ OKX · 24 часа наблюдения",
+      "blank": false,
+      "overlays": false
+    }
+  ],
+  "firstRenderMs": 1750,
+  "legendHideRestore": true,
+  "sourceRowsAndExactDecimals": true,
+  "sourceHashVisible": true,
+  "frozenFeeCaveatVisible": true,
+  "portableRendered": true,
+  "errors": [],
+  "warnings": [],
+  "externalRequests": [],
+  "requests": [
+    "/dist/",
+    "/dist/snapshot.b73042f4a6ac06205b40830e782518357301f3bca6264d4ddb6ebb96090c4a82.json",
+    "/pair-study.html"
+  ],
+  "pass": true,
+  "visualReview": {
+    "desktop": true,
+    "mobile": true,
+    "sourceData": true,
+    "notes": "Both direction marks and zero visible; complete endpoint dates and all material fee/coverage caveats readable. Seventeen gap groups create eighteen line segments; 21 missing rows retained."
+  },
+  "screenshots": [
+    {
+      "path": "/tmp/crypto-day-real-chart-qa-20260928/day-chart-1440.png",
+      "sha256": "2ccfa596a9903a748b0456a0a1430b1d8f36ebcee4dc403868c0426c530ebba9"
+    },
+    {
+      "path": "/tmp/crypto-day-real-chart-qa-20260928/day-chart-390.png",
+      "sha256": "3cf61acf4a682111be71fa2fc77be69bcf3d5dc3d65560695ae706c0cd372b1f"
+    },
+    {
+      "path": "/tmp/crypto-day-real-chart-qa-20260928/source-data-390.png",
+      "sha256": "4e2509c8d2c8264aa93d558dc8bd2d2415c459d3f2b0e42ba3b6c78c7a7c7636"
+    },
+    {
+      "path": "/tmp/crypto-day-real-chart-qa-20260928/source-evidence-390.png",
+      "sha256": "57efa4737da40a5ad5a15075115d0753cc279da1af3a8850b68325e8e18f3e44"
+    }
+  ],
+  "portablePath": "/home/anton/Projects/trading/robot.crypto.jsnode/output/pair-day-20260926/chart/pair-study.html",
+  "scope": "Local artifact only; no production deploy, capture changes, trading, or source edits"
+}

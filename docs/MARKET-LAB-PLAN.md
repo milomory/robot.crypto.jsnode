@@ -1,6 +1,6 @@
 # Market data and paper lab plan
 
-Updated 2026-09-21. User requested a plan and implementation, with notification
+Updated 2026-09-22. User requested a plan and implementation, with notification
 when keys are needed. Binance account integration is excluded by user choice;
 Binance remains a public-data source. No keys are needed for stages 1–4.
 
@@ -14,6 +14,10 @@ Binance remains a public-data source. No keys are needed for stages 1–4.
    Bybit and OKX; BTC/USDT, ETH/USDT and SOL/USDT. Fixed public endpoints only,
    5-second timeout, no credentials, redirects, retries or synthetic fallback.
    Separate unavailable-source and rejected-comparison results.
+   The opt-in [five-venue one-shot comparison](EXCHANGE-PUBLIC-DATA.md) now adds
+   MEXC/HitBTC, verified once on Athena for BTC/USDT. Historical three-venue
+   campaigns and exact Bybit archives remain unchanged; multi-venue instrument
+   rules, decimal archives and bounded capture are next.
 3. **Done for bounded campaigns: durable observation and report.** Bounded runs store
    timestamped snapshots and assumptions outside the old trading journal, with
    run/model IDs and gap/coverage reporting. Hyperion acceptance completed;
@@ -39,18 +43,27 @@ Binance remains a public-data source. No keys are needed for stages 1–4.
    now preserve decimal strings and bind a full fixed period to schema 2; the
    old numeric archive is not authoritative monetary input. The first real-data
    probe uses predetermined diagnostic intents, not an optimised strategy.
-   No worker is enabled. A [fixed 30-minute causal comparison](PAPER-STUDY.md)
-   is the next bounded protocol; broader strategy assessment remains under the
+   No worker is enabled. The [fixed 30-minute causal comparison](PAPER-STUDY.md)
+   completed with 60/60 observations, 61/61 valuation points and byte-identical
+   independent replay. The fixed strategy made no entries; no parameter tuning
+   followed. Broader strategy assessment remains under the
    [remaining gates](PAPER-V2-PLAN.md).
-5. **Only if needed: private account reads.** Ask the user for selected venues
-   and dedicated read-only keys through the existing key vault/secret workflow.
-   Verify the available vault-to-consumer delivery contract before using it;
-   no new secret store and no secrets in chat, Git or reports. Actual tariffs
-   and balances can then replace assumptions. Binance private access stays off.
-6. **Separate future decision: execution.** Funding on both venues, market
+5. **Selected private accounts: Bybit, OKX, HitBTC and MEXC.** The user will add
+   full-permission keys to the existing Memory Core key vault. The initial
+   [implemented account readers](EXCHANGE-ACCOUNTS.md) accept those keys and
+   provide bounded GET-only balances/fees/permission checks. The broker-to-Crypto
+   permanent delivery profile remains unbound. One isolated MEXC spot balance
+   read is verified; other account acceptances are pending. Keys stay
+   out of chat, Git, arguments and reports. Actual fees and balances can then
+   replace assumptions. Binance private access stays off. A longer proof of
+   strategy profitability is not a prerequisite for connecting account reads.
+6. **Requested future execution: operational limits and implementation pending.**
+   Funding on both venues, market
    precision, execution failures/partial fills, reconciliation and rebalancing
-   costs must be addressed before any live arbitrage. No live authority is
-   granted by this plan; existing live lock and trading restrictions remain.
+   costs must be addressed before live arbitrage. The user requested arbitrage
+   and inter-exchange transfers; amount/loss limits and exact transfer routes
+   still need definition. The deployed live lock remains unchanged while the
+   execution and reconciliation paths are implemented and tested.
 
 ## Run the completed lab
 

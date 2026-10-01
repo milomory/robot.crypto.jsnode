@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { registerAuthCore, logSafeRequest, type AuthCoreConfig } from '../src/auth/auth-core.js';
 import { buildServer } from '../src/http/api.js';
 import type { DbPool } from '../src/db/pool.js';
+import { registerBalanceHistoryRoutes } from '../src/http/balance-history-routes.js';
 
 const uid = '12345678-1234-4234-8234-123456789abc';
 const config: AuthCoreConfig = { enabled: true, origin: 'https://auth.example', appOrigin: 'https://crypto.example',
@@ -44,9 +45,11 @@ function upstream() {
 async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
   const fake = upstream();
   const app = Fastify({ logger: false });
-  registerAuthCore(app, { ...config, ...overrides }, fake.fetcher);
+  const access = registerAuthCore(app, { ...config, ...overrides }, fake.fetcher);
   app.get('/', async () => 'Crypto viewer');
-  app.get('/api/status', async () => ({ ok: true }));
+  app.get('/api/status', async request => ({ ok: true, access: { accountOwner: access.isAccountOwner(request) } }));
+  app.get('/api/accounts/dashboard', async () => ({ private: true }));
+  app.get('/api/accounts/balance-history', async () => ({ private: true }));
   app.get('/api/lab/report', async () => ({ available: false }));
   app.get('/api/runtime-config', async () => ({ private: true }));
   app.get('/api/exchanges/binance/account', async () => ({ private: true }));
@@ -72,6 +75,63 @@ async function fixture(overrides: Partial<AuthCoreConfig> = {}) {
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe('Auth Core viewer adapter (offline)', () => {
+  it('separately authorizes the account owner without expanding shared viewer rights', async () => {
+    for (const owner of [false, true]) {
+      const f = await fixture({ ownerIds: owner ? [uid] : [] });
+      try {
+        for (const path of ['/api/accounts/dashboard', '/api/accounts/balance-history?range=7d']) {
+          expect((await f.app.inject(path)).statusCode).toBe(401);
+        }
+        const flow = await f.login(); const headers = { cookie: flow.sessionCookie };
+        const status = await f.app.inject({ url: '/api/status', headers });
+        expect(status.json().access.accountOwner).toBe(owner);
+        for (const path of ['/api/accounts/dashboard', '/api/accounts/balance-history?range=7d']) {
+          const response = await f.app.inject({ url: path, headers });
+          expect(response.statusCode).toBe(owner ? 200 : 403);
+          if (!owner) expect(response.json().error).toBe('account_owner_required');
+          expect((await f.app.inject({ method: 'POST', url: path, headers })).statusCode).toBe(403);
+        }
+        for (const path of ['/api/accounts/balance-history/extra', '/api/accounts/balance-history.json']) {
+          expect((await f.app.inject({ url: path, headers })).statusCode).toBe(403);
+        }
+        expect((await f.app.inject({ url: '/api/runtime-config', headers })).statusCode).toBe(403);
+      } finally { await f.app.close(); }
+    }
+  });
+  it('revokes owner reads immediately and fails closed on Auth outage', async () => {
+    const f = await fixture({ ownerIds: [uid] });
+    try {
+      const flow = await f.login(); const headers = { cookie: flow.sessionCookie, authorization: 'Basic dGVzdDp0ZXN0' };
+      const paths = ['/api/accounts/dashboard', '/api/accounts/balance-history?range=30d'];
+      for (const path of paths) expect((await f.app.inject({ url: path, headers })).statusCode).toBe(200);
+      f.fake.state.fail = 'introspect';
+      for (const path of paths) {
+        const unavailable = await f.app.inject({ url: path, headers });
+        expect(unavailable.statusCode).toBe(503); expect(unavailable.body).not.toContain('synthetic-secret');
+      }
+      f.fake.state.fail = ''; f.fake.state.active = false;
+      for (const path of paths) expect((await f.app.inject({ url: path, headers })).statusCode).toBe(401);
+    } finally { await f.app.close(); }
+  });
+  it('rejects owners outside the explicit viewer subset', async () => {
+    const app = Fastify();
+    try {
+      expect(() => registerAuthCore(app, { ...config, ownerIds: ['22345678-1234-4234-8234-123456789abc'] })).toThrow();
+    } finally { await app.close(); }
+  });
+  it('has no account-owner capability when SSO is disabled', async () => {
+    const app = Fastify();
+    const access = registerAuthCore(app, { ...config, enabled: false, ownerIds: [uid] });
+    app.get('/probe', async request => ({ owner: access.isAccountOwner(request) }));
+    registerBalanceHistoryRoutes(app, { directory: '/unconfigured', isAccountOwner: access.isAccountOwner });
+    try {
+      expect((await app.inject('/probe')).json()).toEqual({ owner: false });
+      const result = await app.inject({ url: '/api/accounts/balance-history', headers: { authorization: 'Basic dGVzdDp0ZXN0' } });
+      expect(result.statusCode).toBe(403); expect(result.json().error).toBe('account_owner_required');
+    }
+    finally { await app.close(); }
+  });
+
   it('allows only authenticated viewer reads of the observation report', async () => {
     const f = await fixture();
     try {
@@ -283,6 +343,13 @@ describe('Fastify integration and explicit operator boundary', () => {
     try {
       expect((await app.inject({ url: '/api/runtime-config', headers: { authorization } })).statusCode).toBe(401);
       expect((await app.inject('/operator/api/runtime-config')).statusCode).toBe(401);
+      expect((await app.inject({ url: '/api/accounts/dashboard', headers: { authorization } })).statusCode).toBe(401);
+      expect((await app.inject({ url: '/operator/api/accounts/dashboard', headers: { authorization } })).statusCode).toBe(404);
+      expect(app.hasRoute({ method: 'GET', url: '/operator/api/accounts/dashboard' })).toBe(false);
+      expect((await app.inject({ url: '/api/accounts/balance-history?range=1d', headers: { authorization } })).statusCode).toBe(401);
+      expect((await app.inject({ url: '/operator/api/accounts/balance-history?range=1d', headers: { authorization } })).statusCode).toBe(404);
+      expect(app.hasRoute({ method: 'GET', url: '/operator/api/accounts/balance-history' })).toBe(false);
+      expect(app.hasRoute({ method: 'HEAD', url: '/api/accounts/balance-history' })).toBe(false);
       expect((await app.inject({ url: '/operator/api/runtime-config', headers: { authorization } })).statusCode).toBe(200);
       const bootstrap = await app.inject({ url: '/operator/auth/session', headers: { authorization } });
       expect(bootstrap.statusCode).toBe(200);

@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "kind": "account-funds-preparation-local-acceptance",
+  "date": "2026-09-30",
+  "sourceParent": "ab1f5cd6815c8dd3aed8dfe33c2baebd401d79a6",
+  "scope": "local-offline-preparation-only",
+  "deployed": false,
+  "sourcePushed": false,
+  "realAccountReads": false,
+  "realSecretReads": false,
+  "liveAllowed": false,
+  "feeProvenanceVerified": false,
+  "accountGlobalOwnershipVerified": false,
+  "checks": {
+    "fullTests": {
+      "status": "passed",
+      "passed": 3017,
+      "skippedExistingPostgres": 15,
+      "passedFiles": 90,
+      "skippedFiles": 1
+    },
+    "newTests": {
+      "fundsEvidence": 117,
+      "feeBudget": 79,
+      "admission": 34,
+      "journal": 30,
+      "cli": 33,
+      "total": 293
+    },
+    "buildApiUi": "passed",
+    "strictNewTests": "passed"
+  },
+  "covered": [
+    "receipt-pin-integrity-and-exact-selected-accounts",
+    "capture-start-freshness-and-clock-regression",
+    "missing-is-not-zero",
+    "exact-native-fee-and-principal-reservation",
+    "held-btc-remains-in-inventory-exposure",
+    "no-double-exchange-hold-subtraction",
+    "no-old-cash-delta-added-to-fresh-funds",
+    "draft-limits-no-defaults",
+    "two-process-checkpoint-cas",
+    "restart-and-refresh-preserve-reservations",
+    "kill-before-publication",
+    "fsync-before-after-publication",
+    "private-file-owner-modes-and-link-validation",
+    "legacy-api-dispatch-rejected",
+    "new-account-rejected-same-account-pin-keeps-reserves",
+    "large-private-capture-replay",
+    "safe-cli-output"
+  ],
+  "limitations": [
+    "fee-data-declared-not-bound-capture",
+    "mexc-spendability-and-main-type-unconfirmed",
+    "okx-null-liabilities-mode-applicability-unaccepted",
+    "native-fee-currency-and-per-fill-rounding-unconfirmed",
+    "no-sender-dispatch-or-exchange-cancel",
+    "configured-preparation-root-not-production-global-ledger",
+    "no-user-selected-approved-capital-loss-policy",
+    "no-positive-qualified-strategy"
+  ],
+  "sourceHashes": {
+    "src/live/funds-evidence.ts": "1d64451ae78672cae35af922e6a5dbc9abc86d64fd5145a4b7b0435379237141",
+    "src/live/order-fee-budget.ts": "2d65a17dd5e024189bc0de2dcc1f7d9beac860856a0391b307de41d152c425b8",
+    "src/live/account-funds-admission.ts": "ab0a922c4e93e29d88b9549afdf25fb7d989703ce5ae28b3065502da6586171e",
+    "src/live/account-funds-journal.ts": "1149e4ffd9ee44ce744ce36bca425d50e7e6fbd37e843d93b6e95fa442c65d62",
+    "src/scripts/account-funds-preparation.ts": "ae0fb7728cc13ac77c0072593b25626c2a5da43aa31e147ee9276c6305571797",
+    "tests/live-funds-evidence.test.ts": "b77033bb426198a3fadabb8c2fd11d84efee616f937b8fc1a83521bc0c48cadd",
+    "tests/live-order-fee-budget.test.ts": "aa1d33f7ec99c0de79caff19e668b14f20463c58b22ba5ed5e3685bf1bfbdd56",
+    "tests/live-account-funds-admission.test.ts": "5962dbc23fd77d5b2565859dad851f80ebfcfec97b659b26be6529964cd1adbd",
+    "tests/live-account-funds-journal.test.ts": "235b1f81f67b586b8f77153817b6a6ca73bcf9b7110fe50f79fd1b83307b9cbc",
+    "tests/account-funds-preparation-cli.test.ts": "bbd57a85185d87fdd0bf0d3cc22d3f4d52df4af33addd23b7ee1bca793706053",
+    "tests/helpers/funds-evidence-fixture.ts": "2aa3b6d54d76342d962b9069e163df1044ac4b836e37432bd6b25f2c6bc919ab",
+    "package.json": "fa5cc20348a26971200af2a47429e1bffd76ef26670e8c91041cff417a8e2d63"
+  },
+  "logHashes": {
+    "full": "9da2aaabc51de4cacf64d1d4b8a35f07cb8ce1bd78e83eaa30b6deb80bc3fcc9",
+    "build": "a7278e921cb6b9a4f03bed26efd9b4ecb7b37011a81918aa8586fe01cd37d12a",
+    "strict": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

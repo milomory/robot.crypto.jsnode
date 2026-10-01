@@ -8,21 +8,22 @@ import {
   FlaskConical,
   Gauge,
   LockKeyhole,
-  Play,
   RefreshCw,
   ShieldCheck,
   WalletCards
 } from 'lucide-react';
 import { apiUrl } from './api-url';
+import { AccountDashboard, useAccountDashboard, type AccountPage } from './AccountDashboard';
 import { LabReport, type Payload as LabPayload } from './LabReport';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { LiveReadiness } from './LiveReadiness';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type StatusPayload = {
   ok: boolean;
   mode: 'paper' | 'live';
   liveTradingLocked: boolean;
   dashboardAuth?: 'enabled' | 'disabled';
-  access?: { role: 'viewer' | 'operator' };
+  access?: { role: 'viewer' | 'operator'; accountOwner?: boolean };
   autoTrader?: AutoTraderStatus;
   exchange: string;
   marketData: string;
@@ -62,6 +63,7 @@ type Position = {
 
 type Trade = {
   id: string;
+  mode: 'paper' | 'live';
   symbol: string;
   side: 'buy' | 'sell';
   quantity: number;
@@ -162,12 +164,15 @@ const emptySnapshot: Snapshot = {
 };
 
 const nav = [
-  { id: 'overview', label: 'Overview', icon: Gauge },
-  { id: 'paper', label: 'Paper Trading', icon: Play },
-  { id: 'journal', label: 'Journal', icon: BookOpenText },
+  { id: 'overview', label: 'Главная', icon: Gauge },
+  { id: 'exchanges', label: 'Биржи', icon: WalletCards },
+  { id: 'earn', label: 'Earn', icon: WalletCards },
+  { id: 'operations', label: 'История бирж', icon: BookOpenText },
+  { id: 'paper', label: 'Симулятор', icon: FlaskConical },
+  { id: 'live', label: 'Реальный робот', icon: Bot },
   { id: 'lab', label: 'Наблюдения', icon: FlaskConical },
-  { id: 'risk', label: 'Risk', icon: ShieldCheck },
-  { id: 'logs', label: 'Logs', icon: Activity }
+  { id: 'risk', label: 'Риски', icon: ShieldCheck },
+  { id: 'logs', label: 'Состояние и логи', icon: Activity }
 ] as const;
 
 type NavId = (typeof nav)[number]['id'];
@@ -227,7 +232,7 @@ const formatInterval = (value?: number) => {
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-const pageTitle = (active: NavId) => nav.find((item) => item.id === active)?.label ?? 'Overview';
+const pageTitle = (active: NavId) => nav.find((item) => item.id === active)?.label ?? 'Главная';
 
 
 let redirectingToLogin = false;
@@ -257,9 +262,9 @@ const api = async <T,>(path: string, init?: RequestInit): Promise<T> => {
 
 const loadLabReport = () => api<LabPayload>('/api/lab/report');
 
-const fetchAutoTraderStatus = async (): Promise<AutoTraderFetchResult> => {
+const fetchAutoTraderStatus = async (signal?: AbortSignal): Promise<AutoTraderFetchResult> => {
   try {
-    return { status: await api<AutoTraderStatus>('/api/auto-trader/status') };
+    return { status: await api<AutoTraderStatus>('/api/auto-trader/status', { signal }) };
   } catch (error) {
     return { error: getErrorMessage(error) };
   }
@@ -320,51 +325,55 @@ function Metric({
 function useSnapshot() {
   const [snapshot, setSnapshot] = useState<Snapshot>(emptySnapshot);
   const [loading, setLoading] = useState(false);
-
-  const refresh = async () => {
+  const inFlight = useRef<AbortController | null>(null);
+  const refresh = useCallback(async () => {
+    if (inFlight.current) return;
+    const controller = new AbortController();
+    inFlight.current = controller;
     setLoading(true);
+    const deadline = window.setTimeout(() => controller.abort(), 10_000);
+    const live = () => inFlight.current === controller && !controller.signal.aborted;
     try {
-      const [status, market, risk, positions, journal, events, autoTrader] = await Promise.all([
-        api<StatusPayload>('/api/status'),
-        api<{ tickers: MarketTicker[] }>('/api/market/tickers'),
-        api<RiskPayload>('/api/risk-budget'),
-        api<{ positions: Position[] }>('/api/positions'),
-        api<{ orders: Order[]; trades: Trade[]; decisions: Decision[] }>('/api/journal'),
-        api<{ events: RiskEvent[] }>('/api/risk-events'),
-        fetchAutoTraderStatus()
+      await Promise.all([
+        // Owner authorization is independent of paper data availability.
+        api<StatusPayload>('/api/status', { signal: controller.signal }).then(status => {
+          if (live()) setSnapshot(current => ({ ...current, status }));
+        }).catch(() => {
+          if (inFlight.current === controller) setSnapshot(current => ({ ...current, status: undefined }));
+        }),
+        Promise.all([
+          api<{ tickers: MarketTicker[] }>('/api/market/tickers', { signal: controller.signal }),
+          api<RiskPayload>('/api/risk-budget', { signal: controller.signal }),
+          api<{ positions: Position[] }>('/api/positions', { signal: controller.signal }),
+          api<{ orders: Order[]; trades: Trade[]; decisions: Decision[] }>('/api/journal', { signal: controller.signal }),
+          api<{ events: RiskEvent[] }>('/api/risk-events', { signal: controller.signal }),
+          fetchAutoTraderStatus(controller.signal)
+        ]).then(([market, risk, positions, journal, events, autoTrader]) => {
+          if (live()) setSnapshot(current => ({ ...current, tickers: market.tickers, risk,
+            positions: positions.positions, orders: journal.orders.filter(order => order.mode === 'paper'),
+            trades: journal.trades.filter(trade => trade.mode === 'paper'),
+            decisions: journal.decisions, events: events.events,
+            autoTrader: autoTrader.status, autoTraderError: autoTrader.error, error: undefined }));
+        }).catch(error => {
+          if (inFlight.current === controller) setSnapshot(current => ({ ...current, error: getErrorMessage(error) }));
+        })
       ]);
-
-      setSnapshot({
-        status,
-        autoTrader: autoTrader.status,
-        autoTraderError: autoTrader.error,
-        tickers: market.tickers,
-        risk,
-        positions: positions.positions,
-        orders: journal.orders,
-        trades: journal.trades,
-        decisions: journal.decisions,
-        events: events.events
-      });
-    } catch (error) {
-      setSnapshot((current) => ({
-        ...current,
-        error: getErrorMessage(error)
-      }));
     } finally {
-      setLoading(false);
+      window.clearTimeout(deadline);
+      controller.abort();
+      if (inFlight.current === controller) { inFlight.current = null; setLoading(false); }
     }
-  };
-
+  }, []);
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(() => {
-      void refresh();
-    }, 15_000);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
+    const timer = window.setInterval(() => void refresh(), 15_000);
+    return () => {
+      window.clearInterval(timer);
+      const controller = inFlight.current;
+      inFlight.current = null;
+      controller?.abort();
+    };
+  }, [refresh]);
   return { snapshot, loading, refresh };
 }
 
@@ -414,10 +423,10 @@ function PaperOrderPanel({
   };
 
   return (
-    <Panel title="Paper Order" icon={<WalletCards size={16} />}>
+    <Panel title="Виртуальная заявка" icon={<WalletCards size={16} />}>
       <form className="order-form" onSubmit={submit}>
         <label>
-          <span>Symbol</span>
+          <span>Пара</span>
           <select value={symbol} onChange={(event) => setSymbol(event.target.value)}>
             {symbols.map((item) => (
               <option key={item}>{item}</option>
@@ -425,22 +434,22 @@ function PaperOrderPanel({
           </select>
         </label>
         <label>
-          <span>Side</span>
+          <span>Направление</span>
           <div className="segmented">
             <button type="button" className={side === 'buy' ? 'active' : ''} onClick={() => setSide('buy')}>
-              Buy
+              Купить
             </button>
             <button type="button" className={side === 'sell' ? 'active' : ''} onClick={() => setSide('sell')}>
-              Sell
+              Продать
             </button>
           </div>
         </label>
         <label>
-          <span>Quote USDT</span>
+          <span>Виртуальная сумма, USDT</span>
           <input value={quoteValue} onChange={(event) => setQuoteValue(event.target.value)} inputMode="decimal" />
         </label>
         <label>
-          <span>Base qty</span>
+          <span>Виртуальное количество актива</span>
           <input
             value={baseQuantity}
             onChange={(event) => setBaseQuantity(event.target.value)}
@@ -449,9 +458,9 @@ function PaperOrderPanel({
           />
         </label>
         <button className="primary" disabled={busy} type="submit">
-          {busy ? 'Sending' : 'Place paper order'}
+          {busy ? 'Выполняем в симуляторе' : 'Создать виртуальную заявку'}
         </button>
-        {message ? <div className={message === 'filled' ? 'form-message good' : 'form-message bad'}>{message}</div> : null}
+        {message ? <div className={message === 'filled' ? 'form-message good' : 'form-message bad'}>{message === 'filled' ? 'Виртуальная заявка исполнена в симуляторе' : message}</div> : null}
       </form>
     </Panel>
   );
@@ -470,10 +479,10 @@ function DashboardMetrics({
 }) {
   return (
     <section className="metric-grid">
-      <Metric label="Realized net P/L" value={`${formatNumber(realized)} USDT`} tone={realized >= 0 ? 'good' : 'bad'} />
-      <Metric label="Open exposure" value={`${formatNumber(exposure)} USDT`} />
-      <Metric label="Daily buy usage" value={`${formatNumber(dailyBuyQuoteUsage)} USDT`} />
-      <Metric label="Open positions" value={String(openPositions)} />
+      <Metric label="Виртуальный результат" value={`${formatNumber(realized)} USDT`} tone={realized >= 0 ? 'good' : 'bad'} />
+      <Metric label="Виртуальные активы" value={`${formatNumber(exposure)} USDT`} />
+      <Metric label="Виртуальные покупки за день" value={`${formatNumber(dailyBuyQuoteUsage)} USDT`} />
+      <Metric label="Виртуальные позиции" value={String(openPositions)} />
     </section>
   );
 }
@@ -516,35 +525,35 @@ function AutoTraderPanel({
   const [scanState, setScanState] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [scanMessage, setScanMessage] = useState('');
   const signals = status?.lastSignals ?? [];
-  const stateLabel = status?.running ? 'running' : status?.enabled ? 'enabled' : status ? 'disabled' : 'waiting';
+  const stateLabel = status?.running ? 'Выполняется цикл' : status?.enabled ? 'Включён' : status ? 'Выключен' : 'Нет данных';
   const stateTone = status?.running ? 'warn' : status?.enabled ? 'good' : 'neutral';
   const statusRows: Array<{ label: string; value: React.ReactNode }> = [
     {
-      label: 'Enabled',
-      value: status ? <StatusPill tone={status.enabled ? 'good' : 'neutral'}>{String(status.enabled)}</StatusPill> : 'n/a'
+      label: 'Автоматические циклы',
+      value: status ? <StatusPill tone={status.enabled ? 'good' : 'neutral'}>{status.enabled ? 'Включены' : 'Выключены'}</StatusPill> : 'n/a'
     },
     {
-      label: 'Running',
-      value: status ? <StatusPill tone={status.running ? 'warn' : 'neutral'}>{String(status.running)}</StatusPill> : 'n/a'
+      label: 'Текущий цикл',
+      value: status ? <StatusPill tone={status.running ? 'warn' : 'neutral'}>{status.running ? 'Выполняется' : 'Ожидает'}</StatusPill> : 'n/a'
     },
-    { label: 'Interval', value: formatInterval(status?.intervalMs) },
-    { label: 'Order quote', value: formatNumber(status?.orderQuote) },
-    { label: 'Min change', value: formatPercent(status?.minChangePercent) },
+    { label: 'Интервал', value: formatInterval(status?.intervalMs) },
+    { label: 'Виртуальная заявка, USDT', value: formatNumber(status?.orderQuote) },
+    { label: 'Мин. изменение цены', value: formatPercent(status?.minChangePercent) },
     { label: 'TP / SL', value: `${formatPercent(status?.sellTakeProfitPercent)} / ${formatPercent(status?.sellStopLossPercent)}` },
-    { label: 'Last run', value: formatDateTime(status?.lastRunAt) },
-    { label: 'Next run', value: formatDateTime(status?.nextRunAt) },
-    { label: 'Errors', value: String(status?.consecutiveErrors ?? 0) }
+    { label: 'Последний цикл', value: formatDateTime(status?.lastRunAt) },
+    { label: 'Следующий цикл', value: formatDateTime(status?.nextRunAt) },
+    { label: 'Ошибки', value: String(status?.consecutiveErrors ?? 0) }
   ];
 
   const runScan = async () => {
     setScanState('running');
-    setScanMessage('scan running');
+    setScanMessage('Выполняется цикл симулятора');
 
     try {
       await api<AutoTraderStatus>('/api/auto-trader/scan', { method: 'POST' });
       await onScanned();
       setScanState('success');
-      setScanMessage('scan complete');
+      setScanMessage('Цикл симулятора завершён');
     } catch (error) {
       setScanState('error');
       setScanMessage(getErrorMessage(error));
@@ -553,7 +562,7 @@ function AutoTraderPanel({
 
   return (
     <Panel
-      title="Auto Trader"
+      title="Симулятор робота"
       icon={<Bot size={16} />}
       action={
         <div className="panel-action-row">
@@ -566,8 +575,8 @@ function AutoTraderPanel({
             onClick={() => void runScan()}
           >
             <RefreshCw size={14} className={scanState === 'running' ? 'spin' : ''} />
-            {scanState === 'running' ? 'Running' : 'Run scan'}
-          </button> : <StatusPill tone="neutral">Read only</StatusPill>}
+            {scanState === 'running' ? 'Проверяем' : 'Запустить цикл симулятора'}
+          </button> : <StatusPill tone="neutral">Только чтение</StatusPill>}
         </div>
       }
     >
@@ -580,21 +589,21 @@ function AutoTraderPanel({
         ))}
       </div>
 
-      {!status && !statusError ? <div className="scan-message neutral">status loading</div> : null}
-      {statusError ? <div className="scan-message bad">status: {statusError}</div> : null}
-      {status?.lastError ? <div className="scan-message bad">last error: {status.lastError}</div> : null}
+      {!status && !statusError ? <div className="scan-message neutral">Загружаем состояние симулятора</div> : null}
+      {statusError ? <div className="scan-message bad">Состояние симулятора: {statusError}</div> : null}
+      {status?.lastError ? <div className="scan-message bad">Последняя ошибка симулятора: {status.lastError}</div> : null}
       {scanMessage ? <div className={`scan-message ${scanState === 'error' ? 'bad' : scanState}`}>{scanMessage}</div> : null}
 
       <table className="signals-table">
         <thead>
           <tr>
-            <th>Symbol</th>
-            <th>Action</th>
-            <th>Decision</th>
+            <th>Пара</th>
+            <th>Действие</th>
+            <th>Решение</th>
             <th className="right">24h</th>
-            <th className="right">Price</th>
-            <th className="right">Quote</th>
-            <th>Reason</th>
+            <th className="right">Цена</th>
+            <th className="right">Сумма</th>
+            <th>Причина</th>
           </tr>
         </thead>
         <tbody>
@@ -628,7 +637,7 @@ function AutoTraderPanel({
           ) : (
             <tr>
               <td colSpan={7} className="empty">
-                No signals
+                Нет сигналов
               </td>
             </tr>
           )}
@@ -640,15 +649,15 @@ function AutoTraderPanel({
 
 function MarketWatchPanel({ tickers }: { tickers: MarketTicker[] }) {
   return (
-    <Panel title="Market Watch" icon={<Activity size={16} />}>
+    <Panel title="Рыночные котировки" icon={<Activity size={16} />}>
       <table>
         <thead>
           <tr>
-            <th>Symbol</th>
-            <th className="right">Last</th>
-            <th className="right">Bid</th>
-            <th className="right">Ask</th>
-            <th className="right">24h quote</th>
+            <th>Пара</th>
+            <th className="right">Цена</th>
+            <th className="right">Покупка</th>
+            <th className="right">Продажа</th>
+            <th className="right">Объём за 24 ч</th>
           </tr>
         </thead>
         <tbody>
@@ -668,7 +677,7 @@ function MarketWatchPanel({ tickers }: { tickers: MarketTicker[] }) {
           ) : (
             <tr>
               <td colSpan={5} className="empty">
-                Waiting for market data
+                Ожидаем котировки
               </td>
             </tr>
           )}
@@ -680,7 +689,7 @@ function MarketWatchPanel({ tickers }: { tickers: MarketTicker[] }) {
 
 function RiskBudgetPanel({ risk }: { risk?: RiskPayload }) {
   return (
-    <Panel title="Risk Budget" icon={<ShieldCheck size={16} />}>
+    <Panel title="Лимиты симулятора" icon={<ShieldCheck size={16} />}>
       <div className="budget-list">
         {risk ? (
           Object.entries(risk.budget).map(([key, value]) => (
@@ -690,7 +699,7 @@ function RiskBudgetPanel({ risk }: { risk?: RiskPayload }) {
             </div>
           ))
         ) : (
-          <div className="empty">Risk budget is loading</div>
+          <div className="empty">Загружаем лимиты</div>
         )}
       </div>
     </Panel>
@@ -699,14 +708,14 @@ function RiskBudgetPanel({ risk }: { risk?: RiskPayload }) {
 
 function PositionsPanel({ positions }: { positions: Position[] }) {
   return (
-    <Panel title="Positions" icon={<WalletCards size={16} />}>
+    <Panel title="Виртуальные позиции" icon={<WalletCards size={16} />}>
       <table>
         <thead>
           <tr>
-            <th>Symbol</th>
-            <th className="right">Qty</th>
-            <th className="right">Avg</th>
-            <th className="right">Realized</th>
+            <th>Пара</th>
+            <th className="right">Количество</th>
+            <th className="right">Средняя цена</th>
+            <th className="right">Результат</th>
           </tr>
         </thead>
         <tbody>
@@ -724,7 +733,7 @@ function PositionsPanel({ positions }: { positions: Position[] }) {
           ) : (
             <tr>
               <td colSpan={4} className="empty">
-                No positions
+                Нет виртуальных позиций
               </td>
             </tr>
           )}
@@ -736,16 +745,16 @@ function PositionsPanel({ positions }: { positions: Position[] }) {
 
 function TradesPanel({ trades, limit = 12 }: { trades: Trade[]; limit?: number }) {
   return (
-    <Panel title="Recent Trades" icon={<BookOpenText size={16} />}>
+    <Panel title="Виртуальные сделки" icon={<BookOpenText size={16} />}>
       <table>
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th className="right">Qty</th>
-            <th className="right">Quote</th>
-            <th className="right">Fee</th>
+            <th>Время</th>
+            <th>Пара</th>
+            <th>Направление</th>
+            <th className="right">Количество</th>
+            <th className="right">Сумма</th>
+            <th className="right">Комиссия</th>
           </tr>
         </thead>
         <tbody>
@@ -765,7 +774,7 @@ function TradesPanel({ trades, limit = 12 }: { trades: Trade[]; limit?: number }
           ) : (
             <tr>
               <td colSpan={6} className="empty">
-                No trades
+                Нет виртуальных сделок
               </td>
             </tr>
           )}
@@ -777,17 +786,17 @@ function TradesPanel({ trades, limit = 12 }: { trades: Trade[]; limit?: number }
 
 function OrdersPanel({ orders, limit = 12 }: { orders: Order[]; limit?: number }) {
   return (
-    <Panel title="Paper Orders" icon={<WalletCards size={16} />}>
+    <Panel title="Виртуальные заявки" icon={<WalletCards size={16} />}>
       <table>
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Symbol</th>
-            <th>Side</th>
-            <th>Status</th>
-            <th className="right">Filled</th>
-            <th className="right">Avg</th>
-            <th className="right">Quote</th>
+            <th>Время</th>
+            <th>Пара</th>
+            <th>Направление</th>
+            <th>Статус</th>
+            <th className="right">Исполнено</th>
+            <th className="right">Средняя цена</th>
+            <th className="right">Сумма</th>
           </tr>
         </thead>
         <tbody>
@@ -808,7 +817,7 @@ function OrdersPanel({ orders, limit = 12 }: { orders: Order[]; limit?: number }
           ) : (
             <tr>
               <td colSpan={7} className="empty">
-                No orders
+                Нет виртуальных заявок
               </td>
             </tr>
           )}
@@ -820,15 +829,15 @@ function OrdersPanel({ orders, limit = 12 }: { orders: Order[]; limit?: number }
 
 function DecisionJournalPanel({ decisions }: { decisions: Decision[] }) {
   return (
-    <Panel title="Decision Journal" icon={<BookOpenText size={16} />}>
+    <Panel title="Решения симулятора" icon={<BookOpenText size={16} />}>
       <table>
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Symbol</th>
-            <th>Signal</th>
-            <th>Decision</th>
-            <th>Reason</th>
+            <th>Время</th>
+            <th>Пара</th>
+            <th>Сигнал</th>
+            <th>Решение</th>
+            <th>Причина</th>
           </tr>
         </thead>
         <tbody>
@@ -849,7 +858,7 @@ function DecisionJournalPanel({ decisions }: { decisions: Decision[] }) {
           ) : (
             <tr>
               <td colSpan={5} className="empty">
-                No decisions
+                Нет решений
               </td>
             </tr>
           )}
@@ -862,7 +871,7 @@ function DecisionJournalPanel({ decisions }: { decisions: Decision[] }) {
 function RiskLogPanel({ events, limit = 10 }: { events: RiskEvent[]; limit?: number }) {
   return (
     <Panel
-      title="Risk Log"
+      title="События риска"
       icon={<CirclePause size={16} />}
       action={<StatusPill tone={events.some((event) => event.severity === 'critical') ? 'bad' : 'neutral'}>{events.length}</StatusPill>}
     >
@@ -876,7 +885,7 @@ function RiskLogPanel({ events, limit = 10 }: { events: RiskEvent[]; limit?: num
             </div>
           ))
         ) : (
-          <div className="empty">No risk events</div>
+          <div className="empty">Нет событий риска</div>
         )}
       </div>
     </Panel>
@@ -885,7 +894,7 @@ function RiskLogPanel({ events, limit = 10 }: { events: RiskEvent[]; limit?: num
 
 function RuntimePanel({ status }: { status?: StatusPayload }) {
   return (
-    <Panel title="Runtime" icon={<Database size={16} />}>
+    <Panel title="Состояние сервиса" icon={<Database size={16} />}>
       <div className="budget-list">
         <div className="budget-row">
           <span>mode</span>
@@ -916,165 +925,66 @@ function RuntimePanel({ status }: { status?: StatusPayload }) {
   );
 }
 
+function SimulatorNotice() {
+  return <section className="simulator-notice" aria-label="Режим симулятора">
+    <FlaskConical size={21} aria-hidden="true" />
+    <div><strong>Симулятор · виртуальные деньги</strong>
+      <p>Робот моделирует покупки и продажи по рыночным котировкам. Сделки, позиции и результат на этом экране виртуальные. Деньги на биржах не используются.</p>
+    </div>
+  </section>;
+}
+
 export function App() {
-  const [active, setActive] = useState<(typeof nav)[number]['id']>('overview');
+  const [active, setActive] = useState<NavId>('overview');
   const { snapshot, loading, refresh } = useSnapshot();
   const status = snapshot.status;
+  const accountOwner = status?.access?.accountOwner === true;
+  const accounts = useAccountDashboard(accountOwner);
   const canOperate = !snapshot.error && status?.access?.role === 'operator';
   const symbols = status?.symbols ?? ['BTC/USDT', 'ETH/USDT', 'SOL/USDT'];
   const realized = snapshot.risk?.usage.realizedPnlQuote ?? 0;
-
-  const exposure = useMemo(
-    () =>
-      snapshot.positions.reduce((sum, position) => {
-        const ticker = snapshot.tickers.find((item) => item.symbol === position.symbol);
-        return sum + position.baseQuantity * (ticker?.lastPrice ?? position.avgEntryPrice);
-      }, 0),
-    [snapshot.positions, snapshot.tickers]
-  );
-  const dailyBuyQuoteUsage = snapshot.risk?.usage.dailyBuyQuoteUsage ?? 0;
-  const openPositionCount = snapshot.risk?.usage.openPositions ?? snapshot.positions.length;
-  const metrics = (
-    <DashboardMetrics
-      realized={realized}
-      exposure={exposure}
-      dailyBuyQuoteUsage={dailyBuyQuoteUsage}
-      openPositions={openPositionCount}
-    />
-  );
-  const autoTraderPanel = (
-    <AutoTraderPanel
-      status={snapshot.autoTrader}
-      statusError={snapshot.autoTraderError}
-      canOperate={canOperate}
-      onScanned={() => refresh()}
-    />
-  );
-
+  const view = !accountOwner && (active === 'exchanges' || active === 'operations' || active === 'earn') ? 'overview' : active;
+  const accountView = accountOwner && ['overview', 'exchanges', 'operations', 'earn'].includes(view);
+  const exposure = useMemo(() => snapshot.positions.reduce((sum, position) => {
+    const ticker = snapshot.tickers.find(item => item.symbol === position.symbol);
+    return sum + position.baseQuantity * (ticker?.lastPrice ?? position.avgEntryPrice);
+  }, 0), [snapshot.positions, snapshot.tickers]);
+  const metrics = <DashboardMetrics realized={realized} exposure={exposure}
+    dailyBuyQuoteUsage={snapshot.risk?.usage.dailyBuyQuoteUsage ?? 0}
+    openPositions={snapshot.risk?.usage.openPositions ?? snapshot.positions.length} />;
+  const autoTraderPanel = <AutoTraderPanel status={snapshot.autoTrader} statusError={snapshot.autoTraderError}
+    canOperate={canOperate} onScanned={() => refresh()} />;
+  const paperContent = <>
+    <SimulatorNotice />
+    {metrics}
+    <section className="grid equal"><PositionsPanel positions={snapshot.positions} /><TradesPanel trades={snapshot.trades} limit={12} /></section>
+    <details className="paper-details"><summary>Управление симулятором</summary><section className="grid">{autoTraderPanel}</section>{canOperate ? <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} /> : null}</details>
+    <details className="paper-details"><summary>Виртуальные заявки и решения</summary><section className="page-stack"><OrdersPanel orders={snapshot.orders} limit={20} /><DecisionJournalPanel decisions={snapshot.decisions} /></section></details>
+  </>;
   const activeContent = (() => {
-    switch (active) {
-      case 'lab':
-        return <LabReport load={loadLabReport} />;
-      case 'paper':
-        return (
-          <>
-            {metrics}
-            <section className="grid">{autoTraderPanel}</section>
-            <section className="grid two-one">
-              {canOperate ? <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} /> : null}
-              <PositionsPanel positions={snapshot.positions} />
-            </section>
-            <section className="grid equal">
-              <OrdersPanel orders={snapshot.orders} />
-              <TradesPanel trades={snapshot.trades} limit={10} />
-            </section>
-          </>
-        );
-      case 'journal':
-        return (
-          <section className="page-stack">
-            <DecisionJournalPanel decisions={snapshot.decisions} />
-            <section className="grid equal">
-              <TradesPanel trades={snapshot.trades} limit={20} />
-              <OrdersPanel orders={snapshot.orders} limit={20} />
-            </section>
-          </section>
-        );
-      case 'risk':
-        return (
-          <>
-            {metrics}
-            <section className="grid equal">
-              <RiskBudgetPanel risk={snapshot.risk} />
-              <RiskLogPanel events={snapshot.events} limit={16} />
-            </section>
-            <DecisionJournalPanel decisions={snapshot.decisions.filter((decision) => decision.decision !== 'allow')} />
-          </>
-        );
-      case 'logs':
-        return (
-          <section className="grid equal">
-            <RuntimePanel status={status} />
-            <RiskLogPanel events={snapshot.events} limit={24} />
-          </section>
-        );
-      case 'overview':
-      default:
-        return (
-          <>
-            {metrics}
-            <section className="grid two-one">
-              <MarketWatchPanel tickers={snapshot.tickers} />
-              {autoTraderPanel}
-            </section>
-            <section className="grid equal">
-              {canOperate ? <PaperOrderPanel symbols={symbols} onFilled={() => void refresh()} /> : null}
-              <PositionsPanel positions={snapshot.positions} />
-            </section>
-            <section className="grid">
-              <RiskBudgetPanel risk={snapshot.risk} />
-            </section>
-            <section className="grid equal">
-              <TradesPanel trades={snapshot.trades} limit={8} />
-              <RiskLogPanel events={snapshot.events} />
-            </section>
-          </>
-        );
+    if (accountView) return <AccountDashboard page={view as AccountPage} state={accounts} onNavigate={setActive} />;
+    switch (view) {
+      case 'lab': return <LabReport load={loadLabReport} />;
+      case 'paper': return paperContent;
+      case 'live': return <LiveReadiness status={status} />;
+      case 'risk': return <><p className="paper-notice">Диагностика симулятора · виртуальные средства</p><section className="grid equal"><RiskBudgetPanel risk={snapshot.risk} /><RiskLogPanel events={snapshot.events} limit={16} /></section><DecisionJournalPanel decisions={snapshot.decisions.filter(decision => decision.decision !== 'allow')} /></>;
+      case 'logs': return <section className="grid equal"><RuntimePanel status={status} /><RiskLogPanel events={snapshot.events} limit={24} /></section>;
+      default: return <><SimulatorNotice /><p className="paper-notice">Реальные счета доступны их владельцу в разделах «Главная», «Биржи» и «История бирж».</p>{metrics}<section className="grid equal"><PositionsPanel positions={snapshot.positions} /><TradesPanel trades={snapshot.trades} limit={8} /></section><details className="paper-details"><summary>Рыночные котировки</summary><MarketWatchPanel tickers={snapshot.tickers} /></details></>;
     }
   })();
-
-  return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark">CR</div>
-          <div>
-            <strong>Crypto Robot</strong>
-            <span>paper ops</span>
-          </div>
-        </div>
-        <nav>
-          {nav.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button key={item.id} aria-label={item.label} className={active === item.id ? 'active' : ''} onClick={() => setActive(item.id)}>
-                <Icon size={16} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <main>
-        <header className="topbar">
-          <div>
-            <h1>{pageTitle(active)}</h1>
-            <span className="timestamp">server {formatTime(status?.serverTime)}</span>
-          </div>
-          <div className="status-strip">
-            <StatusPill tone={status?.mode === 'paper' ? 'good' : 'bad'}>{status?.mode?.toUpperCase() ?? 'WAIT'}</StatusPill>
-            <StatusPill tone={status?.liveTradingLocked ? 'good' : 'bad'}>
-              <LockKeyhole size={12} /> live locked
-            </StatusPill>
-            <StatusPill tone={status?.database.ok ? 'good' : 'bad'}>
-              <Database size={12} /> postgres
-            </StatusPill>
-            <button className="icon-button" onClick={() => void refresh()} disabled={loading} title="Refresh">
-              <RefreshCw size={16} />
-            </button>
-          </div>
-        </header>
-
-        {snapshot.error ? (
-          <div className="alert-row">
-            <AlertTriangle size={16} />
-            {snapshot.error}
-          </div>
-        ) : null}
-
-        {activeContent}
-      </main>
-    </div>
-  );
+  const navButton = (item: (typeof nav)[number]) => {
+    const Icon = item.icon;
+    return <button key={item.id} type="button" aria-current={view === item.id ? 'page' : undefined}
+      className={view === item.id ? 'active' : ''} onClick={() => setActive(item.id)}><Icon size={17} aria-hidden="true" /><span>{item.label}</span></button>;
+  };
+  return <div className="app-shell">
+    <aside className="sidebar"><div className="brand"><div className="brand-mark">CR</div><div><strong>Crypto Robot</strong><span>Счета и наблюдение</span></div></div>
+      <nav aria-label="Основная навигация">{nav.filter(item => ['overview', 'paper', 'live'].includes(item.id) || (accountOwner && ['exchanges', 'operations', 'earn'].includes(item.id))).map(navButton)}</nav>
+      <details className="nav-diagnostics"><summary>Диагностика</summary><nav aria-label="Диагностика">{nav.filter(item => ['risk', 'logs', 'lab'].includes(item.id)).map(navButton)}</nav></details>
+    </aside>
+    <main><header className="topbar"><div><h1>{view === 'overview' && !accountOwner ? 'Симулятор' : pageTitle(view)}</h1><span className="timestamp">{accountView ? 'Реальные счета · MEXC и OKX' : view === 'live' ? 'Реальные средства · подготовка к запуску' : 'Симулятор · виртуальные средства'}</span></div><div className="status-strip">{!accountView ? <><StatusPill tone={status?.liveTradingLocked === true ? 'neutral' : 'warn'}><LockKeyhole size={12} />{status?.liveTradingLocked === true ? 'Реальная торговля выключена' : 'Статус торговли на уточнении'}</StatusPill><button className="icon-button" onClick={() => void refresh()} disabled={loading} title="Обновить данные робота" aria-label="Обновить данные робота"><RefreshCw size={16} /></button></> : null}</div></header>
+      {snapshot.error ? <div className="alert-row" role="alert"><AlertTriangle size={16} />Не удалось обновить данные робота. Повторите обновление.</div> : null}
+      {activeContent}
+    </main>
+  </div>;
 }

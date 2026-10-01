@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "kind": "offline-order-recovery-acceptance",
+  "scope": "synthetic-local-only",
+  "checkedAt": "2026-09-28T12:51:13.903052+00:00",
+  "executable": false,
+  "productionChanged": false,
+  "exchangeCalls": 0,
+  "checks": {
+    "not_found_retains_reservation": true,
+    "unknown_does_not_resubmit": true,
+    "cancel_ack_not_terminal": true,
+    "independent_decimal_cash_match": true,
+    "independent_decimal_base_match": true,
+    "terminal_release_requires_complete_reconciliation": true,
+    "single_fill_not_doubled": true,
+    "live_environment_cannot_enable_tool": true,
+    "limits_not_invented": true,
+    "provenance_not_promoted": true,
+    "private_reports": true,
+    "compiled_commands_succeeded_with_network_disabled": true
+  },
+  "sourceSha256": {
+    "src/live/order-lifecycle.ts": "01766d0b2329268fcd2c618df57b4966f10c5258e1be2fc9f0bd78f69527db40",
+    "src/live/order-journal.ts": "963aca3605ecbe92cd284cbae36ac18e9402b4bdb8bf16890927c7eb3f3c6dba",
+    "src/live/launch-readiness.ts": "c52a692f10e57d69aa273caba4ddc5e69e57eb8cef74f144915669f22a358d3a",
+    "src/scripts/live-order-rehearsal.ts": "5be9e6146b13a96a7bd3977b1b5afc777bb55308ed35d8c2a6b1dcc318eb139c"
+  }
+}

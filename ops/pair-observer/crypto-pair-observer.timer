@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh read-only MEXC and OKX observation every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=5min
+AccuracySec=10s
+Unit=crypto-pair-observer.service
+
+[Install]
+WantedBy=timers.target

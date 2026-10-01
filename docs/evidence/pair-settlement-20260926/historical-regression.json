@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "historicalReports": [
+    {
+      "case": "five-minute",
+      "reportSha256": "9002eaec67c12c38e787dc362e33b638e805070952b4da0c427904f11ed1712d",
+      "unchanged": true
+    },
+    {
+      "case": "thirty-minute-diagnostic",
+      "reportSha256": "c65fd1aa07cb68904a3004332f791bcba6a0a21e86a581b716402a2fac8cb1e4",
+      "unchanged": true
+    }
+  ]
+}
