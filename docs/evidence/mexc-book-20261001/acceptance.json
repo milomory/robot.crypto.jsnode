@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "scope": "public MEXC BTC/ETH verified top50 bootstrap and replay",
+  "captures": [
+    {
+      "base": "BTC",
+      "status": "complete",
+      "requestCount": 2,
+      "connections": 1,
+      "frames": 88,
+      "appliedDeltas": 52,
+      "elapsedMs": 1727,
+      "metadataFromSameCapture": true,
+      "bootstrapLevelsPerSide": [
+        1000,
+        1000
+      ],
+      "verifiedDepth": 50,
+      "entireBookKnown": false,
+      "sourceAgeMs": 770,
+      "lastFrameToEvaluationMs": 624,
+      "knownLevels": {
+        "bids": 1001,
+        "asks": 1002
+      },
+      "compiledReplay": "passed",
+      "independentRawMapReconstruction": "passed",
+      "sha256": "f50369b8af1941d2faf6e7d4b89c1612a7dd305bf1f2fadc377def8b813d8a48",
+      "archiveBytes": 280696,
+      "executable": false
+    },
+    {
+      "base": "ETH",
+      "status": "complete",
+      "requestCount": 2,
+      "connections": 1,
+      "frames": 11,
+      "appliedDeltas": 10,
+      "elapsedMs": 2908,
+      "metadataFromSameCapture": true,
+      "bootstrapLevelsPerSide": [
+        1000,
+        1000
+      ],
+      "verifiedDepth": 50,
+      "entireBookKnown": false,
+      "sourceAgeMs": 169,
+      "lastFrameToEvaluationMs": 11,
+      "knownLevels": {
+        "bids": 1000,
+        "asks": 1000
+      },
+      "compiledReplay": "passed",
+      "independentRawMapReconstruction": "passed",
+      "sha256": "3091f508d803e416a216890d9aa771a74148311f4f2276ccb5ed8ebced4ed64a",
+      "archiveBytes": 219502,
+      "executable": false
+    }
+  ],
+  "credentialsUsed": false,
+  "accountRequests": false,
+  "runtimeModified": false,
+  "recurringObserverStarted": false,
+  "netEdgeVerified": false,
+  "sourceAgeIsNetworkLatency": false,
+  "publicFixturePrivacyReview": "passed-no-sensitive-fields-or-credential-patterns"
+}

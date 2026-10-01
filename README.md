@@ -40,7 +40,9 @@ funding event accounting, hedged simulation and private readiness separate.
 The [D0b observation/replay profile](docs/DERIVATIVES-PUBLIC-D0B.md) adds books,
 mark/index/OI and historical funding. The full 24-read capture and replay passed.
 A separate [MEXC WS source-time probe](docs/DERIVATIVES-MEXC-DEPTH-SOURCE.md) verifies
-matching-engine timestamps; reconstructing a complete book remains the next step.
+matching-engine timestamps. [BTC/ETH book reconstruction](docs/DERIVATIVES-MEXC-BOOK.md)
+now joins fresh snapshots and continuous deltas into verified top50; joint OKX/Spot
+observation and the D1 budget remain next.
 
 ## Local Checks
 

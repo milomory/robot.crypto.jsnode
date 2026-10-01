@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "scope": "MEXC BTC/ETH bounded top50 reconstruction",
+  "sourceTests": {
+    "command": "npm test -- --maxWorkers=2",
+    "passed": 4910,
+    "skippedExistingPostgres": 15,
+    "newTests": 336
+  },
+  "initialDefaultConcurrencyRun": {
+    "passed": 4909,
+    "failed": 1,
+    "failure": "existing paper-pair-study study-30m case exceeded 5000 ms",
+    "assertionsOrTimeoutsChanged": false
+  },
+  "isolatedExistingStudyRetry": {
+    "passed": 14,
+    "failed": 0
+  },
+  "interruptedRetry": {
+    "signal": "SIGTERM",
+    "causeEstablished": false,
+    "countedAsPassed": false
+  },
+  "marketDataTests": 1238,
+  "apiUiBuild": "passed",
+  "strictMarketDataTypes": "passed",
+  "realCaptureAndCompiledReplay": {
+    "BTC": "passed",
+    "ETH": "passed"
+  },
+  "independentReviewFixes": [
+    "check all observed versions including covered bootstrap deltas",
+    "record exact socket start for replay deadlines",
+    "reject impossible incomplete failure stages"
+  ],
+  "credentialsUsed": false,
+  "runtimeModified": false,
+  "ordersOrTransfers": false,
+  "executable": false
+}

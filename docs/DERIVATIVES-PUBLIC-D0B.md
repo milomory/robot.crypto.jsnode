@@ -165,3 +165,6 @@ API-origin. План и ограничения: [D0–D5](DERIVATIVES-OPPORTUNIT
 Текущая [приёмка и проверка всего проекта](evidence/derivatives-d0b-20261001/completion-validation.json):
 **4 574 PASS**, 15 прежних PostgreSQL skips; API/UI build и строгие типы market-data PASS.
 Новые 248 тестов проверяют WS-парсер, transport/replay и оба реальных публичных fixture.
+
+Следующий технический этап выполнен отдельно: [MEXC BTC/ETH top50 восстановление](DERIVATIVES-MEXC-BOOK.md).
+Флаги исходного REST-only D0b архива не изменены задним числом.

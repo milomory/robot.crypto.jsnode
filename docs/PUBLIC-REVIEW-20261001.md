@@ -46,3 +46,26 @@ API/UI build PASS. Новые D0 тесты — 284, строгая типиза
 Далее D0b — единицы/время стаканов, mark/index/OI и история funding; затем D1
 по [плану](DERIVATIVES-OPPORTUNITY-PLAN.md). Новые ключи не нужны. Торговая блокировка,
 основной робот, БД, Spot observer, сделки и перемещения средств не менялись.
+
+
+## Полный D0b и MEXC WS source-time
+
+Source `f4b2b882eece55efc674382e2934b8f7d5886575` опубликован отдельным публичным
+review-коммитом `d25bdf1f890c9b40fce4297cb34fa96e9dde0b4a`, parent `b342faa`.
+Анонимный GitHub API подтвердил точный commit ветки и blob `PUBLIC-REVIEW.md`.
+
+- Полный D0b: 24/24 GET BTC/ETH и replay приняты на том же OKX origin.
+  Причина исторического Python 403 не установлена.
+- MEXC WS: 10 последовательных BTC deltas с matching-engine cts; полная книга
+  ещё не реконструирована. Следующий этап — fresh bootstrap, continuous updates,
+  известная граница глубины, затем ETH/Spot и D1 budget.
+- Source: 4 574 PASS, 15 прежних PG skips; build/strict types PASS.
+- Export: 902 market-data tests и API/UI build PASS. 298 source/tests/fixtures
+  сверены: 297 byte-identical, один файл только с прежними private ref placeholders.
+- Первоначальный массовый git add был отклонён auto-review из-за риска захватить
+  пользовательский Auth-документ. Read-only проверка доказала отсутствие этого
+  файла в review-worktree; использован явный список 23 файлов. Повторный scoped
+  commit/push принят. Пользовательский файл остался untracked в исходном checkout.
+
+[Evidence](evidence/derivatives-d0b-20261001/depth-source-publication.json).
+Main, private history и production runtime сохранены.

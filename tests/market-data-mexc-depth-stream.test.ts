@@ -211,3 +211,20 @@ describe('delta frame schema and resource limits', () => {
     expect(() => stream.accept(event(), at)).toThrow('stream-already-rejected');
   });
 });
+
+// BTC remains the default for the existing source-time capture. ETH is explicit.
+describe('explicit ETH depth stream without widening an instance to arbitrary markets', () => {
+  it('accepts ETH only after selecting ETH', () => {
+    const stream = new MexcDepthStreamEvidence('ETH');
+    expect(stream.accept(event({}, { symbol: 'ETH_USDT' }), at)).toMatchObject({ kind: 'delta', symbol: 'ETH_USDT' });
+    expect(() => stream.accept(event({ version: '9007199254740994' }), at)).toThrow('unsupported-stream-symbol');
+  });
+  it('retains the same exact continuity semantics for ETH', () => {
+    const stream = new MexcDepthStreamEvidence('ETH');
+    stream.accept(event({}, { symbol: 'ETH_USDT' }), at);
+    expect(() => stream.accept(event({ version: '9007199254740995' }, { symbol: 'ETH_USDT' }), at)).toThrow('stream-version-discontinuity');
+  });
+  it.each(['SOL', '', null, 'btc'])('rejects unsupported base %j during construction', base => {
+    expect(() => new MexcDepthStreamEvidence(base as 'BTC')).toThrow('unsupported-market');
+  });
+});

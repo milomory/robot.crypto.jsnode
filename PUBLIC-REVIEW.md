@@ -3,7 +3,7 @@
 This branch contains a tracked source snapshot for review, layered on existing
 public review history. It does not publish the private intervening local Git history.
 
-- Source snapshot commit: `f4b2b882eece55efc674382e2934b8f7d5886575`.
+- Source snapshot commit: `7a54547ba5f484a54473fb9496b51427ecd20ddc`.
 - Public history base commit: `4345d0c9f868e830bb2b2034d0b78864c4309575`.
 - Mathematical, strategy, reader and test source is preserved. The only source
   substitutions are stable placeholders for private environment references.
@@ -29,38 +29,40 @@ prove actual profitability, real account fills or execution readiness.
 
 ## Current review starting points
 
-The older public main predates MEXC/OKX account work. The exact spot pair ledger,
-partial/unknown outcomes, reserves and offline recovery already exist. They are
-not a perpetual funding/margin engine. See `docs/ARCHITECTURE.md`.
-
 - `src/accounts`: account/Earn readers and explicit asset/fee semantics.
-- `src/paper-pair`: spot pair model, settlement, journals and risk.
+- `src/paper-pair`: exact spot pair model, settlement, journals and risk.
 - `src/live`: preparation and recovery; no exchange order sender.
-- `src/market-data`: exact perpetual specs, funding, books/metrics, bounded WS evidence.
-- `docs/DERIVATIVES-PUBLIC-D0B.md`: accepted complete 24-GET capture and replay.
-- `docs/DERIVATIVES-MEXC-DEPTH-SOURCE.md`: accepted bounded BTC WS source-time probe.
+- `src/market-data`: exact perpetual specs, funding, books/metrics, bounded WS evidence and verified top50 reconstruction.
+- `docs/DERIVATIVES-MEXC-BOOK.md`: new BTC/ETH bootstrap/stream acceptance and limits.
 - `docs/DERIVATIVES-OPPORTUNITY-PLAN.md`: remaining D0–D5 gates.
 
 ## Current acceptance — 2026-10-01
 
-A new diagnostic using the normal Node client on the same www.okx.com origin
-returned 200/code0; the reason for the historical Python 403 remains unknown.
-The full BTC/ETH D0b capture passed all 24 reads and independent replay. Both
-MEXC REST books retain cts:null and are not qualified as synchronized books.
+The full BTC/ETH D0b 24-read capture remains accepted. Its historical REST MEXC
+quality flags are unchanged; this new work uses separate fresh metadata, snapshots
+and continuous WS updates to reconstruct verified top50 within immutable known
+depth boundaries. It never claims the entire exchange book is known.
 
-A separate MEXC public WS probe accepted 10 sequential BTC deltas with
-matching-engine timestamps (114–123 ms source age in this short sample).
-The stream parser, bounded transport and archive replay are implemented.
-These deltas are not a reconstructed full book. A fresh bootstrap with continuous
-updates and known depth boundaries, then ETH/Spot integration and the D1 budget,
-remain the next step. No new recurring observer or real trading was enabled.
+Real BTC and ETH captures each used 2 GETs and 1 public WS connection, followed
+by independent replay and a separate raw-to-Map reconstruction. BTC applied 52
+buffered updates after the snapshot; ETH applied 10. Final source ages were 770
+and 169 ms respectively. These are short samples, not steady-state performance
+or pure network-latency claims. Credentials/runtime/trades were not modified.
 
-Source validation: 4,574 tests passed, 15 existing PostgreSQL skips; API/UI build
-and strict market-data test types passed. This change adds 248 tests, including
-real public archives and a regression for normalization increasing archive size.
-Independent review also closed clock-error classification in stream callbacks.
+Source validation: 4,910 passed, 15 existing PostgreSQL skips with maxWorkers=2;
+API/UI build and strict market-data types passed. An initial default-concurrency
+run had one 5-second timeout in an existing study case; isolated and full reruns
+passed without changing assertions or timeouts. One SIGTERM-interrupted retry was
+not counted. This change adds 336 tests, including real BTC/ETH archives.
 
-The new code/test/fixture delta is byte-identical to the source snapshot. Previous
-private reference substitutions remain stable; see PUBLIC-REVIEW-PARITY.json.
+Independent review strengthened covered-version continuity, explicit socket-start
+time and replay validation of impossible incomplete-failure stages. All new
+source/tests/fixtures match the source snapshot byte-for-byte; only previously
+approved private environment reference placeholders differ elsewhere.
 
-This exported snapshot also passed all 902 market-data tests and the API/UI build.
+Next: align MEXC perpetual books with OKX/Spot observations, resolve required
+metric timestamps and accept the D1 request/storage budget before a campaign.
+Net advantage, executable capital, derivatives fees and real execution remain
+unverified. No new recurring observer or real trading was enabled.
+
+The exported snapshot passed all 1,238 market-data tests and the API/UI build.

@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "sourceCommit": "f4b2b882eece55efc674382e2934b8f7d5886575",
+  "publicReviewBranch": "codex/mexc-okx",
+  "publicReviewCommit": "d25bdf1f890c9b40fce4297cb34fa96e9dde0b4a",
+  "publicReviewParent": "b342faacf3ec6858a9c2acf43c81c5b70d1e1292",
+  "pushVerified": true,
+  "anonymousGithubCommitVerified": true,
+  "publicGuideBlobVerified": true,
+  "exportedMarketDataTestsPassed": 902,
+  "exportedApiUiBuild": "passed",
+  "codeTestFixtureFilesCompared": 298,
+  "byteIdentical": 297,
+  "referenceOnlyChanges": [
+    "src/accounts/account-binding.ts"
+  ],
+  "otherCodeChanges": [],
+  "privatePathsExcluded": 103,
+  "untrackedAuthRequestIncluded": false,
+  "publicMainChanged": false,
+  "privateHistoryPublished": false,
+  "deploymentPerformed": false
+}

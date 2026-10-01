@@ -89,3 +89,7 @@ hash, пределы, хронологию и заново нормализуе�
 
 Проверки: **4 574 PASS**, 15 прежних PostgreSQL skips, API/UI build и строгие типы PASS;
 [сводка evidence](evidence/derivatives-d0b-20261001/completion-validation.json).
+
+Обновление того же дня: [BTC/ETH snapshot + WS восстановление top50](DERIVATIVES-MEXC-BOOK.md)
+реализовано и принято отдельными свежими capture; прежняя короткая проба не
+использовалась как их metadata или bootstrap.

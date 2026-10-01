@@ -105,12 +105,12 @@
     "docs/evidence/recorded-fees-20261001/install.json",
     "docs/evidence/recorded-fees-20261001/isolation.json"
   ],
-  "exportedTrackedFiles": 590,
+  "exportedTrackedFiles": 606,
   "gitRefsChanged": false,
   "kind": "public-review-snapshot-parity",
   "literalReplacementCount": 8,
   "parentCommit": "4345d0c9f868e830bb2b2034d0b78864c4309575",
-  "publicationParentCommit": "b342faacf3ec6858a9c2acf43c81c5b70d1e1292",
+  "publicationParentCommit": "d25bdf1f890c9b40fce4297cb34fa96e9dde0b4a",
   "referenceChangedFiles": [
     "docs/EXCHANGE-ACCOUNTS.md",
     "ops/account-fees/run-fees-once.py",
@@ -164,17 +164,17 @@
     "trackedTreeOnly": true
   },
   "schema": 1,
-  "sourceCommit": "f4b2b882eece55efc674382e2934b8f7d5886575",
+  "sourceCommit": "7a54547ba5f484a54473fb9496b51427ecd20ddc",
   "sourceTestsFixtures": {
-    "byteIdenticalFiles": 297,
-    "checkedFiles": 298,
+    "byteIdenticalFiles": 309,
+    "checkedFiles": 310,
     "otherChanges": [],
     "parityPassed": true,
     "referenceOnlyChangedFiles": [
       "src/accounts/account-binding.ts"
     ]
   },
-  "sourceTrackedFiles": 673,
+  "sourceTrackedFiles": 689,
   "stubbedMarkdown": [
     "docs/ACCOUNT-DASHBOARD.md",
     "docs/ACCOUNT-FUNDS-OBSERVATION.md",

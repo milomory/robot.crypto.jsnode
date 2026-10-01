@@ -1,11 +1,14 @@
-/** Public BTC incremental evidence only: no connection, snapshot, ledger or execution. */
+/** Public BTC/ETH incremental evidence only: no connection, snapshot, ledger or execution. */
 import { decimal, parsePublicJson, record, timestamp } from './exact-json.js';
-import { freeze, reject } from './model.js';
+import { freeze, market, reject, type ResearchBase } from './model.js';
 import { integerText } from './observation-model.js';
 
 export const MEXC_DEPTH_STREAM_URL = 'wss://contract.mexc.com/edge';
-export const MEXC_DEPTH_STREAM_SUBSCRIPTION = Object.freeze({ method: 'sub.depth',
-  param: Object.freeze({ symbol: 'BTC_USDT', compress: false }), gzip: false });
+export function mexcDepthStreamSubscription(base: ResearchBase = 'BTC') {
+  return Object.freeze({ method: 'sub.depth',
+    param: Object.freeze({ symbol: market('mexc', base).instrumentId, compress: false }), gzip: false });
+}
+export const MEXC_DEPTH_STREAM_SUBSCRIPTION = mexcDepthStreamSubscription();
 export const MEXC_DEPTH_STREAM_LIMITS = Object.freeze({ maximumFrameBytes: 512 * 1024,
   maximumLevelsPerSide: 2000, maximumAgeMs: 5000, maximumFutureMs: 5000 });
 
@@ -35,7 +38,7 @@ export interface MexcDepthDeltaLevel {
   price: string; quantityContracts: string; orderCount: string; action: 'set' | 'delete';
 }
 export interface MexcDepthStreamDelta extends StreamEvidence {
-  kind: 'delta'; channel: 'push.depth'; symbol: 'BTC_USDT';
+  kind: 'delta'; channel: 'push.depth'; symbol: 'BTC_USDT' | 'ETH_USDT';
   version: string; previousVersion: string | null;
   bids: readonly MexcDepthDeltaLevel[]; asks: readonly MexcDepthDeltaLevel[];
   sourceTime: { at: number | null; meaning: 'matching-engine-book-production'; ageMs: number | null;
@@ -71,6 +74,11 @@ export class MexcDepthStreamEvidence {
   #lastSourceTime: number | null = null;
   #acknowledged = false;
   #rejected = false;
+  readonly #symbol: 'BTC_USDT' | 'ETH_USDT';
+
+  constructor(base: ResearchBase = 'BTC') {
+    this.#symbol = market('mexc', base).instrumentId as 'BTC_USDT' | 'ETH_USDT';
+  }
 
   accept(raw: string, receivedAt: number): MexcDepthStreamMessage {
     if (this.#rejected) return reject('stream-already-rejected');
@@ -105,7 +113,7 @@ export class MexcDepthStreamEvidence {
     if (!['rs.sub.depth', 'pong', 'push.depth'].includes(row.channel as string)) {
       return reject('unexpected-stream-channel');
     }
-    if (row.symbol !== undefined && row.symbol !== 'BTC_USDT') return reject('unsupported-stream-symbol');
+    if (row.symbol !== undefined && row.symbol !== this.#symbol) return reject('unsupported-stream-symbol');
     const common = { receivedAt, exchangeTimestamp: optionalTime(row.ts),
       exchangeTimestampVerified: false as const, executable: false as const };
     if (row.channel === 'rs.sub.depth') {
@@ -115,9 +123,9 @@ export class MexcDepthStreamEvidence {
     if (row.channel === 'pong') {
       return { ...common, kind: 'pong', channel: 'pong', serverTime: timestamp(row.data), serverTimeVerified: false };
     }
-    if (row.symbol !== 'BTC_USDT') return reject('unsupported-stream-symbol');
+    if (row.symbol !== this.#symbol) return reject('unsupported-stream-symbol');
     const data = record(row.data);
-    if (data.symbol !== undefined && data.symbol !== 'BTC_USDT') return reject('unsupported-stream-symbol');
+    if (data.symbol !== undefined && data.symbol !== this.#symbol) return reject('unsupported-stream-symbol');
     const version = integerText(data.version);
     if (this.#lastVersion !== null && BigInt(version) !== BigInt(this.#lastVersion) + 1n) {
       return reject('stream-version-discontinuity');
@@ -129,7 +137,7 @@ export class MexcDepthStreamEvidence {
     const ageMs = at === null ? null : receivedAt - at;
     const ageStatus = ageMs === null ? 'missing' : ageMs < -MEXC_DEPTH_STREAM_LIMITS.maximumFutureMs ? 'future' :
       ageMs > MEXC_DEPTH_STREAM_LIMITS.maximumAgeMs ? 'stale' : 'within-window';
-    return { ...common, kind: 'delta', channel: 'push.depth', symbol: 'BTC_USDT', version,
+    return { ...common, kind: 'delta', channel: 'push.depth', symbol: this.#symbol, version,
       previousVersion: this.#lastVersion, bids: levels(data.bids), asks: levels(data.asks),
       sourceTime: { at, meaning: 'matching-engine-book-production', ageMs, ageStatus },
       sourceTimeFresh: ageStatus === 'within-window', bookReconstructed: false, bookFreshnessVerified: false };

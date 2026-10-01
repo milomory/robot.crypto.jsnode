@@ -23,20 +23,20 @@ It is not the strategy foundation for the new funding/basis research.
 | `src/paper-v2` | Exact single-venue ledger and deterministic replay | Retains its original scenario boundary |
 | `src/paper-pair` | Independently funded MEXC/OKX spot legs, partial/unknown outcomes, explicit-fill BTC/USDT/MX settlement and reserves | Spot pair accounting already exists; it is not a perpetual margin/funding engine |
 | `src/live` | Preparation, admission, journals and offline recovery | No exchange order sender; dispatch markers do not send orders |
-| `src/market-data` | Shared exchange/market identity, exact specs/grids, funding estimates/history, books/mark/index/OI and archive replay | D0a and full D0b capture accepted; MEXC WS source-time probe accepted separately. Full WS book reconstruction, account eligibility, fees and net edge remain unverified |
+| `src/market-data` | Shared exchange/market identity, exact specs/grids, funding estimates/history, books/mark/index/OI and archive replay | D0a and full D0b capture accepted; MEXC WS source-time probe accepted separately. MEXC BTC/ETH top50 reconstruction accepted; joint time/Spot integration, account eligibility, fees and net edge remain unverified |
 
 `lab:derivatives-capabilities` is an explicit standalone command. Importing the
 application does not start it. Existing private account readers and server timers
 are not dependencies of the new module. Narrow venue unions in protected APIs
 remain intentional; they are not widened by the new shared research identity.
 
-Next: reconstruct MEXC books from fresh metadata, a snapshot and continuous WS
-deltas after the [source-time probe](DERIVATIVES-MEXC-DEPTH-SOURCE.md). D0b network
-capture is accepted; remaining metric-time and Spot integration constraints must
-be resolved before observation under a fixed budget. Perpetual pair simulation
-still needs event funding, separate-wallet margin/liquidation, four execution
-costs and recovery after a broken hedge. See [D0 acceptance](DERIVATIVES-PUBLIC-D0.md)
-and [D0–D5](DERIVATIVES-OPPORTUNITY-PLAN.md).
+MEXC BTC/ETH [top50 reconstruction](DERIVATIVES-MEXC-BOOK.md) is now accepted:
+fresh metadata, REST bootstrap and continuous WS deltas with immutable depth
+boundaries. This is not proof of the entire exchange book or execution readiness.
+Next: align these books with OKX/Spot observation, resolve the remaining metric-time
+contracts, and accept the D1 budget. Perpetual simulation still needs event funding,
+separate-wallet margin/liquidation, four execution costs and broken-hedge recovery.
+See [D0–D5](DERIVATIVES-OPPORTUNITY-PLAN.md).
 
 ## Safety Invariants
 
