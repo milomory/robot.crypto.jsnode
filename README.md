@@ -37,6 +37,9 @@ A new [public derivatives D0a capture](docs/DERIVATIVES-PUBLIC-D0.md) reads BTC/
 contract specifications and funding forecasts on MEXC/OKX without keys. The
 [funding/basis roadmap](docs/DERIVATIVES-OPPORTUNITY-PLAN.md) keeps public observation,
 funding event accounting, hedged simulation and private readiness separate.
+The [D0b observation/replay profile](docs/DERIVATIVES-PUBLIC-D0B.md) adds books,
+mark/index/OI and historical funding. Offline checks pass; full network acceptance
+is pending after an OKX 403, and unverified source timestamps remain explicit.
 
 ## Local Checks
 

@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "recordedAt": "2026-10-01T09:09:07.608139+00:00",
+  "attempted": 1,
+  "request": {
+    "method": "GET",
+    "url": "https://www.okx.com/api/v5/market/books?instId=BTC-USDT-SWAP&sz=50",
+    "http": 403
+  },
+  "remainingRequests": 4,
+  "remainingStatus": "not-attempted-stop-on-403",
+  "credentialsUsed": false,
+  "retries": 0,
+  "alternateOrigins": false,
+  "rawSuccessBodies": 0
+}

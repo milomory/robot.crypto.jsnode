@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "scope": "D0b code/offline validation and partial public schema probes",
+  "fullNetworkAcceptance": false,
+  "sourceTests": {
+    "passed": 4326,
+    "skippedExistingPostgres": 15,
+    "newD0bTests": 370
+  },
+  "apiUiBuild": "passed",
+  "marketDataStrictTypes": "passed",
+  "compiledCliReplay": "passed-synthetic-failure-archive-no-network",
+  "mexc": {
+    "attempted": 3,
+    "http200": 3,
+    "base": "BTC",
+    "kinds": [
+      "book",
+      "ticker",
+      "history"
+    ],
+    "sameCaptureMetadata": false,
+    "publicFixtureSha256": "7f81aed06ec1dc2a654adc23e76b4cc666117cbf8fa9f4d605de3d0119ed1697"
+  },
+  "okx": {
+    "attempted": 1,
+    "http403": 1,
+    "remainingNotAttempted": 4,
+    "causeEstablished": false
+  },
+  "fullD0bCaptureRun": false,
+  "recurringObserverStarted": false,
+  "executable": false,
+  "newCredentialsUsed": false,
+  "runtimeModified": false
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "kind": "public-endpoint-research",
+  "metadataCaptured": false,
+  "captureAcceptance": false,
+  "observations": [
+    {
+      "kind": "book",
+      "receipt": {
+        "url": "https://api.mexc.com/api/v1/contract/depth/BTC_USDT?limit=50",
+        "requestedAt": 1790845673838,
+        "receivedAt": 1790845674119
+      },
+      "raw": "{\"success\":true,\"code\":0,\"data\":{\"cts\":null,\"asks\":[[83581.7,63528,12],[83581.8,303,1],[83581.9,303,1],[83582.1,303,1],[83583.8,11458,3],[83583.9,29524,2],[83584,47833,3],[83584.1,47771,1],[83584.2,47771,1],[83584.3,47771,1],[83584.4,47771,1],[83584.5,102521,5],[83584.6,8805,1],[83585,1,1],[83585.1,5730,2],[83585.2,27507,3],[83585.3,5086,1],[83585.5,5423,1],[83585.7,6389,1],[83585.9,5761,1],[83586.1,5390,1],[83586.3,5129,1],[83586.5,5387,1],[83586.7,5439,1],[83586.9,6269,1],[83587.1,5670,1],[83587.3,6406,1],[83587.5,5695,1],[83587.7,6848,1],[83587.9,5086,1],[83588.1,5725,1],[83588.3,5965,1],[83589.3,17948,1],[83590.1,8700,1],[83590.2,10489,1],[83590.3,8350,1],[83590.4,8238,1],[83590.5,30446,3],[83590.6,10601,1],[83590.7,10731,1],[83590.8,8433,1],[83590.9,12616,2],[83591,17360,2],[83591.1,8860,1],[83591.2,15820,2],[83591.3,9932,1],[83591.4,17000,2],[83591.5,8728,1],[83591.6,15512,2],[83591.7,9971,1]],\"bids\":[[83581.6,22870,1],[83581.5,4795,1],[83581.4,4835,1],[83581.3,5104,1],[83581.2,4800,2],[83581.1,4813,2],[83581,4801,2],[83580.9,4810,2],[83580.8,7188,2],[83580.7,5866,1],[83580.6,4965,1],[83580.5,92395,2],[83580.4,4818,1],[83580.3,4829,1],[83580.2,4949,1],[83580.1,4813,1],[83580,6409,2],[83579.9,4815,1],[83579.8,4810,1],[83579.7,4821,1],[83579.6,4909,1],[83579.5,4969,1],[83579.4,5684,1],[83579.3,5376,1],[83579.2,5289,1],[83579.1,5439,1],[83579,5022,1],[83578.9,4905,1],[83578.8,5046,1],[83578.7,5470,1],[83578.2,5729,1],[83578,5086,1],[83577.8,5485,2],[83577.6,61,1],[83577.5,5841,1],[83577.3,6399,2],[83577.1,5143,1],[83577,303,1],[83576.9,5793,1],[83576.7,5448,1],[83576.5,6627,1],[83576.3,5750,1],[83576.1,14615,2],[83575.9,5202,1],[83575.7,5935,1],[83575.5,10571,2],[83575.3,6082,1],[83575.1,5887,1],[83574.9,5967,1],[83574.7,6500,1]],\"version\":42262313630,\"timestamp\":1790845673755}}"
+    },
+    {
+      "kind": "ticker",
+      "receipt": {
+        "url": "https://api.mexc.com/api/v1/contract/ticker?symbol=BTC_USDT",
+        "requestedAt": 1790845674120,
+        "receivedAt": 1790845674369
+      },
+      "raw": "{\"success\":true,\"code\":0,\"data\":{\"contractId\":10,\"symbol\":\"BTC_USDT\",\"lastPrice\":83584.5,\"bid1\":83584.4,\"ask1\":83584.5,\"volume24\":358881264,\"amount24\":3017260101.48246,\"holdVol\":523813146,\"lower24Price\":83009.3,\"high24Price\":85620,\"riseFallRate\":-0.0061,\"riseFallValue\":-517.7,\"indexPrice\":83625.6,\"fairPrice\":83584.5,\"fundingRate\":0.000032,\"maxBidPrice\":91988.1,\"minAskPrice\":75263,\"timestamp\":1790845671713,\"riseFallRates\":{\"zone\":\"UTC+8\",\"r\":-0.0061,\"v\":-517.7,\"r7\":-0.0045,\"r30\":0.0641,\"r90\":0.3573,\"r180\":0.2511,\"r365\":-0.2606},\"riseFallRatesOfTimezone\":[0.0067,0,-0.0061]}}"
+    },
+    {
+      "kind": "history",
+      "receipt": {
+        "url": "https://api.mexc.com/api/v1/contract/funding_rate/history?symbol=BTC_USDT&page_num=1&page_size=20",
+        "requestedAt": 1790845674369,
+        "receivedAt": 1790845674646
+      },
+      "raw": "{\"success\":true,\"code\":0,\"data\":{\"pageSize\":20,\"totalCount\":1620,\"totalPage\":81,\"currentPage\":1,\"resultList\":[{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000046,\"settleTime\":1790841600000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.00008,\"settleTime\":1790812800000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000065,\"settleTime\":1790784000000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0,\"settleTime\":1790755200000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000077,\"settleTime\":1790726400000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000014,\"settleTime\":1790697600000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000067,\"settleTime\":1790668800000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000038,\"settleTime\":1790640000000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000064,\"settleTime\":1790611200000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":-0.000025,\"settleTime\":1790582400000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.00002,\"settleTime\":1790553600000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.00001,\"settleTime\":1790524800000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000013,\"settleTime\":1790496000000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000046,\"settleTime\":1790467200000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":-0.000005,\"settleTime\":1790438400000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000049,\"settleTime\":1790409600000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000007,\"settleTime\":1790380800000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":-0.000006,\"settleTime\":1790352000000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000035,\"settleTime\":1790323200000,\"collectCycle\":8},{\"symbol\":\"BTC_USDT\",\"fundingRate\":0.000001,\"settleTime\":1790294400000,\"collectCycle\":8}]}}"
+    }
+  ]
+}

@@ -33,7 +33,8 @@
     "lab:live-order-rehearsal": "tsx src/scripts/live-order-rehearsal.ts",
     "lab:order-recovery": "tsx src/scripts/order-recovery.ts",
     "lab:account-funds": "tsx src/scripts/account-funds-preparation.ts",
-    "lab:derivatives-capabilities": "tsx src/scripts/derivatives-capabilities.ts"
+    "lab:derivatives-capabilities": "tsx src/scripts/derivatives-capabilities.ts",
+    "lab:derivatives-observe": "tsx src/scripts/derivatives-observe.ts"
   },
   "dependencies": {
     "@fastify/static": "^9.1.3",
